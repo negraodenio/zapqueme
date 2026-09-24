@@ -3,167 +3,766 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Zap, quem é? — Verificador Instantâneo de Golpes</title>
+<title>Zap, quem é? — Detector de Golpes e Fraudes Online</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
-  :root{
-    --bg:#0f1115; --card:#1a1d24; --text:#eaeaea; --muted:#9aa0aa;
-    --green:#22c55e; --yellow:#eab308; --red:#ef4444; --accent:#0F6E56;
-    --card-border: #272b36;
+  :root {
+    --bg: #0b0d11;
+    --card: #15181f;
+    --card-hover: #1c202a;
+    --border: #232834;
+    --border-focus: #10b981;
+    --text: #f3f4f6;
+    --muted: #94a3b8;
+    --accent: #0f766e;
+    --accent-hover: #115e59;
+    --accent-glow: rgba(15, 118, 110, 0.25);
+    --red: #ef4444;
+    --red-bg: rgba(239, 68, 68, 0.12);
+    --red-border: rgba(239, 68, 68, 0.35);
+    --yellow: #f59e0b;
+    --yellow-bg: rgba(245, 158, 11, 0.12);
+    --yellow-border: rgba(245, 158, 11, 0.35);
+    --green: #10b981;
+    --green-bg: rgba(16, 185, 129, 0.12);
+    --green-border: rgba(16, 185, 129, 0.35);
   }
-  *{box-sizing:border-box}
-  body{margin:0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
-    background:var(--bg);color:var(--text);min-height:100vh;padding:20px;}
-  .wrap{max-width:540px;margin:0 auto;}
-  .header{text-align:center;margin-bottom:20px;}
-  h1{font-size:1.6rem;margin-bottom:4px;letter-spacing:-0.02em;}
-  .sub{color:var(--muted);margin:0 0 16px;font-size:.95rem;}
-  .btn-fui-vitima{display:inline-block;background:rgba(239,68,68,.12);border:1px solid rgba(239,68,68,.3);color:#f87171;padding:6px 14px;border-radius:20px;font-size:.85rem;font-weight:600;cursor:pointer;text-decoration:none;transition:0.2s;}
-  .btn-fui-vitima:hover{background:rgba(239,68,68,.25);}
 
-  .card{background:var(--card);border:1px solid var(--card-border);border-radius:16px;padding:20px;margin-bottom:16px;}
-  textarea{width:100%;min-height:105px;background:#0f1115;color:var(--text);
-    border:1px solid #333;border-radius:10px;padding:12px;font-size:1rem;resize:vertical;}
-  textarea:focus{outline:none;border-color:var(--accent);}
-  input[type=file]{width:100%;margin-top:10px;color:var(--muted);}
-  button{width:100%;padding:14px;border:none;border-radius:12px;background:var(--accent);
-    color:white;font-size:1.05rem;font-weight:600;margin-top:14px;cursor:pointer;transition:0.15s;}
-  button:hover{opacity:0.92;}
-  button:disabled{opacity:.5;cursor:not-allowed;}
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background-color: var(--bg);
+    color: var(--text);
+    font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+    min-height: 100vh;
+    line-height: 1.5;
+    padding-bottom: 60px;
+    background-image: radial-gradient(circle at 50% 0%, rgba(15, 118, 110, 0.12), transparent 45%);
+  }
+
+  .container {
+    max-width: 680px;
+    margin: 0 auto;
+    padding: 24px 16px;
+  }
+
+  /* Navbar */
+  .navbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 0 24px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 28px;
+  }
+  .brand {
+    font-size: 1.25rem;
+    font-weight: 800;
+    color: #fff;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    text-decoration: none;
+    letter-spacing: -0.02em;
+  }
+  .brand-badge {
+    background: rgba(16, 185, 129, 0.15);
+    color: var(--green);
+    font-size: 0.7rem;
+    font-weight: 700;
+    padding: 3px 8px;
+    border-radius: 20px;
+    border: 1px solid var(--green-border);
+    text-transform: uppercase;
+  }
+  .nav-actions {
+    display: flex;
+    gap: 8px;
+  }
+  .btn-nav-emergency {
+    background: var(--red-bg);
+    color: #fca5a5;
+    border: 1px solid var(--red-border);
+    padding: 8px 14px;
+    border-radius: 10px;
+    font-size: 0.82rem;
+    font-weight: 700;
+    cursor: pointer;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: 0.2s;
+  }
+  .btn-nav-emergency:hover {
+    background: rgba(239, 68, 68, 0.22);
+    border-color: var(--red);
+  }
+
+  /* Hero */
+  .hero {
+    text-align: center;
+    margin-bottom: 28px;
+  }
+  .hero-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.8rem;
+    color: var(--green);
+    background: var(--green-bg);
+    border: 1px solid var(--green-border);
+    padding: 4px 12px;
+    border-radius: 20px;
+    margin-bottom: 12px;
+    font-weight: 600;
+  }
+  .hero h1 {
+    font-size: 1.85rem;
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    line-height: 1.25;
+    margin-bottom: 10px;
+  }
+  .hero p {
+    color: var(--muted);
+    font-size: 0.98rem;
+    max-width: 520px;
+    margin: 0 auto;
+  }
+
+  /* Cards */
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    padding: 24px;
+    margin-bottom: 20px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
+  }
+
+  /* Seletor de Canal */
+  .channel-title {
+    font-size: 0.8rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--muted);
+    margin-bottom: 10px;
+    display: block;
+  }
+  .channels-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+    margin-bottom: 16px;
+  }
+  .channel-btn {
+    background: #0f1217;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 10px 8px;
+    color: var(--muted);
+    font-size: 0.82rem;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    transition: 0.15s;
+  }
+  .channel-btn.active, .channel-btn:hover {
+    background: #1a202c;
+    color: #fff;
+    border-color: #3b82f6;
+  }
+
+  /* Input Área */
+  textarea {
+    width: 100%;
+    min-height: 120px;
+    background: #0b0d11;
+    color: var(--text);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 14px;
+    font-family: inherit;
+    font-size: 0.95rem;
+    line-height: 1.5;
+    resize: vertical;
+    transition: 0.2s;
+  }
+  textarea:focus {
+    outline: none;
+    border-color: var(--green);
+    box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.15);
+  }
+
+  /* Upload Box */
+  .upload-box {
+    margin-top: 14px;
+    background: #0b0d11;
+    border: 1px dashed var(--border);
+    border-radius: 12px;
+    padding: 14px 16px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+  }
+  .upload-info {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: var(--muted);
+    font-size: 0.88rem;
+  }
+  .upload-icon {
+    font-size: 1.25rem;
+  }
+  input[type=file] {
+    display: none;
+  }
+  .btn-upload {
+    background: #1e2430;
+    color: #fff;
+    border: 1px solid var(--border);
+    padding: 8px 14px;
+    border-radius: 8px;
+    font-size: 0.82rem;
+    font-weight: 600;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: 0.2s;
+  }
+  .btn-upload:hover {
+    background: #273040;
+  }
+  .file-name-preview {
+    font-size: 0.82rem;
+    color: var(--green);
+    font-weight: 600;
+    display: none;
+  }
+
+  /* Botão Principal */
+  .btn-verify {
+    width: 100%;
+    padding: 15px;
+    border: none;
+    border-radius: 12px;
+    background: linear-gradient(135deg, #0f766e, #0d9488);
+    color: white;
+    font-size: 1.05rem;
+    font-weight: 700;
+    margin-top: 18px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    box-shadow: 0 4px 14px var(--accent-glow);
+    transition: 0.2s;
+  }
+  .btn-verify:hover {
+    opacity: 0.95;
+    transform: translateY(-1px);
+  }
+  .btn-verify:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+  }
+
+  .loading-box {
+    display: none;
+    text-align: center;
+    padding: 16px 0 0;
+    color: var(--muted);
+    font-size: 0.9rem;
+  }
+  .spinner {
+    display: inline-block;
+    width: 18px;
+    height: 18px;
+    border: 2px solid rgba(255,255,255,0.2);
+    border-top-color: var(--green);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    vertical-align: middle;
+    margin-right: 8px;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* CARD DE RESULTADOS (ESTILO DETECTOR DE BURLA) */
+  .result-card {
+    display: none;
+    border-width: 2px;
+    animation: fadeIn 0.4s ease-out;
+  }
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .result-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    padding-bottom: 14px;
+    border-bottom: 1px solid var(--border);
+  }
+  .channel-pill {
+    background: #11141a;
+    border: 1px solid var(--border);
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: var(--muted);
+    text-transform: uppercase;
+  }
+  .veredito-badge {
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 0.88rem;
+    font-weight: 800;
+    letter-spacing: -0.01em;
+  }
+
+  /* Score Principal com Termômetro */
+  .score-display-box {
+    background: #0f1217;
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 18px 20px;
+    margin-bottom: 20px;
+  }
+  .score-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 10px;
+  }
+  .score-title {
+    font-size: 0.85rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: var(--muted);
+    letter-spacing: 0.03em;
+  }
+  .score-numbers {
+    display: flex;
+    align-items: baseline;
+    gap: 6px;
+  }
+  .score-big {
+    font-size: 2.2rem;
+    font-weight: 900;
+    line-height: 1;
+  }
+  .score-total {
+    font-size: 1rem;
+    color: var(--muted);
+    font-weight: 700;
+  }
+  .risk-badge {
+    padding: 3px 10px;
+    border-radius: 6px;
+    font-size: 0.78rem;
+    font-weight: 800;
+    margin-left: 8px;
+    vertical-align: middle;
+  }
+  .score-track {
+    background: #232834;
+    height: 12px;
+    border-radius: 6px;
+    overflow: hidden;
+  }
+  .score-fill {
+    height: 100%;
+    width: 0%;
+    border-radius: 6px;
+    transition: width 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  /* Contador Social Viral */
+  .social-counter {
+    background: var(--red-bg);
+    border: 1px solid var(--red-border);
+    color: #fca5a5;
+    padding: 10px 14px;
+    border-radius: 10px;
+    font-size: 0.88rem;
+    font-weight: 600;
+    margin-bottom: 18px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  /* Alerta de Link / Typosquatting */
+  .link-alert-box {
+    background: var(--yellow-bg);
+    border: 1px solid var(--yellow-border);
+    color: #fde68a;
+    padding: 12px 16px;
+    border-radius: 12px;
+    font-size: 0.9rem;
+    line-height: 1.45;
+    margin-bottom: 18px;
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+  }
+
+  /* Explicação & Sinais */
+  .section-label {
+    font-size: 0.8rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--muted);
+    margin-bottom: 8px;
+  }
+  .explanation-text {
+    font-size: 0.95rem;
+    color: #e2e8f0;
+    margin-bottom: 18px;
+    line-height: 1.55;
+  }
+  .signals-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 20px;
+  }
+  .signal-pill {
+    background: #0f1217;
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--yellow);
+    padding: 10px 14px;
+    border-radius: 8px;
+    font-size: 0.88rem;
+    color: #e2e8f0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  /* Ação Recomendada */
+  .action-box {
+    background: #0f1217;
+    border: 1px solid var(--border);
+    border-left: 4px solid var(--green);
+    border-radius: 10px;
+    padding: 14px 16px;
+    margin-bottom: 22px;
+    font-size: 0.92rem;
+    line-height: 1.5;
+  }
+
+  /* Botões de Ação Final */
+  .action-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .btn-share {
+    background: #25d366;
+    color: #0b0d11;
+    border: none;
+    border-radius: 10px;
+    padding: 14px;
+    font-weight: 800;
+    font-size: 0.95rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    transition: 0.2s;
+  }
+  .btn-share:hover { background: #22bf5b; }
   
-  .result{display:none;}
-  .veredito{font-size:1.4rem;font-weight:800;padding:14px;border-radius:12px;text-align:center;margin-bottom:14px;}
-  .veredito.golpe{background:rgba(239,68,68,.15);color:var(--red);border:1px solid var(--red);}
-  .veredito.suspeito{background:rgba(234,179,8,.15);color:var(--yellow);border:1px solid var(--yellow);}
-  .veredito.legitimo{background:rgba(34,197,94,.15);color:var(--green);border:1px solid var(--green);}
+  .feedback-row {
+    display: flex;
+    gap: 10px;
+    margin-top: 4px;
+  }
+  .btn-fb {
+    flex: 1;
+    background: #11141a;
+    border: 1px solid var(--border);
+    color: var(--muted);
+    padding: 10px;
+    border-radius: 10px;
+    font-size: 0.88rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: 0.15s;
+  }
+  .btn-fb:hover { background: #1a202c; color: #fff; }
 
-  /* Termômetro de Risco */
-  .risk-container{background:#0f1115;border-radius:12px;padding:14px;margin-bottom:16px;border:1px solid #282b33;}
-  .risk-header{display:flex;justify-content:space-between;font-size:.85rem;font-weight:700;margin-bottom:8px;}
-  .risk-title{color:var(--muted);text-transform:uppercase;letter-spacing:0.04em;}
-  .risk-val{font-size:.95rem;}
-  .risk-track{background:#232730;height:10px;border-radius:5px;overflow:hidden;position:relative;}
-  .risk-fill{height:100%;width:0%;border-radius:5px;transition:width 0.6s ease-in-out;}
-
-  .reportada{background:rgba(239,68,68,.12);border:1px solid var(--red);color:var(--red);
-    padding:10px 14px;border-radius:10px;text-align:center;font-weight:600;font-size:.9rem;margin-bottom:16px;}
-  .alerta-link{background:rgba(234,179,8,.12);border:1px solid var(--yellow);color:var(--yellow);
-    padding:10px 14px;border-radius:10px;font-size:.9rem;margin-bottom:16px;line-height:1.4;}
-  ul{padding-left:20px;margin:8px 0;}
-  li{margin-bottom:6px;}
-  .label{font-weight:700;font-size:.85rem;text-transform:uppercase;color:var(--muted);margin-top:14px;margin-bottom:4px;}
-  .acao{background:#0f1115;padding:14px;border-radius:10px;border-left:3px solid var(--accent);line-height:1.45;}
-  .fb{display:flex;gap:10px;margin-top:16px;}
-  .fb button{flex:1;background:#2a2d36;font-size:1.15rem;margin-top:0;}
-  
   /* Seção de Emergência Fui Vítima */
-  .emergency-card{background:rgba(239,68,68,.06);border:1px solid rgba(239,68,68,.3);margin-top:14px;}
-  .emergency-title{color:#f87171;font-size:1.05rem;font-weight:700;margin-bottom:6px;}
-  .emergency-sub{color:var(--muted);font-size:.85rem;margin:0 0 14px;line-height:1.4;}
-  .step-box{background:#111317;padding:12px 14px;border-radius:10px;margin-bottom:8px;font-size:.9rem;line-height:1.45;}
-  .step-box strong{color:#eaeaea;display:block;margin-bottom:2px;}
+  .emergency-section {
+    background: rgba(239, 68, 68, 0.05);
+    border: 1px solid var(--red-border);
+    border-radius: 18px;
+    padding: 24px;
+    margin-top: 30px;
+  }
+  .emergency-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 8px;
+  }
+  .emergency-header h2 {
+    font-size: 1.25rem;
+    font-weight: 800;
+    color: #f87171;
+  }
+  .emergency-desc {
+    color: var(--muted);
+    font-size: 0.9rem;
+    margin-bottom: 18px;
+    line-height: 1.5;
+  }
+  .steps-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .step-item {
+    background: #11141b;
+    border: 1px solid rgba(239, 68, 68, 0.2);
+    border-radius: 12px;
+    padding: 14px 16px;
+    font-size: 0.9rem;
+    line-height: 1.5;
+  }
+  .step-item strong {
+    color: #fff;
+    display: block;
+    margin-bottom: 4px;
+    font-size: 0.95rem;
+  }
+  .step-item em {
+    color: #fca5a5;
+    font-style: normal;
+    font-weight: 600;
+  }
 
-  .disclaimer{font-size:.75rem;color:var(--muted);text-align:center;margin-top:20px;line-height:1.4;}
-  .loading{text-align:center;color:var(--muted);display:none;margin-top:12px;}
+  /* Footer Disclaimer */
+  .footer-disclaimer {
+    font-size: 0.78rem;
+    color: #64748b;
+    text-align: center;
+    margin-top: 32px;
+    line-height: 1.5;
+  }
 </style>
 </head>
 <body>
-<div class="wrap">
-  <div class="header">
-    <h1>⚡ Zap, quem é?</h1>
-    <p class="sub">Cola o texto ou manda o print da mensagem suspeita</p>
-    <a href="#emergencia" class="btn-fui-vitima" id="btnToggleEmergencia">🆘 Já caiu em um golpe? O que fazer</a>
+
+<div class="container">
+  <!-- Navbar -->
+  <header class="navbar">
+    <a href="#" class="brand">
+      ⚡ Zap, quem é?
+      <span class="brand-badge">IA com Visão</span>
+    </a>
+    <div class="nav-actions">
+      <a href="#emergencia" class="btn-nav-emergency" id="btnNavEmergency">
+        🆘 Fui Vítima
+      </a>
+    </div>
+  </header>
+
+  <!-- Hero -->
+  <div class="hero">
+    <div class="hero-tag">
+      🛡️ Detector Instantâneo de Fraudes & Phishing
+    </div>
+    <h1>Verifique mensagens, links e prints suspeitos</h1>
+    <p>Descubra na hora se uma mensagem de SMS, WhatsApp ou e-mail é tentativa de golpe e veja exatamente o que fazer.</p>
   </div>
 
-  <!-- Card Principal de Verificação -->
+  <!-- Card do Formulário -->
   <div class="card">
-    <textarea id="texto" placeholder="Cola aqui o texto do SMS/WhatsApp suspeito..."></textarea>
-    <input type="file" id="imagem" accept="image/*">
-    <button id="btnVerificar">Zap, quem é? 👀</button>
-    <p class="loading" id="loading">Analisando com Inteligência Artificial... 🕵️</p>
+    <label class="channel-title">Onde você recebeu a mensagem?</label>
+    <div class="channels-grid">
+      <button type="button" class="channel-btn active" data-channel="WhatsApp">
+        <span>💬</span> WhatsApp
+      </button>
+      <button type="button" class="channel-btn" data-channel="SMS">
+        <span>📱</span> SMS
+      </button>
+      <button type="button" class="channel-btn" data-channel="E-mail">
+        <span>📧</span> E-mail
+      </button>
+      <button type="button" class="channel-btn" data-channel="Outro / Link">
+        <span>🔗</span> Link
+      </button>
+    </div>
+
+    <textarea id="texto" placeholder="Cole aqui o texto da mensagem suspeita (ex: aviso de encomenda, falso parente pedindo dinheiro, banco alertando compra)..."></textarea>
+
+    <div class="upload-box">
+      <div class="upload-info">
+        <span class="upload-icon">📷</span>
+        <div>
+          <div>Tem um print da conversa?</div>
+          <span class="file-name-preview" id="fileNamePreview"></span>
+        </div>
+      </div>
+      <label class="btn-upload" for="imagem">
+        Selecionar Print
+      </label>
+      <input type="file" id="imagem" accept="image/*">
+    </div>
+
+    <button id="btnVerificar" class="btn-verify">
+      <span>Verificar Mensagem com IA</span> 🕵️
+    </button>
+    <div class="loading-box" id="loading">
+      <span class="spinner"></span> Analisando padrões de fraude, links e remetente...
+    </div>
   </div>
 
-  <!-- Resultado da Análise -->
-  <div class="card result" id="resultado">
-    <div class="veredito" id="veredito"></div>
-    
-    <!-- Termômetro de Risco -->
-    <div class="risk-container">
-      <div class="risk-header">
-        <span class="risk-title">Nível de Risco Aparente</span>
-        <span class="risk-val" id="riskLabel">--/100</span>
+  <!-- Card de Resultado (Inspirado no Detector de Burla) -->
+  <div class="card result-card" id="resultado">
+    <div class="result-header">
+      <span class="channel-pill" id="resultChannel">WhatsApp</span>
+      <span class="veredito-badge" id="vereditoBadge">🚨 PROVÁVEL GOLPE</span>
+    </div>
+
+    <!-- Display de Nível de Risco -->
+    <div class="score-display-box">
+      <div class="score-top">
+        <span class="score-title">Nível de Risco Aparente</span>
+        <div class="score-numbers">
+          <span class="score-big" id="scoreNum">95</span>
+          <span class="score-total">/100</span>
+          <span class="risk-badge" id="riskBadge">CRÍTICO</span>
+        </div>
       </div>
-      <div class="risk-track">
-        <div class="risk-fill" id="riskBar"></div>
+      <div class="score-track">
+        <div class="score-fill" id="scoreFill"></div>
       </div>
     </div>
 
-    <div class="reportada" id="reportada" style="display:none;"></div>
-    <div class="alerta-link" id="alertaLink" style="display:none;"></div>
-    
-    <div class="label">Sinais de alerta identificados</div>
-    <ul id="sinais"></ul>
-    
-    <div class="label">O que fazer agora</div>
-    <div class="acao" id="acao"></div>
-    
-    <button id="btnPartilhar">📲 Partilhar no WhatsApp</button>
-    
-    <div class="fb">
-      <button id="fbUp">👍 Ajudou</button>
-      <button id="fbDown">👎 Não ajudou</button>
+    <!-- Contador Social -->
+    <div class="social-counter" id="socialCounter" style="display:none;">
+      <span>⚠️</span>
+      <span id="socialCounterText">Esta mensagem já foi verificada por outras pessoas.</span>
+    </div>
+
+    <!-- Alerta de Link -->
+    <div class="link-alert-box" id="linkAlert" style="display:none;">
+      <span style="font-size:1.2rem;">🔗</span>
+      <div id="linkAlertText"></div>
+    </div>
+
+    <!-- Explicação Simples -->
+    <div class="section-label">Diagnóstico da IA</div>
+    <p class="explanation-text" id="explicacao"></p>
+
+    <!-- Sinais de Alerta -->
+    <div class="section-label">Sinais de Risco Identificados</div>
+    <div class="signals-grid" id="signalsContainer"></div>
+
+    <!-- O que Fazer -->
+    <div class="section-label">Recomendação de Segurança</div>
+    <div class="action-box" id="acaoRecomendada"></div>
+
+    <!-- Ações e Compartilhamento -->
+    <div class="action-buttons">
+      <button class="btn-share" id="btnShareWhatsApp">
+        <span>📲</span> Enviar Alerta no WhatsApp
+      </button>
+      <div class="feedback-row">
+        <button class="btn-fb" id="btnFbUp">👍 Análise Ajudou</button>
+        <button class="btn-fb" id="btnFbDown">👎 Não Ajudou</button>
+      </div>
     </div>
   </div>
 
   <!-- Protocolo de Emergência: Fui Vítima -->
-  <div class="card emergency-card" id="emergencia" style="display:none;">
-    <div class="emergency-title">🆘 Protocolo de Emergência — Fui Vítima</div>
-    <p class="emergency-sub">Se você já realizou pagamentos, enviou PIX ou informou senhas, aja agora. Cada minuto conta:</p>
+  <section class="emergency-section" id="emergencia">
+    <div class="emergency-header">
+      <span style="font-size:1.5rem;">🆘</span>
+      <h2>Protocolo de Emergência — Fui Vítima</h2>
+    </div>
+    <p class="emergency-desc">Se você já enviou dinheiro, fez transferência/PIX ou passou senhas e dados do cartão, <strong>aja imediatamente</strong>. Cada minuto é vital para bloquear o valor:</p>
     
-    <div class="step-box">
-      <strong>1️⃣ Ligue para o seu banco imediatamente:</strong>
-      No Brasil, exija o acionamento do <em>MED (Mecanismo Especial de Devolução do PIX)</em> para bloquear o valor na conta de destino. Em Portugal, solicite o cancelamento urgente de cartões e estorno de transferências.
+    <div class="steps-list">
+      <div class="step-item">
+        <strong>1️⃣ Ligue para o seu banco agora mesmo:</strong>
+        • <em>No Brasil:</em> Peça a abertura imediata do <em>MED (Mecanismo Especial de Devolução do PIX)</em>. O banco tem até 80 dias para rastrear e bloquear o valor na conta de destino.<br>
+        • <em>Em Portugal:</em> Contacte a linha de apoio de urgência do seu banco ou SIBS para bloquear cartões e tentar travar transferências imediatas.
+      </div>
+      <div class="step-item">
+        <strong>2️⃣ Guarde todas as provas:</strong>
+        Tire prints de toda a conversa, número do golpista, comprovantes de transferência, links recebidos e chaves PIX/IBAN antes que o criminoso apague a conversa.
+      </div>
+      <div class="step-item">
+        <strong>3️⃣ Registre Boletim de Ocorrência / Queixa-crime:</strong>
+        • <em>No Brasil:</em> Registre online na <em>Delegacia Eletrônica</em> da Polícia Civil do seu Estado por estelionato virtual / fraude.<br>
+        • <em>Em Portugal:</em> Apresente queixa no portal da <em>Polícia Judiciária / Ministério Público</em> ou presencialmente no posto da PSP/GNR.
+      </div>
+      <div class="step-item">
+        <strong>4️⃣ Blinde seus acessos:</strong>
+        Altere senhas do seu e-mail e ative a <em>Confirmação em Duas Etapas (com código PIN)</em> no WhatsApp para evitar invasões da sua conta.
+      </div>
     </div>
-    <div class="step-box">
-      <strong>2️⃣ Guarde todas as provas:</strong>
-      Tire prints de toda a conversa, número do remetente, comprovantes de transação e chaves PIX/IBAN antes que o criminoso apague.
-    </div>
-    <div class="step-box">
-      <strong>3️⃣ Registre Boletim de Ocorrência / Queixa:</strong>
-      No Brasil, registre online na <em>Delegacia Eletrônica</em> por fraude/estelionato. Em Portugal, registre queixa no portal da Polícia Judiciária / Ministério Público ou na PSP/GNR.
-    </div>
-    <div class="step-box">
-      <strong>4️⃣ Blinde seus acessos:</strong>
-      Altere senhas do seu e-mail e ative a <em>Confirmação em Duas Etapas (com código PIN)</em> no WhatsApp para evitar clonagem.
-    </div>
-  </div>
+  </section>
 
-  <p class="disclaimer">
-    Isto é um alerta automático e informativo, não substitui a polícia, o teu banco ou uma autoridade oficial.
-    As mensagens não são partilhadas publicamente nem usadas para treinar modelos de terceiros.
+  <p class="footer-disclaimer">
+    Aviso: Esta ferramenta tem caráter informativo e pedagógico. A análise é gerada por Inteligência Artificial e não substitui órgãos policiais, seu banco ou assessoria jurídica. Suas mensagens não são armazenadas publicamente nem vendidas.
   </p>
 </div>
 
 <script>
-const btn = document.getElementById('btnVerificar');
-const loading = document.getElementById('loading');
-const resultado = document.getElementById('resultado');
-const btnToggleEmergencia = document.getElementById('btnToggleEmergencia');
-const cardEmergencia = document.getElementById('emergencia');
+let currentChannel = 'WhatsApp';
+const channelBtns = document.querySelectorAll('.channel-btn');
+channelBtns.forEach(btn => {
+  btn.addEventListener('click', () => {
+    channelBtns.forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    currentChannel = btn.dataset.channel;
+  });
+});
 
-btnToggleEmergencia.addEventListener('click', (e) => {
-  e.preventDefault();
-  cardEmergencia.style.display = cardEmergencia.style.display === 'none' ? 'block' : 'none';
-  if (cardEmergencia.style.display === 'block') {
-    cardEmergencia.scrollIntoView({ behavior: 'smooth' });
+const imagemInput = document.getElementById('imagem');
+const fileNamePreview = document.getElementById('fileNamePreview');
+imagemInput.addEventListener('change', () => {
+  if (imagemInput.files && imagemInput.files[0]) {
+    fileNamePreview.textContent = 'Arquivo: ' + imagemInput.files[0].name;
+    fileNamePreview.style.display = 'block';
+  } else {
+    fileNamePreview.style.display = 'none';
   }
 });
 
-btn.addEventListener('click', async () => {
-  const texto = document.getElementById('texto').value.trim();
-  const file = document.getElementById('imagem').files[0];
-  if (!texto && !file) { alert('Cola um texto ou escolhe uma imagem primeiro.'); return; }
+const btnVerificar = document.getElementById('btnVerificar');
+const loading = document.getElementById('loading');
+const resultado = document.getElementById('resultado');
 
-  btn.disabled = true;
+btnVerificar.addEventListener('click', async () => {
+  const texto = document.getElementById('texto').value.trim();
+  const file = imagemInput.files[0];
+  if (!texto && !file) {
+    alert('Por favor, cole um texto ou selecione um print de tela para analisar.');
+    return;
+  }
+
+  btnVerificar.disabled = true;
   loading.style.display = 'block';
   resultado.style.display = 'none';
 
@@ -181,84 +780,126 @@ btn.addEventListener('click', async () => {
     const resp = await fetch('/api/analyze', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ texto, imagemBase64, imagemTipo: file ? file.type : null })
+      body: JSON.stringify({
+        texto: texto ? `[Canal: ${currentChannel}] ${texto}` : `[Canal: ${currentChannel}]`,
+        imagemBase64,
+        imagemTipo: file ? file.type : null
+      })
     });
     const data = await resp.json();
     if (data.error) throw new Error(data.error);
 
-    mostrarResultado(data);
-  } catch (e) {
-    alert('Erro ao analisar: ' + e.message);
+    renderizarResultado(data);
+  } catch (err) {
+    alert('Erro ao realizar a verificação: ' + err.message);
   } finally {
-    btn.disabled = false;
+    btnVerificar.disabled = false;
     loading.style.display = 'none';
   }
 });
 
-function mostrarResultado(data) {
-  const vEl = document.getElementById('veredito');
-  const labels = { golpe: '🚨 PROVÁVEL GOLPE', suspeito: '⚠️ MENSAGEM SUSPEITA', legitimo: '✅ PARECE LEGÍTIMO' };
-  vEl.textContent = labels[data.veredito] || data.veredito;
-  vEl.className = 'veredito ' + data.veredito;
+function renderizarResultado(data) {
+  document.getElementById('resultChannel').textContent = currentChannel;
 
-  // Atualiza Termômetro de Risco
-  const score = data.risco_score !== undefined 
-    ? data.risco_score 
+  const score = data.risco_score !== undefined
+    ? data.risco_score
     : (data.veredito === 'golpe' ? data.confianca : (data.veredito === 'suspeito' ? 55 : Math.max(5, 100 - data.confianca)));
-  
-  const riskLabel = document.getElementById('riskLabel');
-  const riskBar = document.getElementById('riskBar');
-  const nivel = score >= 80 ? 'CRÍTICO' : score >= 65 ? 'ALTO' : score >= 40 ? 'MODERADO' : 'BAIXO';
-  const cor = score >= 65 ? '#ef4444' : score >= 40 ? '#eab308' : '#22c55e';
-  
-  riskLabel.textContent = `${score}/100 [${nivel}]`;
-  riskLabel.style.color = cor;
-  riskBar.style.width = `${score}%`;
-  riskBar.style.background = cor;
 
-  // Alerta de Mensagem Repetida
-  const reportadaEl = document.getElementById('reportada');
+  const scoreNum = document.getElementById('scoreNum');
+  const scoreFill = document.getElementById('scoreFill');
+  const riskBadge = document.getElementById('riskBadge');
+  const vereditoBadge = document.getElementById('vereditoBadge');
+
+  scoreNum.textContent = score;
+
+  let nivelText, color, bgBadge, borderBadge;
+  if (score >= 80) {
+    nivelText = 'CRÍTICO';
+    color = '#ef4444';
+    bgBadge = 'rgba(239, 68, 68, 0.15)';
+    borderBadge = 'rgba(239, 68, 68, 0.4)';
+  } else if (score >= 65) {
+    nivelText = 'ALTO';
+    color = '#f87171';
+    bgBadge = 'rgba(248, 113, 113, 0.15)';
+    borderBadge = 'rgba(248, 113, 113, 0.4)';
+  } else if (score >= 40) {
+    nivelText = 'MODERADO';
+    color = '#f59e0b';
+    bgBadge = 'rgba(245, 158, 11, 0.15)';
+    borderBadge = 'rgba(245, 158, 11, 0.4)';
+  } else {
+    nivelText = 'BAIXO';
+    color = '#10b981';
+    bgBadge = 'rgba(16, 185, 129, 0.15)';
+    borderBadge = 'rgba(16, 185, 129, 0.4)';
+  }
+
+  scoreNum.style.color = color;
+  scoreFill.style.background = color;
+  scoreFill.style.width = score + '%';
+
+  riskBadge.textContent = nivelText;
+  riskBadge.style.color = color;
+  riskBadge.style.background = bgBadge;
+
+  const labels = {
+    golpe: '🚨 PROVÁVEL GOLPE',
+    suspeito: '⚠️ MENSAGEM SUSPEITA',
+    legitimo: '✅ PARECE LEGÍTIMO'
+  };
+  vereditoBadge.textContent = labels[data.veredito] || data.veredito.toUpperCase();
+  vereditoBadge.style.color = color;
+  vereditoBadge.style.background = bgBadge;
+  vereditoBadge.style.border = `1px solid ${borderBadge}`;
+  resultado.style.borderColor = borderBadge;
+
+  // Contador social
+  const socialEl = document.getElementById('socialCounter');
   if (data.vezes_reportada && data.vezes_reportada > 1) {
-    reportadaEl.textContent = `⚠️ Esta mensagem já foi verificada ${data.vezes_reportada} vezes por outras pessoas`;
-    reportadaEl.style.display = 'block';
+    document.getElementById('socialCounterText').textContent = `⚠️ Esta mensagem já foi verificada ${data.vezes_reportada} vezes por outras pessoas.`;
+    socialEl.style.display = 'flex';
   } else {
-    reportadaEl.style.display = 'none';
+    socialEl.style.display = 'none';
   }
 
-  // Alerta de Link / Typosquatting
-  const alertaLinkEl = document.getElementById('alertaLink');
+  // Alerta de link
+  const linkAlert = document.getElementById('linkAlert');
   if (data.alerta_link) {
-    alertaLinkEl.innerHTML = `<strong>🔗 Alerta de Link:</strong> ${data.alerta_link}`;
-    alertaLinkEl.style.display = 'block';
+    document.getElementById('linkAlertText').innerHTML = `<strong>Atenção ao Link:</strong> ${data.alerta_link}`;
+    linkAlert.style.display = 'flex';
   } else {
-    alertaLinkEl.style.display = 'none';
+    linkAlert.style.display = 'none';
   }
 
-  // Sinais de alerta
-  const sinaisEl = document.getElementById('sinais');
-  sinaisEl.innerHTML = '';
+  // Explicação
+  document.getElementById('explicacao').textContent = data.explicacao_simples || 'Análise concluída com base nos padrões conhecidos de engenharia social.';
+
+  // Sinais
+  const signalsContainer = document.getElementById('signalsContainer');
+  signalsContainer.innerHTML = '';
   (data.sinais || []).forEach(s => {
-    const li = document.createElement('li');
-    li.textContent = s;
-    sinaisEl.appendChild(li);
+    const div = document.createElement('div');
+    div.className = 'signal-pill';
+    div.innerHTML = `<span>⚠️</span> <span>${s}</span>`;
+    signalsContainer.appendChild(div);
   });
 
-  document.getElementById('acao').textContent = data.acao_recomendada;
+  // Ação recomendada
+  document.getElementById('acaoRecomendada').textContent = data.acao_recomendada || 'Não clique em links nem repasse valores.';
+
   resultado.style.display = 'block';
   resultado.scrollIntoView({ behavior: 'smooth' });
 
-  // Exibe o card de emergência automaticamente se for golpe
-  if (data.veredito === 'golpe' || score >= 75) {
-    cardEmergencia.style.display = 'block';
-  }
-
-  document.getElementById('btnPartilhar').onclick = () => {
-    const msg = `⚡ Zap, quem é? analisou:\n${labels[data.veredito]} (Risco: ${score}/100)\n\n${data.explicacao_simples}\n\nVerifica a tua mensagem também: [seu-link]`;
-    window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`, '_blank');
+  // Botão de compartilhamento
+  document.getElementById('btnShareWhatsApp').onclick = () => {
+    const shareText = `⚡ *Zap, quem é? — Alerta de Golpe*\n\nResultado: *${labels[data.veredito]}*\n📊 Nível de Risco: *${score}/100 [${nivelText}]*\n\n${data.explicacao_simples}\n\nVerifique a sua mensagem também: https://zapqueme.vercel.app`;
+    window.open(`https://wa.me/?text=${encodeURIComponent(shareText)}`, '_blank');
   };
 
-  document.getElementById('fbUp').onclick = () => enviarFeedback(true, data.analise_id);
-  document.getElementById('fbDown').onclick = () => enviarFeedback(false, data.analise_id);
+  // Feedback
+  document.getElementById('btnFbUp').onclick = () => enviarFeedback(true, data.analise_id);
+  document.getElementById('btnFbDown').onclick = () => enviarFeedback(false, data.analise_id);
 }
 
 function enviarFeedback(positivo, analise_id) {
@@ -267,7 +908,7 @@ function enviarFeedback(positivo, analise_id) {
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ positivo, analise_id })
   }).catch(() => {});
-  alert('Obrigado pelo feedback! 🙏');
+  alert('Obrigado pelo seu feedback! Ele ajuda a calibrar o sistema.');
 }
 </script>
 </body>
