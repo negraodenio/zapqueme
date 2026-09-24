@@ -383,19 +383,19 @@
         }
       }
 
-      // Chip permanente de verificação Redis / Disparo em massa
+      // Chip de verificação coletiva humanizada
       const repeatedChip = (data.vezes_reportada && data.vezes_reportada > 1) ? `
         <div class="flex items-center space-x-2 bg-amber-50 text-amber-900 border border-amber-200/80 px-2.5 py-1.5 rounded-lg text-xs font-medium">
           <span class="text-sm">🔥</span>
           <p class="leading-tight">
-            <strong>Disparo em massa (Redis):</strong> Pesquisada <span class="underline decoration-amber-500 decoration-2 font-bold">${data.vezes_reportada}x hoje</span> por outras pessoas.
+            <strong>Alerta de Golpe em Massa:</strong> Esta mesma mensagem já foi verificada <span class="underline decoration-amber-500 decoration-2 font-bold">${data.vezes_reportada}x hoje</span> por outras pessoas.
           </p>
         </div>
       ` : `
         <div class="flex items-center space-x-2 bg-emerald-50 text-emerald-900 border border-emerald-200/80 px-2.5 py-1.5 rounded-lg text-xs font-medium">
           <span class="text-sm">🛡️</span>
           <p class="leading-tight">
-            <strong>Inteligência Coletiva (Redis):</strong> 1ª vez que esta mensagem exata é verificada hoje.
+            <strong>Verificação do Sistema:</strong> 1ª vez que esta mensagem exata é consultada hoje.
           </p>
         </div>
       `;
