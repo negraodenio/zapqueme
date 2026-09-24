@@ -15,7 +15,19 @@ se é golpe, porquê, e o que fazer.
    - `SUPABASE_URL` e `SUPABASE_SERVICE_ROLE_KEY` (opcional, para guardar histórico e métricas — ver abaixo)
 5. Clica **Deploy**. Em ~1 minuto tens um link tipo `e-golpe.vercel.app`.
 
-### Configurar o backend de análise de dados (Supabase)
+## Como Conectar ao WhatsApp (Twilio Sandbox)
+
+O bot responde automaticamente pelo WhatsApp mensagens de texto encaminhadas ou prints/fotos enviadas:
+
+1. Cria conta grátis em https://twilio.com.
+2. No menu lateral, aceda a **Messaging → Try it out → Send a WhatsApp message**.
+3. Na aba **Sandbox Settings**:
+   - Em **WHEN A MESSAGE COMES IN**, coloca a URL do teu deploy:
+     `https://<teu-app>.vercel.app/api/whatsapp` (método **HTTP POST**).
+   - Clica **Save**.
+4. No teu telemóvel/celular, envia a mensagem `join <código-da-sandbox>` para o número do WhatsApp da Twilio indicado na tela.
+5. Pronto! Agora podes encaminhar qualquer mensagem ou print que o bot responde na hora com o veredito.
+
 
 Isto guarda cada análise (veredito, confiança, tipo de golpe) e cada feedback 👍/👎
 num banco de dados de verdade, para depois responder perguntas tipo "quantas análises
