@@ -103,8 +103,10 @@ function sendTwiml(res, messageText) {
   const xmlContent = escapeXml(messageText);
   const twiml = `<?xml version="1.0" encoding="UTF-8"?>
 <Response>
-  <Message>${xmlContent}</Message>
-</Response>`;
+  <Message>
+    <Body>${xmlContent}</Body>
+  </Message>
+</Response>`.trim();
 
   res.setHeader('Content-Type', 'text/xml');
   return res.status(200).send(twiml);

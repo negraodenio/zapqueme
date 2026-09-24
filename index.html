@@ -383,6 +383,23 @@
         }
       }
 
+      // Chip permanente de verificação Redis / Disparo em massa
+      const repeatedChip = (data.vezes_reportada && data.vezes_reportada > 1) ? `
+        <div class="flex items-center space-x-2 bg-amber-50 text-amber-900 border border-amber-200/80 px-2.5 py-1.5 rounded-lg text-xs font-medium">
+          <span class="text-sm">🔥</span>
+          <p class="leading-tight">
+            <strong>Disparo em massa (Redis):</strong> Pesquisada <span class="underline decoration-amber-500 decoration-2 font-bold">${data.vezes_reportada}x hoje</span> por outras pessoas.
+          </p>
+        </div>
+      ` : `
+        <div class="flex items-center space-x-2 bg-emerald-50 text-emerald-900 border border-emerald-200/80 px-2.5 py-1.5 rounded-lg text-xs font-medium">
+          <span class="text-sm">🛡️</span>
+          <p class="leading-tight">
+            <strong>Inteligência Coletiva (Redis):</strong> 1ª vez que esta mensagem exata é verificada hoje.
+          </p>
+        </div>
+      `;
+
       let cardHtml = '';
 
       // 🔴 1. MODO VERMELHO: GOLPE / RISCO CRÍTICO
@@ -393,15 +410,6 @@
             <span>${escapeHtml(s)}</span>
           </li>
         `).join('');
-
-        const repeatedChip = data.vezes_reportada > 1 ? `
-          <div class="flex items-center space-x-2 bg-amber-50 text-amber-900 border border-amber-200/80 px-2.5 py-1.5 rounded-lg text-xs font-medium">
-            <span class="text-sm">🔥</span>
-            <p class="leading-tight">
-              <strong>Mensagem repetida!</strong> Pesquisada <span class="underline decoration-amber-500 decoration-2 font-bold">${data.vezes_reportada} vezes hoje</span>. Disparo em massa.
-            </p>
-          </div>
-        ` : '';
 
         cardHtml = `
           <div class="bg-white rounded-2xl rounded-tl-xs shadow-md border border-red-100 overflow-hidden w-full max-w-[96%]">
@@ -419,27 +427,32 @@
               </span>
             </div>
 
-            <!-- Score e Mascote -->
-            <div class="p-3.5 space-y-3.5">
-              <div class="flex items-center justify-between gap-3 bg-red-50/60 p-3 rounded-xl border border-red-100">
-                <div class="flex items-center space-x-3">
-                  <img class="w-13 h-13 object-cover rounded-xl shadow-xs border-2 border-white bg-amber-50 shrink-0" src="logo.jpg" onerror="this.src='https://lh3.googleusercontent.com/aida-public/AB6AXuBsaLDFc_Xh3_-5ACvOBSPGt_FsEbDAZ75Iq-trF1G19bfbqbXKm24aBVAG5gTcB9lkjH9r4TwjC6pjAp0MMv1jfgiNeg_V30EtRpuce5o3v7vyeir337kCDsCmnmwfD5v2s2pMvUJfrLykjq-jofJaV5juOfpBT-KWj0zxv68oWwVXD3jhwPiNAAGHHiuOYPXdPb3s3KXG97TK2wiA3xPepcaELW2MGWOlJXIO4MaCflHvvDE4NX5yVQ'">
-                  <div>
-                    <span class="text-[11px] uppercase tracking-wider font-semibold text-red-600">Nível de Risco</span>
-                    <div class="flex items-baseline space-x-1.5">
-                      <span class="text-2xl font-black text-red-700 tracking-tight">${score}</span>
-                      <span class="text-xs text-gray-500 font-medium">/ 100</span>
-                      <span class="ml-1 text-[11px] font-bold px-1.5 py-0.5 bg-red-600 text-white rounded">CRÍTICO</span>
+            <!-- Score e Mascote com largura estrita -->
+            <div class="p-3.5 space-y-3">
+              <div class="flex items-center justify-between gap-2.5 bg-red-50/70 p-3 rounded-xl border border-red-100">
+                <div class="flex items-center space-x-2.5 min-w-0">
+                  <img src="logo.jpg" onerror="this.src='https://lh3.googleusercontent.com/aida-public/AB6AXuBsaLDFc_Xh3_-5ACvOBSPGt_FsEbDAZ75Iq-trF1G19bfbqbXKm24aBVAG5gTcB9lkjH9r4TwjC6pjAp0MMv1jfgiNeg_V30EtRpuce5o3v7vyeir337kCDsCmnmwfD5v2s2pMvUJfrLykjq-jofJaV5juOfpBT-KWj0zxv68oWwVXD3jhwPiNAAGHHiuOYPXdPb3s3KXG97TK2wiA3xPepcaELW2MGWOlJXIO4MaCflHvvDE4NX5yVQ'" style="width: 48px; height: 48px; min-width: 48px; max-width: 48px; object-fit: cover;" class="rounded-xl shadow-xs border-2 border-white shrink-0 bg-white" alt="ZapQuemE">
+                  <div class="min-w-0">
+                    <div class="text-[10px] uppercase tracking-wider font-bold text-red-600 truncate leading-tight">Nível de Risco</div>
+                    <div class="flex items-baseline space-x-1 mt-0.5">
+                      <span class="text-2xl font-black text-red-700 tracking-tight leading-none">${score}</span>
+                      <span class="text-[11px] text-gray-500 font-semibold leading-none">/ 100</span>
+                      <span class="text-[10px] font-black px-1.5 py-0.5 bg-red-600 text-white rounded leading-tight tracking-wide ml-1">CRÍTICO</span>
                     </div>
                   </div>
                 </div>
-                <div class="flex flex-col items-end gap-1">
-                  <div class="flex gap-1 h-3.5">${gaugeHtml}</div>
-                  <span class="text-[10px] font-semibold text-red-700">Perigo Extremo</span>
+                <div class="flex flex-col items-end shrink-0 pl-1">
+                  <div class="flex gap-1 h-3.5 mb-1">${gaugeHtml}</div>
+                  <span class="text-[10px] font-bold text-red-700 tracking-tight">Perigo Extremo</span>
                 </div>
               </div>
 
               ${repeatedChip}
+
+              <!-- Explicação simples (Por que) -->
+              <div class="bg-red-50/70 p-2.5 rounded-xl border border-red-200/80 text-xs text-red-950 leading-relaxed">
+                <span class="font-bold text-red-800">📝 Por que:</span> ${escapeHtml(data.explicacao_simples || 'Esta mensagem apresenta características claras de fraude e engenharia social.')}
+              </div>
 
               <!-- Resumo e Sinais -->
               <div class="space-y-1.5">
@@ -528,28 +541,26 @@
             </header>
 
             <div class="p-3.5 space-y-3 text-slate-800">
-              <!-- Score Box -->
-              <section class="bg-amber-50/70 rounded-xl p-3 border border-amber-200/60 flex items-center justify-between">
-                <div class="flex items-center space-x-3">
-                  <div class="w-13 h-13 rounded-2xl bg-amber-100 p-1 shrink-0 shadow-inner">
-                    <img class="w-12 h-12 rounded-xl object-cover" src="logo.jpg" onerror="this.src='https://lh3.googleusercontent.com/aida-public/AB6AXuAaUmr1ZsxKP1sgcUvEekTqbwuf3LwoH8yXaP92rjOoakL4GD7Er77ICkVd7Iyvy8ChKVfZVvbQjDeez7PuoyIScYqcZ9RsO3dyxIFY28HeOA3I-c32OXEk6CS2qF59rRcdE_8ZA0terQS7mDDPdAI_Yf279HlluGc5_eD-b6JrEteu-O8Px0mJkqFhl8wHrKMh8xw3ogTPcchdzfmitYB7cU5uJuj2aAd435U7X8iK4CleX_vf5q4FNw'">
-                  </div>
-                  <div>
-                    <p class="text-[10px] font-bold uppercase tracking-wider text-amber-900/80">NÍVEL DE RISCO</p>
-                    <div class="flex items-baseline space-x-1.5">
-                      <span class="text-3xl font-black text-amber-700 tracking-tight">${score}</span>
-                      <span class="text-xs text-slate-500 font-semibold">/ 100</span>
-                      <span class="ml-1.5 bg-amber-600 text-white text-[10px] font-extrabold px-2 py-0.5 rounded-md shadow-xs">
-                        SUSPEITO
-                      </span>
+              <!-- Score Box com largura estrita -->
+              <div class="flex items-center justify-between gap-2.5 bg-amber-50/70 p-3 rounded-xl border border-amber-200/60">
+                <div class="flex items-center space-x-2.5 min-w-0">
+                  <img src="logo.jpg" onerror="this.src='https://lh3.googleusercontent.com/aida-public/AB6AXuAaUmr1ZsxKP1sgcUvEekTqbwuf3LwoH8yXaP92rjOoakL4GD7Er77ICkVd7Iyvy8ChKVfZVvbQjDeez7PuoyIScYqcZ9RsO3dyxIFY28HeOA3I-c32OXEk6CS2qF59rRcdE_8ZA0terQS7mDDPdAI_Yf279HlluGc5_eD-b6JrEteu-O8Px0mJkqFhl8wHrKMh8xw3ogTPcchdzfmitYB7cU5uJuj2aAd435U7X8iK4CleX_vf5q4FNw'" style="width: 48px; height: 48px; min-width: 48px; max-width: 48px; object-fit: cover;" class="rounded-xl shadow-xs border-2 border-white shrink-0 bg-white" alt="ZapQuemE">
+                  <div class="min-w-0">
+                    <div class="text-[10px] uppercase tracking-wider font-bold text-amber-800 truncate leading-tight">Nível de Risco</div>
+                    <div class="flex items-baseline space-x-1 mt-0.5">
+                      <span class="text-2xl font-black text-amber-700 tracking-tight leading-none">${score}</span>
+                      <span class="text-[11px] text-gray-500 font-semibold leading-none">/ 100</span>
+                      <span class="text-[10px] font-black px-1.5 py-0.5 bg-amber-600 text-white rounded leading-tight tracking-wide ml-1">SUSPEITO</span>
                     </div>
                   </div>
                 </div>
-                <div class="flex flex-col items-end">
-                  <div class="flex space-x-1 mb-1">${gaugeHtml}</div>
+                <div class="flex flex-col items-end shrink-0 pl-1">
+                  <div class="flex gap-1 h-3.5 mb-1">${gaugeHtml}</div>
                   <span class="text-[10px] font-bold text-amber-800 tracking-tight">Atenção Redobrada</span>
                 </div>
-              </section>
+              </div>
+
+              ${repeatedChip}
 
               <!-- Alerta de Domínio / Link -->
               <aside class="bg-amber-100/70 border border-amber-300 rounded-lg p-2.5 flex items-start space-x-2 text-xs text-amber-900 leading-snug">
@@ -623,27 +634,27 @@
               </span>
             </div>
 
-            <div class="p-3.5 space-y-3.5">
-              <!-- Score Box -->
-              <div class="bg-emerald-50/70 border border-emerald-200/80 rounded-xl p-3 flex items-center justify-between">
-                <div class="w-14 h-14 rounded-xl overflow-hidden shadow-sm shrink-0 border border-emerald-200 bg-emerald-100">
-                  <img class="w-full h-full object-cover" src="logo.jpg" onerror="this.src='https://lh3.googleusercontent.com/aida-public/AB6AXuDHYzmSpbIzChRvndbo4ZGFrFwMEFYh2QoDBSbo3rrkSY0TVaVUQKZssboL90hm5FaTici7JivDR0JVFyGmCuLJdWJworS7AePz9ohOFyK1wmVMdxQVIuCbbrXbqai0bqUnLPwSiVPmRpGM9ezEHLBWY2fd0jpwbkO8t3nNWudmdOH5ZC6BQdVq9P-t8X386ezxjUR2kDDoP8sAAMwEtkFMO-Ci2UwEtNm6331KY1xp4AZXlW-q6MgJXA'">
-                </div>
-                <div class="flex flex-col ml-3 flex-1">
-                  <span class="text-[10px] font-bold text-emerald-800 tracking-wider uppercase">Nível de Risco</span>
-                  <div class="flex items-baseline space-x-1.5 mt-0.5">
-                    <span class="text-2xl font-black text-emerald-600">${score < 10 ? '0' + score : score}</span>
-                    <span class="text-xs font-semibold text-gray-500">/ 100</span>
-                    <span class="bg-emerald-600 text-white text-[10px] font-bold px-2 py-0.5 rounded-md ml-1 tracking-wide">
-                      SEGURO
-                    </span>
+            <div class="p-3.5 space-y-3">
+              <!-- Score Box com largura estrita -->
+              <div class="flex items-center justify-between gap-2.5 bg-emerald-50/70 p-3 rounded-xl border border-emerald-200/80">
+                <div class="flex items-center space-x-2.5 min-w-0">
+                  <img src="logo.jpg" onerror="this.src='https://lh3.googleusercontent.com/aida-public/AB6AXuDHYzmSpbIzChRvndbo4ZGFrFwMEFYh2QoDBSbo3rrkSY0TVaVUQKZssboL90hm5FaTici7JivDR0JVFyGmCuLJdWJworS7AePz9ohOFyK1wmVMdxQVIuCbbrXbqai0bqUnLPwSiVPmRpGM9ezEHLBWY2fd0jpwbkO8t3nNWudmdOH5ZC6BQdVq9P-t8X386ezxjUR2kDDoP8sAAMwEtkFMO-Ci2UwEtNm6331KY1xp4AZXlW-q6MgJXA'" style="width: 48px; height: 48px; min-width: 48px; max-width: 48px; object-fit: cover;" class="rounded-xl shadow-xs border-2 border-white shrink-0 bg-white" alt="ZapQuemE">
+                  <div class="min-w-0">
+                    <div class="text-[10px] uppercase tracking-wider font-bold text-emerald-800 truncate leading-tight">Nível de Risco</div>
+                    <div class="flex items-baseline space-x-1 mt-0.5">
+                      <span class="text-2xl font-black text-emerald-600 tracking-tight leading-none">${score < 10 ? '0' + score : score}</span>
+                      <span class="text-[11px] text-gray-500 font-semibold leading-none">/ 100</span>
+                      <span class="text-[10px] font-black px-1.5 py-0.5 bg-emerald-600 text-white rounded leading-tight tracking-wide ml-1">SEGURO</span>
+                    </div>
                   </div>
                 </div>
-                <div class="flex flex-col items-end space-y-1">
-                  <div class="flex space-x-0.5">${gaugeHtml}</div>
-                  <span class="text-[10.5px] font-bold text-emerald-700">Risco Mínimo</span>
+                <div class="flex flex-col items-end shrink-0 pl-1">
+                  <div class="flex gap-1 h-3.5 mb-1">${gaugeHtml}</div>
+                  <span class="text-[10px] font-bold text-emerald-700 tracking-tight">Risco Mínimo</span>
                 </div>
               </div>
+
+              ${repeatedChip}
 
               <!-- Remetente Autenticado -->
               <div class="bg-emerald-50/50 border border-emerald-200 rounded-lg p-2.5 flex items-start space-x-2.5">

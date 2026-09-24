@@ -9,11 +9,12 @@ node_modules/
 # Vercel deployment artifacts
 .vercel/
 
+# Baileys WhatsApp Session
+auth_info_baileys/
+
 # OS & Editor files
 .DS_Store
 Thumbs.db
 *.log
 .vscode/
 .idea/
-
-.vercel
