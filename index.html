@@ -560,7 +560,7 @@
   <header class="navbar">
     <a href="#" class="brand">
       ⚡ Zap, quem é?
-      <span class="brand-badge">IA com Visão</span>
+      <span class="brand-badge">Anti-Golpe</span>
     </a>
     <div class="nav-actions">
       <a href="#emergencia" class="btn-nav-emergency">
@@ -572,7 +572,7 @@
   <!-- Hero -->
   <div class="hero">
     <div class="hero-tag">
-      🛡️ Detector Instantâneo de Fraudes & Phishing
+      🛡️ Verificador Instantâneo de Mensagens
     </div>
     <h1>Verifique mensagens, links e prints suspeitos</h1>
     <p>Cole o texto ou envie o print de uma mensagem suspeita e descubra se é golpe na hora.</p>
@@ -597,17 +597,17 @@
     </div>
 
     <button id="btnVerificar" class="btn-verify">
-      <span>Verificar com IA & Banco de Dados</span> 🕵️
+      <span>Zap, quem é?</span> 👀
     </button>
     <div class="loading-box" id="loading">
-      <span class="spinner"></span> Consultando padrões de fraude e histórico de repetições...
+      <span class="spinner"></span> Analisando se é golpe ou legítimo... 🕵️
     </div>
   </div>
 
   <!-- Card de Resultado -->
   <div class="card result-card" id="resultado">
     <div class="result-header">
-      <span class="result-meta">DIAGNÓSTICO AUTOMÁTICO</span>
+      <span class="result-meta">RESULTADO DA VERIFICAÇÃO</span>
       <span class="veredito-badge" id="vereditoBadge">🚨 PROVÁVEL GOLPE</span>
     </div>
 
@@ -626,11 +626,11 @@
       </div>
     </div>
 
-    <!-- CONTADOR SOCIAL UPSTASH REDIS EM DESTAQUE MÁXIMO -->
+    <!-- CONTADOR DE REPETIÇÃO -->
     <div class="redis-counter-card" id="socialCounter" style="display:none;">
       <div class="redis-icon" id="redisIcon">🔥</div>
       <div>
-        <div class="redis-badge-label" id="redisBadgeLabel">ALERTA DE REPETIÇÃO EM MASSA (UPSTASH REDIS)</div>
+        <div class="redis-badge-label" id="redisBadgeLabel">ALERTA DE MENSAGEM REPETIDA</div>
         <div class="redis-main-message" id="socialCounterText"></div>
         <div class="redis-sub-text" id="redisSubText"></div>
       </div>
@@ -643,7 +643,7 @@
     </div>
 
     <!-- Explicação Simples -->
-    <div class="section-label">Diagnóstico da IA</div>
+    <div class="section-label">O que descobrimos</div>
     <p class="explanation-text" id="explicacao"></p>
 
     <!-- Sinais de Alerta -->
@@ -826,16 +826,16 @@ function renderizarResultado(data) {
   if (count > 1) {
     socialEl.className = 'redis-counter-card repeat-alert';
     redisIcon.textContent = '🔥';
-    redisBadgeLabel.textContent = 'ALERTA DE REPETIÇÃO EM MASSA (UPSTASH REDIS)';
+    redisBadgeLabel.textContent = 'ALERTA: GOLPE REPETIDO EM MASSA';
     socialCounterText.innerHTML = `⚠️ Esta mensagem exata já foi pesquisada <strong>${count} vezes</strong> por outras pessoas!`;
-    redisSubText.textContent = 'Golpistas frequentemente testam e disparam o mesmo texto em massa para centenas ou milhares de vítimas.';
+    redisSubText.textContent = 'Golpistas frequentemente disparam o mesmo texto para centenas ou milhares de vítimas.';
     socialEl.style.display = 'flex';
   } else {
     socialEl.className = 'redis-counter-card single-alert';
     redisIcon.textContent = '🛡️';
-    redisBadgeLabel.textContent = 'BANCO DE DADOS (UPSTASH REDIS)';
-    socialCounterText.innerHTML = 'Primeira vez que esta mensagem é pesquisada no sistema.';
-    redisSubText.textContent = 'O registro foi salvo no banco para alertar imediatamente futuras vítimas se este texto se repetir.';
+    redisBadgeLabel.textContent = 'HISTÓRICO DE VERIFICAÇÕES';
+    socialCounterText.innerHTML = 'Primeira vez que esta mensagem é verificada no nosso sistema.';
+    redisSubText.textContent = 'O registro foi salvo para alertar imediatamente futuras pessoas se esta mensagem se repetir.';
     socialEl.style.display = 'flex';
   }
 
