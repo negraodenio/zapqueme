@@ -3,6 +3,7 @@
   "rewrites": [
     { "source": "/admin", "destination": "/admin.html" },
     { "source": "/empresas", "destination": "/empresas.html" },
-    { "source": "/verificar", "destination": "/verificar.html" }
+    { "source": "/verificar", "destination": "/verificar.html" },
+    { "source": "/verify/:codigo", "destination": "/api/verify?codigo=:codigo" }
   ]
 }

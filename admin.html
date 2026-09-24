@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Painel Administrativo & B2B — Zap, quem é?</title>
   <meta name="robots" content="noindex, nofollow">
-  <link rel="icon" type="image/png" href="favicon.png">
+  <link rel="icon" type="image/png" href="/favicon.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -40,7 +40,7 @@
       display: flex;
     }
 
-    /* AUTH MODAL */
+    /* AUTH OVERLAY */
     #authOverlay {
       position: fixed;
       top: 0;
@@ -208,7 +208,22 @@
       box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
     }
 
-    /* STATS CARDS */
+    .btn-secondary {
+      background: rgba(255, 255, 255, 0.06);
+      color: #fff;
+      border: 1px solid var(--card-border);
+      padding: 8px 14px;
+      border-radius: 8px;
+      font-size: 0.85rem;
+      cursor: pointer;
+      font-weight: 600;
+    }
+
+    .btn-secondary:hover {
+      background: rgba(255, 255, 255, 0.1);
+    }
+
+    /* STATS CARDS (Seção 19: 4 CARDS OBRIGATÓRIOS) */
     .kpi-grid {
       display: grid;
       grid-template-columns: repeat(4, 1fr);
@@ -253,11 +268,11 @@
       border: 1px solid var(--card-border);
       border-radius: var(--radius);
       overflow: hidden;
-      margin-bottom: 32px;
+      margin-bottom: 24px;
     }
 
     .table-header {
-      padding: 18px 24px;
+      padding: 20px 24px;
       border-bottom: 1px solid var(--card-border);
       display: flex;
       justify-content: space-between;
@@ -277,72 +292,89 @@
     }
 
     th {
-      padding: 12px 20px;
-      background: rgba(0, 0, 0, 0.2);
+      background: rgba(255, 255, 255, 0.02);
       color: var(--text-muted);
       font-size: 0.75rem;
-      text-transform: uppercase;
       font-weight: 700;
+      text-transform: uppercase;
       letter-spacing: 0.05em;
+      padding: 14px 20px;
       border-bottom: 1px solid var(--card-border);
     }
 
     td {
-      padding: 14px 20px;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--card-border);
       vertical-align: middle;
     }
 
-    tr:hover td {
-      background: rgba(255, 255, 255, 0.02);
+    tr:last-child td {
+      border-bottom: none;
     }
 
-    .tag-status {
+    tr:hover td {
+      background: rgba(255, 255, 255, 0.015);
+    }
+
+    /* BADGES */
+    .badge {
       display: inline-block;
-      padding: 3px 10px;
-      border-radius: 999px;
+      padding: 4px 8px;
+      border-radius: 6px;
       font-size: 0.75rem;
       font-weight: 700;
       text-transform: uppercase;
     }
 
-    .tag-active { background: rgba(16, 185, 129, 0.15); color: #10b981; }
-    .tag-danger { background: rgba(239, 68, 68, 0.15); color: #ef4444; }
-    .tag-warning { background: rgba(245, 158, 11, 0.15); color: #f59e0b; }
-    .tag-plan { background: rgba(59, 130, 246, 0.15); color: #60a5fa; }
-
-    /* ACTION BUTTONS IN TABLE */
-    .btn-table {
-      background: rgba(255, 255, 255, 0.06);
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      color: var(--text);
-      padding: 6px 12px;
-      border-radius: 6px;
-      font-size: 0.8rem;
-      font-weight: 600;
-      cursor: pointer;
-      text-decoration: none;
-      display: inline-flex;
-      align-items: center;
-      gap: 4px;
-      transition: all 0.15s;
+    .badge-ativo {
+      background: rgba(16, 185, 129, 0.15);
+      color: #10b981;
+      border: 1px solid rgba(16, 185, 129, 0.3);
     }
 
-    .btn-table:hover {
-      background: rgba(255, 255, 255, 0.12);
-      border-color: rgba(255, 255, 255, 0.3);
+    .badge-suspenso, .badge-expirado {
+      background: rgba(239, 68, 68, 0.15);
+      color: #ef4444;
+      border: 1px solid rgba(239, 68, 68, 0.3);
     }
 
-    /* MODAL FORM */
+    .badge-plano {
+      background: rgba(59, 130, 246, 0.15);
+      color: #60a5fa;
+      border: 1px solid rgba(59, 130, 246, 0.3);
+    }
+
+    .badge-severidade-monitorar {
+      background: rgba(148, 163, 184, 0.15);
+      color: #94a3b8;
+      border: 1px solid rgba(148, 163, 184, 0.3);
+    }
+
+    .badge-severidade-suspeita {
+      background: rgba(245, 158, 11, 0.15);
+      color: #fbbf24;
+      border: 1px solid rgba(245, 158, 11, 0.3);
+    }
+
+    .badge-severidade-critica {
+      background: rgba(239, 68, 68, 0.15);
+      color: #ef4444;
+      border: 1px solid rgba(239, 68, 68, 0.3);
+    }
+
+    /* MODAL */
     .modal-overlay {
       position: fixed;
-      top: 0; left: 0; right: 0; bottom: 0;
-      background: rgba(0,0,0,0.8);
-      backdrop-filter: blur(6px);
-      z-index: 10000;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(9, 13, 22, 0.85);
+      backdrop-filter: blur(8px);
       display: none;
       align-items: center;
       justify-content: center;
+      z-index: 1000;
       padding: 20px;
     }
 
@@ -350,15 +382,15 @@
       background: #0f172a;
       border: 1px solid var(--card-border);
       border-radius: var(--radius);
-      padding: 32px;
-      max-width: 600px;
+      padding: 28px;
+      max-width: 620px;
       width: 100%;
       max-height: 90vh;
       overflow-y: auto;
     }
 
     .modal-title {
-      font-size: 1.3rem;
+      font-size: 1.25rem;
       font-weight: 800;
       margin-bottom: 20px;
       display: flex;
@@ -377,52 +409,111 @@
     .form-row {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 16px;
-      margin-bottom: 16px;
+      gap: 14px;
+      margin-bottom: 14px;
     }
 
     .form-group {
-      margin-bottom: 16px;
+      margin-bottom: 14px;
     }
 
     .form-label {
       display: block;
-      font-size: 0.8rem;
+      font-size: 0.75rem;
       font-weight: 700;
       margin-bottom: 6px;
       color: var(--text-muted);
       text-transform: uppercase;
     }
 
-    .form-input {
+    .form-input, .form-select {
       width: 100%;
       background: #090d16;
       border: 1px solid rgba(255, 255, 255, 0.15);
       border-radius: 8px;
-      padding: 10px 14px;
+      padding: 10px 12px;
       color: #fff;
       font-size: 0.9rem;
       outline: none;
     }
 
-    .form-input:focus {
+    .form-input:focus, .form-select:focus {
       border-color: var(--primary);
     }
 
-    /* CODE SNIPPET TOAST */
-    .toast-copy {
-      position: fixed;
-      bottom: 24px;
-      right: 24px;
-      background: #10b981;
-      color: #042f2e;
-      padding: 12px 24px;
+    .checkbox-group {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 8px;
+      font-size: 0.85rem;
+      color: #cbd5e1;
+      cursor: pointer;
+    }
+
+    .checkbox-group input {
+      accent-color: var(--primary);
+      width: 16px;
+      height: 16px;
+    }
+
+    .detail-section {
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid var(--card-border);
       border-radius: 8px;
+      padding: 16px;
+      margin-bottom: 16px;
+    }
+
+    .detail-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 6px 0;
+      font-size: 0.88rem;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+    }
+
+    .detail-row:last-child {
+      border-bottom: none;
+    }
+
+    .detail-label {
+      color: var(--text-muted);
+      font-weight: 600;
+    }
+
+    .detail-value {
       font-weight: 700;
-      font-size: 0.9rem;
-      z-index: 99999;
-      display: none;
-      box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+      color: #fff;
+    }
+
+    .btn-xs {
+      padding: 4px 8px;
+      font-size: 0.78rem;
+      border-radius: 6px;
+      cursor: pointer;
+      font-weight: 600;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      background: rgba(255, 255, 255, 0.05);
+      color: #fff;
+      text-decoration: none;
+      display: inline-block;
+    }
+
+    .btn-xs:hover {
+      background: rgba(255, 255, 255, 0.12);
+    }
+
+    .btn-xs-primary {
+      background: rgba(16, 185, 129, 0.2);
+      border-color: rgba(16, 185, 129, 0.4);
+      color: #34d399;
+    }
+
+    .btn-xs-danger {
+      background: rgba(239, 68, 68, 0.15);
+      border-color: rgba(239, 68, 68, 0.4);
+      color: #f87171;
     }
   </style>
 </head>
@@ -431,9 +522,9 @@
   <!-- AUTHENTICATION OVERLAY -->
   <div id="authOverlay">
     <div class="auth-box">
-      <img src="logo.jpg" alt="Logo" class="auth-logo">
+      <img src="/logo.jpg" alt="Logo" class="auth-logo">
       <h2 style="font-size: 1.3rem; margin-bottom: 6px;">Painel Zap, quem é?</h2>
-      <p style="color: var(--text-muted); font-size: 0.85rem;">Digite a Chave Secreta de Administrador para prosseguir</p>
+      <p style="color: var(--text-muted); font-size: 0.85rem;">Insira a Chave Secreta de Administrador para prosseguir</p>
       
       <input type="password" id="adminSecretInput" class="auth-input" placeholder="••••••••••••" autofocus onkeydown="if(event.key==='Enter') verifyAuth()">
       
@@ -447,7 +538,7 @@
   <!-- SIDEBAR -->
   <aside class="sidebar">
     <div class="sidebar-brand">
-      <img src="logo.jpg" alt="Logo">
+      <img src="/logo.jpg" alt="Logo">
       <div>
         <div class="sidebar-title">Zap, quem é?</div>
         <span class="sidebar-badge">B2B & Admin</span>
@@ -456,23 +547,23 @@
 
     <nav>
       <button class="nav-btn active" onclick="switchTab('tab-empresas')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+        Empresas
+      </button>
+
+      <button class="nav-btn" onclick="switchTab('tab-selos')">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
         Selos & Empresas
       </button>
 
-      <button class="nav-btn" onclick="switchTab('tab-ameacas')">
+      <button class="nav-btn" onclick="switchTab('tab-radar')">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/><path d="M2 12h20"/></svg>
-        Radar de Ameaças
+        Threat Radar
       </button>
 
-      <button class="nav-btn" onclick="switchTab('tab-leads')">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-        Leads de Vendas
-      </button>
-
-      <button class="nav-btn" onclick="switchTab('tab-auditoria')">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
-        Auditoria B2C
+      <button class="nav-btn" onclick="switchTab('tab-ocorrencias')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+        Ocorrências
       </button>
     </nav>
 
@@ -492,228 +583,440 @@
   <main class="main-content">
     <div class="top-header">
       <div>
-        <h1 class="page-title" id="pageTitle">Gestão de Empresas & Selos</h1>
-        <p style="color: var(--text-muted); font-size: 0.85rem; margin-top: 4px;">Controle corporativo de faturamento e segurança</p>
+        <h1 class="page-title" id="pageTitle">Gestão de Empresas</h1>
+        <p style="color: var(--text-muted); font-size: 0.85rem; margin-top: 4px;">Painel interno ZAP VERIFIED & Threat Radar</p>
       </div>
 
       <div style="display: flex; gap: 12px;">
-        <button onclick="loadDashboardData()" class="btn-table" title="Recarregar dados">
+        <button onclick="loadDashboardData()" class="btn-secondary" title="Recarregar dados">
           🔄 Atualizar
         </button>
         <button onclick="openNewEmpresaModal()" class="btn-action">
-          + Emitir Novo Selo
+          + Criar Empresa
         </button>
       </div>
     </div>
 
-    <!-- KPIS -->
+    <!-- KPIS: CARD 1, 2, 3, 4 OBRIGATÓRIOS (Seção 19) -->
     <section class="kpi-grid">
+      <!-- CARD 1 -->
       <div class="kpi-card">
         <div class="kpi-header">
-          <span>Empresas Ativas</span>
-          <span>🛡️</span>
+          <span>Empresas</span>
+          <span>🏢</span>
         </div>
         <div class="kpi-value" id="kpiEmpresas">0</div>
-        <div class="kpi-sub">Com selo verificado ativo</div>
+        <div class="kpi-sub">Cadastradas no sistema</div>
       </div>
 
+      <!-- CARD 2 -->
       <div class="kpi-card">
         <div class="kpi-header">
-          <span>Ameaças no Radar</span>
+          <span>Selos</span>
+          <span>🛡️</span>
+        </div>
+        <div class="kpi-value" id="kpiSelos" style="color: #10b981;">0</div>
+        <div class="kpi-sub">Emitidos e monitorados</div>
+      </div>
+
+      <!-- CARD 3 -->
+      <div class="kpi-card">
+        <div class="kpi-header">
+          <span>Threat Radar</span>
+          <span>📡</span>
+        </div>
+        <div class="kpi-value" id="kpiThreatRadar" style="color: #f59e0b;">0</div>
+        <div class="kpi-sub">Empresas com atividade observada</div>
+      </div>
+
+      <!-- CARD 4 -->
+      <div class="kpi-card">
+        <div class="kpi-header">
+          <span>Ocorrências de impersonation</span>
           <span>🚨</span>
         </div>
-        <div class="kpi-value" id="kpiAmeacas" style="color: #ef4444;">0</div>
-        <div class="kpi-sub">Tentativas de clonagem detectadas</div>
-      </div>
-
-      <div class="kpi-card">
-        <div class="kpi-header">
-          <span>Leads Corporativos</span>
-          <span>💼</span>
-        </div>
-        <div class="kpi-value" id="kpiLeads" style="color: #3b82f6;">0</div>
-        <div class="kpi-sub">Empresas aguardando contato</div>
-      </div>
-
-      <div class="kpi-card">
-        <div class="kpi-header">
-          <span>Análises B2C</span>
-          <span>🔍</span>
-        </div>
-        <div class="kpi-value" id="kpiAnalises">0</div>
-        <div class="kpi-sub" id="kpiGolpesSub">0 golpes barrados</div>
+        <div class="kpi-value" id="kpiOcorrencias" style="color: #ef4444;">0</div>
+        <div class="kpi-sub">Possíveis impersonations detectadas</div>
       </div>
     </section>
 
-    <!-- TAB 1: EMPRESAS & SELOS -->
+    <!-- TAB 1: EMPRESAS (Seção 6) -->
     <div id="tab-empresas" class="tab-pane">
       <div class="table-container">
         <div class="table-header">
-          <h3>Empresas & Selos Cadastrados</h3>
+          <h3>Empresas Cadastradas</h3>
         </div>
         <table>
           <thead>
             <tr>
-              <th>Empresa & Domínio</th>
-              <th>CNPJ / NIF</th>
+              <th>Empresa</th>
               <th>Plano</th>
               <th>Status</th>
-              <th>Visualizações</th>
-              <th>Ações Rápidas</th>
+              <th>Domínio</th>
+              <th>Radar</th>
+              <th>Selo</th>
+              <th>Criada em</th>
+              <th>Ações</th>
             </tr>
           </thead>
           <tbody id="empresasTableBody">
-            <tr><td colspan="6" style="text-align: center; color: var(--text-muted); padding: 30px;">Carregando empresas...</td></tr>
+            <tr><td colspan="8" style="text-align: center; color: var(--text-muted); padding: 30px;">Carregando empresas...</td></tr>
           </tbody>
         </table>
       </div>
     </div>
 
-    <!-- TAB 2: RADAR DE AMEAÇAS -->
-    <div id="tab-ameacas" class="tab-pane" style="display: none;">
+    <!-- TAB 2: SELOS & EMPRESAS (Seção 7) -->
+    <div id="tab-selos" class="tab-pane" style="display: none;">
       <div class="table-container">
         <div class="table-header">
-          <h3>Radar de Uso Indevido de Marca</h3>
+          <h3>Selos ZAP VERIFIED</h3>
+          <button onclick="openNewSeloModal()" class="btn-action" style="padding: 6px 14px; font-size: 0.8rem;">+ Criar Selo</button>
         </div>
         <table>
           <thead>
             <tr>
-              <th>Data</th>
-              <th>Canal</th>
-              <th>Tipo de Golpe</th>
-              <th>Trecho da Mensagem / Link Suspeito</th>
-              <th>Risco</th>
-            </tr>
-          </thead>
-          <tbody id="ameacasTableBody">
-            <tr><td colspan="5" style="text-align: center; color: var(--text-muted); padding: 30px;">Nenhuma ameaça registrada ainda.</td></tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
-
-    <!-- TAB 3: LEADS DE VENDAS -->
-    <div id="tab-leads" class="tab-pane" style="display: none;">
-      <div class="table-container">
-        <div class="table-header">
-          <h3>Leads Comerciais Interessados no Selo</h3>
-        </div>
-        <table>
-          <thead>
-            <tr>
-              <th>Data</th>
-              <th>Responsável</th>
               <th>Empresa</th>
-              <th>E-mail</th>
-              <th>WhatsApp</th>
-              <th>Plano</th>
-              <th>Ação</th>
+              <th>Código</th>
+              <th>Estado</th>
+              <th>Validade</th>
+              <th>URL Pública</th>
+              <th>Radar</th>
+              <th>Ações</th>
             </tr>
           </thead>
-          <tbody id="leadsTableBody">
-            <tr><td colspan="7" style="text-align: center; color: var(--text-muted); padding: 30px;">Nenhum lead recebido ainda.</td></tr>
+          <tbody id="selosTableBody">
+            <tr><td colspan="7" style="text-align: center; color: var(--text-muted); padding: 30px;">Carregando selos...</td></tr>
           </tbody>
         </table>
       </div>
     </div>
 
-    <!-- TAB 4: AUDITORIA B2C -->
-    <div id="tab-auditoria" class="tab-pane" style="display: none;">
+    <!-- TAB 3: THREAT RADAR (Seção 8) -->
+    <div id="tab-radar" class="tab-pane" style="display: none;">
       <div class="table-container">
         <div class="table-header">
-          <h3>Últimas Análises do Bot e Web (B2C)</h3>
+          <h3>Threat Radar — Atividade Observada</h3>
+        </div>
+        <table>
+          <thead>
+            <tr>
+              <th>Empresa</th>
+              <th>Ocorrências Detectadas</th>
+              <th>Canais Distintos</th>
+              <th>Primeira Detecção</th>
+              <th>Última Detecção</th>
+              <th>Severidade (Filtro Preliminar)</th>
+              <th>Detalhe</th>
+            </tr>
+          </thead>
+          <tbody id="radarTableBody">
+            <tr><td colspan="7" style="text-align: center; color: var(--text-muted); padding: 30px;">Nenhuma ocorrência observada no Radar.</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- TAB 4: OCORRÊNCIAS DE IMPERSONATION (Seção 21) -->
+    <div id="tab-ocorrencias" class="tab-pane" style="display: none;">
+      <div class="table-container">
+        <div class="table-header">
+          <h3>Ocorrências de Impersonation Detectadas</h3>
         </div>
         <table>
           <thead>
             <tr>
               <th>Data</th>
+              <th>Empresa Imitada</th>
+              <th>Canal Observado</th>
               <th>Veredito</th>
               <th>Confiança</th>
-              <th>Categoria de Golpe</th>
-              <th>Imagem?</th>
-              <th>Repetições</th>
+              <th>Tipo de Golpe</th>
             </tr>
           </thead>
-          <tbody id="auditoriaTableBody">
-            <tr><td colspan="6" style="text-align: center; color: var(--text-muted); padding: 30px;">Carregando histórico...</td></tr>
+          <tbody id="ocorrenciasTableBody">
+            <tr><td colspan="6" style="text-align: center; color: var(--text-muted); padding: 30px;">Nenhuma ocorrência registrada.</td></tr>
           </tbody>
         </table>
       </div>
     </div>
   </main>
 
-  <!-- MODAL CADASTRO DE EMPRESA -->
+  <!-- MODAL 1: CRIAR EMPRESA (Seção 6.1) -->
   <div id="newEmpresaModal" class="modal-overlay">
     <div class="modal-content">
       <div class="modal-title">
-        <span>Emitir Novo Selo Corporativo</span>
-        <button class="close-modal" onclick="closeModal()">×</button>
+        <span>Criar Empresa</span>
+        <button class="close-modal" onclick="closeModals()">×</button>
       </div>
 
-      <form id="newEmpresaForm" onsubmit="handleCreateEmpresa(event)">
+      <form id="formNewEmpresa" onsubmit="handleCreateEmpresa(event)">
+        <div class="form-group">
+          <label class="form-label">Nome da empresa *</label>
+          <input type="text" id="modalNome" class="form-input" required placeholder="Ex: Banco XPTO">
+        </div>
+
         <div class="form-row">
           <div class="form-group">
-            <label class="form-label">Nome da Empresa / Marca *</label>
-            <input type="text" id="modalNome" class="form-input" required placeholder="Ex: Americanas Oficial">
+            <label class="form-label">Domínio Oficial</label>
+            <input type="text" id="modalDominio" class="form-input" placeholder="exemplo.pt">
+            <label class="checkbox-group">
+              <input type="checkbox" id="modalDominioVerificado"> Domínio verificado
+            </label>
           </div>
           <div class="form-group">
-            <label class="form-label">Domínio Oficial da Loja *</label>
-            <input type="text" id="modalDominio" class="form-input" required placeholder="americanas.com.br">
+            <label class="form-label">Email Oficial</label>
+            <input type="email" id="modalEmail" class="form-input" placeholder="contacto@exemplo.pt">
+            <label class="checkbox-group">
+              <input type="checkbox" id="modalEmailVerificado"> Email verificado
+            </label>
           </div>
         </div>
 
         <div class="form-row">
           <div class="form-group">
-            <label class="form-label">CNPJ ou NIF Legal</label>
-            <input type="text" id="modalCnpj" class="form-input" placeholder="00.000.000/0001-00">
+            <label class="form-label">Telefone Oficial</label>
+            <input type="text" id="modalTelefone" class="form-input" placeholder="+351 912 345 678">
+            <label class="checkbox-group">
+              <input type="checkbox" id="modalTelefoneVerificado"> Telefone verificado
+            </label>
           </div>
           <div class="form-group">
-            <label class="form-label">Plano Contratado</label>
-            <select id="modalPlano" class="form-input">
-              <option value="pro">Pro (R$ 297/mês)</option>
-              <option value="start">Start (R$ 97/mês)</option>
-              <option value="enterprise">Enterprise (R$ 990/mês)</option>
+            <label class="form-label">Plano</label>
+            <select id="modalPlano" class="form-select">
+              <option value="business" selected>Business</option>
+              <option value="pro">Pro</option>
+              <option value="enterprise">Enterprise</option>
             </select>
           </div>
         </div>
 
-        <div class="form-row">
-          <div class="form-group">
-            <label class="form-label">WhatsApp Oficial de Suporte</label>
-            <input type="text" id="modalWhatsApp" class="form-input" placeholder="+55 11 99999-9999">
-          </div>
-          <div class="form-group">
-            <label class="form-label">Instagram Oficial</label>
-            <input type="text" id="modalInstagram" class="form-input" placeholder="@lojaoficial">
-          </div>
+        <div class="form-group">
+          <label class="form-label">Apelidos da marca (separados por vírgula)</label>
+          <input type="text" id="modalApelidos" class="form-input" placeholder="Ex: XPTO, Banco XPTO Portugal">
         </div>
 
         <div class="form-row">
           <div class="form-group">
-            <label class="form-label">E-mail do Responsável</label>
-            <input type="email" id="modalEmail" class="form-input" placeholder="financeiro@loja.com">
+            <label class="form-label">Status</label>
+            <select id="modalStatus" class="form-select">
+              <option value="ativo" selected>Ativo</option>
+              <option value="suspenso">Suspenso</option>
+              <option value="expirado">Expirado</option>
+            </select>
           </div>
-          <div class="form-group">
-            <label class="form-label">Nome do Contato</label>
-            <input type="text" id="modalResponsavel" class="form-input" placeholder="Carlos Gerente">
+          <div class="form-group" style="display: flex; flex-direction: column; justify-content: center;">
+            <label class="checkbox-group">
+              <input type="checkbox" id="modalMonitorizacao" checked> Monitorização de impersonation
+            </label>
+            <label class="checkbox-group">
+              <input type="checkbox" id="modalCriarSelo" checked> Emitir selo inicial imediatamente
+            </label>
           </div>
         </div>
 
         <div style="display: flex; justify-content: flex-end; gap: 12px; margin-top: 24px;">
-          <button type="button" class="btn-table" onclick="closeModal()">Cancelar</button>
-          <button type="submit" id="btnModalSubmit" class="btn-action">Emitir e Ativar Selo 🛡️</button>
+          <button type="button" class="btn-secondary" onclick="closeModals()">Cancelar</button>
+          <button type="submit" class="btn-action">Gravar Empresa</button>
         </div>
       </form>
     </div>
   </div>
 
-  <div id="toastCopy" class="toast-copy">Código do widget copiado!</div>
+  <!-- MODAL 2: EDITAR EMPRESA -->
+  <div id="editEmpresaModal" class="modal-overlay">
+    <div class="modal-content">
+      <div class="modal-title">
+        <span>Editar Empresa</span>
+        <button class="close-modal" onclick="closeModals()">×</button>
+      </div>
+
+      <form id="formEditEmpresa" onsubmit="handleUpdateEmpresa(event)">
+        <input type="hidden" id="editEmpresaId">
+
+        <div class="form-group">
+          <label class="form-label">Nome da empresa *</label>
+          <input type="text" id="editNome" class="form-input" required>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Domínio Oficial</label>
+            <input type="text" id="editDominio" class="form-input">
+            <label class="checkbox-group">
+              <input type="checkbox" id="editDominioVerificado"> Domínio verificado
+            </label>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Email Oficial</label>
+            <input type="email" id="editEmail" class="form-input">
+            <label class="checkbox-group">
+              <input type="checkbox" id="editEmailVerificado"> Email verificado
+            </label>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Telefone Oficial</label>
+            <input type="text" id="editTelefone" class="form-input">
+            <label class="checkbox-group">
+              <input type="checkbox" id="editTelefoneVerificado"> Telefone verificado
+            </label>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Plano</label>
+            <select id="editPlano" class="form-select">
+              <option value="business">Business</option>
+              <option value="pro">Pro</option>
+              <option value="enterprise">Enterprise</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Apelidos da marca (separados por vírgula)</label>
+          <input type="text" id="editApelidos" class="form-input">
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Status</label>
+          <select id="editStatus" class="form-select">
+            <option value="ativo">Ativo</option>
+            <option value="suspenso">Suspenso</option>
+            <option value="expirado">Expirado</option>
+          </select>
+        </div>
+
+        <div style="display: flex; justify-content: flex-end; gap: 12px; margin-top: 24px;">
+          <button type="button" class="btn-secondary" onclick="closeModals()">Cancelar</button>
+          <button type="submit" class="btn-action">Salvar Alterações</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL 3: DETALHE DA EMPRESA (Seção 20) -->
+  <div id="detalheEmpresaModal" class="modal-overlay">
+    <div class="modal-content">
+      <div class="modal-title">
+        <span>Detalhe da Empresa</span>
+        <button class="close-modal" onclick="closeModals()">×</button>
+      </div>
+
+      <div class="detail-section">
+        <h4 style="font-size: 0.85rem; text-transform: uppercase; color: var(--text-muted); margin-bottom: 12px;">Identificação</h4>
+        <div class="detail-row"><span class="detail-label">Nome:</span> <span class="detail-value" id="detNome">-</span></div>
+        <div class="detail-row"><span class="detail-label">Status:</span> <span class="detail-value" id="detStatus">-</span></div>
+        <div class="detail-row"><span class="detail-label">Plano:</span> <span class="detail-value" id="detPlano">-</span></div>
+        <div class="detail-row"><span class="detail-label">Apelidos da marca:</span> <span class="detail-value" id="detApelidos">-</span></div>
+      </div>
+
+      <div class="detail-section">
+        <h4 style="font-size: 0.85rem; text-transform: uppercase; color: var(--text-muted); margin-bottom: 12px;">Canais Oficiais</h4>
+        <div class="detail-row"><span class="detail-label">Domínio oficial:</span> <span class="detail-value" id="detDominio">-</span></div>
+        <div class="detail-row"><span class="detail-label">Email oficial:</span> <span class="detail-value" id="detEmail">-</span></div>
+        <div class="detail-row"><span class="detail-label">Telefone oficial:</span> <span class="detail-value" id="detTelefone">-</span></div>
+      </div>
+
+      <div class="detail-section">
+        <h4 style="font-size: 0.85rem; text-transform: uppercase; color: var(--text-muted); margin-bottom: 12px;">Selo ZAP VERIFIED</h4>
+        <div class="detail-row"><span class="detail-label">Código:</span> <span class="detail-value" id="detSeloCodigo">-</span></div>
+        <div class="detail-row"><span class="detail-label">Estado:</span> <span class="detail-value" id="detSeloEstado">-</span></div>
+        <div class="detail-row"><span class="detail-label">Validade:</span> <span class="detail-value" id="detSeloValidade">-</span></div>
+        <div class="detail-row"><span class="detail-label">URL pública:</span> <span class="detail-value" id="detSeloUrl">-</span></div>
+      </div>
+
+      <div class="detail-section">
+        <h4 style="font-size: 0.85rem; text-transform: uppercase; color: var(--text-muted); margin-bottom: 12px;">Threat Radar</h4>
+        <div class="detail-row"><span class="detail-label">Radar:</span> <span class="detail-value" id="detRadarStatus">-</span></div>
+        <div class="detail-row"><span class="detail-label">Ocorrências detectadas:</span> <span class="detail-value" id="detRadarOcorrencias">0</span></div>
+        <div class="detail-row"><span class="detail-label">Última ocorrência:</span> <span class="detail-value" id="detRadarUltima">-</span></div>
+      </div>
+
+      <div style="display: flex; justify-content: flex-end; margin-top: 20px;">
+        <button type="button" class="btn-secondary" onclick="closeModals()">Fechar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL 4: DETALHE DO RADAR (Seção 21) -->
+  <div id="detalheRadarModal" class="modal-overlay">
+    <div class="modal-content" style="max-width: 720px;">
+      <div class="modal-title">
+        <span>Atividade Observada — <span id="radarEmpresaNome"></span></span>
+        <button class="close-modal" onclick="closeModals()">×</button>
+      </div>
+
+      <div class="detail-section">
+        <div class="detail-row"><span class="detail-label">Possíveis impersonations detectadas:</span> <span class="detail-value" id="radarOcorrenciasTotal">0</span></div>
+        <div class="detail-row"><span class="detail-label">Número de canais diferentes:</span> <span class="detail-value" id="radarCanaisDistintos">0</span></div>
+        <div class="detail-row"><span class="detail-label">Data da primeira ocorrência:</span> <span class="detail-value" id="radarPrimeira">-</span></div>
+        <div class="detail-row"><span class="detail-label">Data da última ocorrência:</span> <span class="detail-value" id="radarUltima">-</span></div>
+      </div>
+
+      <h4 style="font-size: 0.85rem; text-transform: uppercase; color: var(--text-muted); margin: 16px 0 8px;">Ocorrências Detalhadas da Empresa</h4>
+      <div style="max-height: 250px; overflow-y: auto; border: 1px solid var(--card-border); border-radius: 8px;">
+        <table>
+          <thead>
+            <tr>
+              <th>Data</th>
+              <th>Canal Observado</th>
+              <th>Veredito</th>
+              <th>Confiança</th>
+            </tr>
+          </thead>
+          <tbody id="radarOcorrenciasTable">
+            <tr><td colspan="4" style="text-align: center; color: var(--text-muted); padding: 15px;">Nenhuma ocorrência detalhada.</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div style="display: flex; justify-content: flex-end; margin-top: 20px;">
+        <button type="button" class="btn-secondary" onclick="closeModals()">Fechar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL 5: CRIAR SELO -->
+  <div id="newSeloModal" class="modal-overlay">
+    <div class="modal-content" style="max-width: 480px;">
+      <div class="modal-title">
+        <span>Criar Selo</span>
+        <button class="close-modal" onclick="closeModals()">×</button>
+      </div>
+
+      <form id="formNewSelo" onsubmit="handleCreateSelo(event)">
+        <div class="form-group">
+          <label class="form-label">Empresa *</label>
+          <select id="seloEmpresaSelect" class="form-select" required>
+            <option value="">Selecione uma empresa...</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Validade</label>
+          <input type="date" id="seloValidade" class="form-input">
+        </div>
+
+        <div class="form-group">
+          <label class="checkbox-group">
+            <input type="checkbox" id="seloMonitorizacao" checked> Monitorização de impersonation
+          </label>
+        </div>
+
+        <div style="display: flex; justify-content: flex-end; gap: 12px; margin-top: 24px;">
+          <button type="button" class="btn-secondary" onclick="closeModals()">Cancelar</button>
+          <button type="submit" class="btn-action">Gerar Selo</button>
+        </div>
+      </form>
+    </div>
+  </div>
 
   <script>
     let globalAdminSecret = localStorage.getItem('zap_admin_key') || '';
-    let dashboardState = null;
+    let dashboardState = { empresas: [], selos: [], radar: [], ocorrencias: [] };
 
-    // Verificar se já tem chave salva
     window.addEventListener('DOMContentLoaded', () => {
       if (globalAdminSecret) {
         document.getElementById('authOverlay').style.display = 'none';
@@ -725,14 +1028,10 @@
       const input = document.getElementById('adminSecretInput');
       const errorEl = document.getElementById('authError');
       const val = input.value.trim();
-
       if (!val) return;
 
       try {
-        const res = await fetch('/api/admin', {
-          headers: { 'x-admin-key': val }
-        });
-
+        const res = await fetch('/api/admin', { headers: { 'x-admin-key': val } });
         if (res.ok) {
           globalAdminSecret = val;
           localStorage.setItem('zap_admin_key', val);
@@ -741,7 +1040,7 @@
         } else {
           errorEl.style.display = 'block';
         }
-      } catch (e) {
+      } catch {
         errorEl.style.display = 'block';
       }
     }
@@ -759,7 +1058,21 @@
       const target = document.getElementById(tabId);
       if (target) target.style.display = 'block';
 
-      event.currentTarget.classList.add('active');
+      if (event && event.currentTarget) {
+        event.currentTarget.classList.add('active');
+      }
+
+      const titles = {
+        'tab-empresas': 'Gestão de Empresas',
+        'tab-selos': 'Selos & Empresas',
+        'tab-radar': 'Threat Radar',
+        'tab-ocorrencias': 'Ocorrências de Impersonation'
+      };
+      document.getElementById('pageTitle').textContent = titles[tabId] || 'Painel Administrativo';
+    }
+
+    function closeModals() {
+      document.querySelectorAll('.modal-overlay').forEach(m => m.style.display = 'none');
     }
 
     async function loadDashboardData() {
@@ -776,59 +1089,57 @@
         const data = await res.json();
         dashboardState = data;
 
-        // Renderizar KPIs
+        // Renderizar KPIs Obrigatórios (Seção 19)
         const kpis = data.kpis || {};
-        document.getElementById('kpiEmpresas').textContent = kpis.totalEmpresasAtivas || 0;
-        document.getElementById('kpiAmeacas').textContent = kpis.totalAmeacas || 0;
-        document.getElementById('kpiLeads').textContent = kpis.totalLeads || 0;
-        document.getElementById('kpiAnalises').textContent = kpis.totalAnalises || 0;
-        document.getElementById('kpiGolpesSub').textContent = `${kpis.totalGolpes || 0} golpes barrados`;
+        document.getElementById('kpiEmpresas').textContent = kpis.totalEmpresas || 0;
+        document.getElementById('kpiSelos').textContent = kpis.totalSelos || 0;
+        document.getElementById('kpiThreatRadar').textContent = kpis.totalThreatRadar || 0;
+        document.getElementById('kpiOcorrencias').textContent = kpis.totalOcorrencias || 0;
 
         renderEmpresas(data.empresas || []);
-        renderAmeacas(data.ameacas || []);
-        renderLeads(data.leads || []);
-        renderAuditoria(data.analisesRecentes || []);
+        renderSelos(data.selos || []);
+        renderRadar(data.radar || []);
+        renderOcorrencias(data.ocorrencias || []);
 
       } catch (err) {
         console.error('Erro ao buscar dados:', err);
       }
     }
 
+    // TAB 1: RENDER EMPRESAS (Seção 6)
     function renderEmpresas(empresas) {
       const tbody = document.getElementById('empresasTableBody');
       if (!empresas.length) {
-        tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: var(--text-muted); padding: 30px;">Nenhuma empresa cadastrada ainda.</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="8" style="text-align: center; color: var(--text-muted); padding: 30px;">Nenhuma empresa cadastrada ainda.</td></tr>';
         return;
       }
 
       tbody.innerHTML = empresas.map(emp => {
-        const isAtivo = emp.status === 'ativo';
-        const tagClass = isAtivo ? 'tag-active' : 'tag-danger';
-        const statusLabel = isAtivo ? 'Ativo' : 'Suspenso';
-        const toggleLabel = isAtivo ? 'Suspender' : 'Reativar';
-        const newStatus = isAtivo ? 'suspenso' : 'ativo';
+        const selosEmp = (dashboardState.selos || []).filter(s => s.empresa_id === emp.id);
+        const seloInfo = selosEmp.length ? `<span style="font-family: 'JetBrains Mono', monospace; font-size: 0.8rem;">${selosEmp[0].codigo}</span>` : '<span style="color: var(--text-muted);">Sem selo</span>';
+        const radarAtivo = selosEmp.some(s => s.monitorizacao_impersonation) ? '🟢 Ativo' : '⚪ Inativo';
+        const dataCriada = emp.criado_em ? new Date(emp.criado_em).toLocaleDateString('pt-PT') : '-';
 
         return `
           <tr>
             <td>
               <div style="font-weight: 700; color: #fff;">${escapeHtml(emp.nome)}</div>
-              <div style="font-size: 0.8rem; color: var(--text-muted);">${escapeHtml(emp.dominio)}</div>
+              <div style="font-size: 0.8rem; color: var(--text-muted);">${escapeHtml(emp.email_oficial || '')}</div>
             </td>
-            <td>${escapeHtml(emp.cnpj_nif || 'Não informado')}</td>
-            <td><span class="tag-status tag-plan">${(emp.plano || 'pro').toUpperCase()}</span></td>
-            <td><span class="tag-status ${tagClass}">${statusLabel}</span></td>
-            <td style="font-family: 'JetBrains Mono';">${emp.visualizacoes_selo || 0}</td>
+            <td><span class="badge badge-plano">${escapeHtml(emp.plano)}</span></td>
+            <td><span class="badge badge-${emp.status === 'ativo' ? 'ativo' : 'suspenso'}">${escapeHtml(emp.status)}</span></td>
+            <td>${escapeHtml(emp.dominio_oficial || '–')}</td>
+            <td>${radarAtivo}</td>
+            <td>${seloInfo}</td>
+            <td style="color: var(--text-muted); font-size: 0.85rem;">${dataCriada}</td>
             <td>
-              <div style="display: flex; gap: 8px;">
-                <button class="btn-table" onclick="copyWidgetCode('${emp.slug}')" title="Copiar código do selo para o e-commerce">
-                  📋 Código
-                </button>
-                <a href="/verificar.html?empresa=${encodeURIComponent(emp.slug)}" target="_blank" class="btn-table" title="Abrir certificado público">
-                  ↗ Ver Certificado
-                </a>
-                <button class="btn-table" onclick="toggleStatus('${emp.id}', '${newStatus}')" style="color: ${isAtivo ? '#ef4444' : '#10b981'};">
-                  ${toggleLabel}
-                </button>
+              <div style="display: flex; gap: 6px;">
+                <button class="btn-xs btn-xs-primary" onclick="verEmpresa('${emp.id}')">Ver</button>
+                <button class="btn-xs" onclick="editarEmpresa('${emp.id}')">Editar</button>
+                ${emp.status === 'ativo'
+                  ? `<button class="btn-xs btn-xs-danger" onclick="toggleStatusEmpresa('${emp.id}', 'suspenso')">Suspender</button>`
+                  : `<button class="btn-xs btn-xs-primary" onclick="toggleStatusEmpresa('${emp.id}', 'ativo')">Reativar</button>`
+                }
               </div>
             </td>
           </tr>
@@ -836,178 +1147,348 @@
       }).join('');
     }
 
-    function renderAmeacas(ameacas) {
-      const tbody = document.getElementById('ameacasTableBody');
-      if (!ameacas.length) {
-        tbody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: var(--text-muted); padding: 30px;">Nenhuma ameaça detectada até o momento. O radar está ativo.</td></tr>';
+    // TAB 2: RENDER SELOS (Seção 7)
+    function renderSelos(selos) {
+      const tbody = document.getElementById('selosTableBody');
+      if (!selos.length) {
+        tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; color: var(--text-muted); padding: 30px;">Nenhum selo cadastrado.</td></tr>';
         return;
       }
 
-      tbody.innerHTML = ameacas.map(am => `
-        <tr>
-          <td>${new Date(am.criado_em).toLocaleString('pt-BR')}</td>
-          <td><span class="tag-status tag-plan">${escapeHtml(am.canal || 'WhatsApp')}</span></td>
-          <td style="font-weight: 600; color: #ef4444;">${escapeHtml(am.tipo_golpe || 'Tentativa de Fraude')}</td>
-          <td style="max-width: 300px; word-break: break-all; font-size: 0.85rem; color: #cbd5e1;">
-            ${escapeHtml(am.mensagem_trecho || am.link_suspeito || '-')}
-          </td>
-          <td><span class="tag-status tag-danger">${am.score_risco || 90}% Risco</span></td>
-        </tr>
-      `).join('');
-    }
-
-    function renderLeads(leads) {
-      const tbody = document.getElementById('leadsTableBody');
-      if (!leads.length) {
-        tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; color: var(--text-muted); padding: 30px;">Nenhum lead cadastrado ainda.</td></tr>';
-        return;
-      }
-
-      tbody.innerHTML = leads.map(l => {
-        const cleanPhone = (l.whatsapp || '').replace(/[^0-9]/g, '');
-        const waLink = cleanPhone ? `https://wa.me/${cleanPhone}?text=${encodeURIComponent('Olá ' + l.nome + ', vi que tem interesse no Selo Zap Seguro para a ' + l.empresa + '. Como podemos ajudar?')}` : null;
+      tbody.innerHTML = selos.map(s => {
+        const emp = (dashboardState.empresas || []).find(e => e.id === s.empresa_id);
+        const agora = new Date();
+        const expirado = s.valido_ate ? new Date(s.valido_ate) < agora : false;
+        const statusTexto = emp?.status === 'suspenso' ? 'Suspenso' : (emp?.status !== 'ativo' ? 'Inativo' : (expirado ? 'Expirado' : 'Ativo'));
+        const statusBadge = (emp?.status === 'ativo' && !expirado) ? 'badge-ativo' : 'badge-suspenso';
+        const validade = s.valido_ate ? new Date(s.valido_ate).toLocaleDateString('pt-PT') : 'Indeterminada';
+        const radar = s.monitorizacao_impersonation ? '🟢 Ativo' : '⚪ Inativo';
+        const urlPublica = `/verify/${s.codigo}`;
 
         return `
           <tr>
-            <td>${new Date(l.criado_em).toLocaleDateString('pt-BR')}</td>
-            <td style="font-weight: 700;">${escapeHtml(l.nome)}</td>
+            <td style="font-weight: 700; color: #fff;">${escapeHtml(s.empresa_nome || emp?.nome || 'Empresa')}</td>
+            <td><strong style="font-family: 'JetBrains Mono', monospace; color: var(--primary);">${escapeHtml(s.codigo)}</strong></td>
+            <td><span class="badge ${statusBadge}">${statusTexto}</span></td>
+            <td style="font-size: 0.85rem; color: var(--text-muted);">${validade}</td>
+            <td><a href="${urlPublica}" target="_blank" class="btn-xs" style="color: var(--primary);">Abrir URL ↗</a></td>
+            <td>${radar}</td>
             <td>
-              <div>${escapeHtml(l.empresa)}</div>
-              ${l.website ? `<div style="font-size: 0.75rem; color: var(--text-muted);">${escapeHtml(l.website)}</div>` : ''}
-            </td>
-            <td><a href="mailto:${escapeHtml(l.email)}" style="color: #3b82f6;">${escapeHtml(l.email)}</a></td>
-            <td>${escapeHtml(l.whatsapp || '-')}</td>
-            <td><span class="tag-status tag-plan">${(l.plano_interesse || 'pro').toUpperCase()}</span></td>
-            <td>
-              ${waLink ? `<a href="${waLink}" target="_blank" class="btn-table" style="color: #10b981; font-weight: 700;">💬 Falar no WhatsApp</a>` : '-'}
+              <div style="display: flex; gap: 6px;">
+                <button class="btn-xs" onclick="regenerarSelo('${s.id}')">Regenerar</button>
+                <button class="btn-xs btn-xs-danger" onclick="excluirSelo('${s.id}')">Excluir</button>
+              </div>
             </td>
           </tr>
         `;
       }).join('');
     }
 
-    function renderAuditoria(analises) {
-      const tbody = document.getElementById('auditoriaTableBody');
-      if (!analises.length) {
-        tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: var(--text-muted); padding: 30px;">Nenhuma análise realizada ainda.</td></tr>';
+    // TAB 3: RENDER THREAT RADAR (Seção 8)
+    function renderRadar(radar) {
+      const tbody = document.getElementById('radarTableBody');
+      if (!radar.length) {
+        tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; color: var(--text-muted); padding: 30px;">Nenhuma ocorrência observada no Radar.</td></tr>';
         return;
       }
 
-      tbody.innerHTML = analises.map(a => {
-        let tagClass = 'tag-active';
-        if (a.veredito === 'golpe') tagClass = 'tag-danger';
-        if (a.veredito === 'suspeito') tagClass = 'tag-warning';
+      tbody.innerHTML = radar.map(r => {
+        const primeira = r.primeira_deteccao ? new Date(r.primeira_deteccao).toLocaleDateString('pt-PT') : '-';
+        const ultima = r.ultima_deteccao ? new Date(r.ultima_deteccao).toLocaleDateString('pt-PT') : '-';
+        const severidade = r.severidade || 'monitorar';
 
         return `
           <tr>
-            <td>${new Date(a.criado_em).toLocaleString('pt-BR')}</td>
-            <td><span class="tag-status ${tagClass}">${(a.veredito || 'suspeito').toUpperCase()}</span></td>
-            <td style="font-family: 'JetBrains Mono'; font-weight: 700;">${a.confianca || 0}%</td>
-            <td>${escapeHtml(a.tipo || 'Geral')}</td>
-            <td>${a.teve_imagem ? '📸 Sim' : '📝 Não'}</td>
-            <td>${a.vezes_reportada || 1}x</td>
+            <td style="font-weight: 700; color: #fff;">${escapeHtml(r.empresa)}</td>
+            <td style="font-weight: 800; font-family: 'JetBrains Mono', monospace; font-size: 1.1rem; color: #ef4444;">${r.ocorrencias}</td>
+            <td>${r.canais_distintos || 1}</td>
+            <td style="font-size: 0.85rem; color: var(--text-muted);">${primeira}</td>
+            <td style="font-size: 0.85rem; color: var(--text-muted);">${ultima}</td>
+            <td><span class="badge badge-severidade-${severidade}">${severidade.toUpperCase()}</span></td>
+            <td>
+              <button class="btn-xs btn-xs-primary" onclick="abrirDetalheRadar('${r.empresa_id}')">Ver Detalhe</button>
+            </td>
           </tr>
         `;
       }).join('');
     }
 
-    function copyWidgetCode(slug) {
-      const code = `<script src="${window.location.origin}/widget.js" data-empresa="${slug}" async><\/script>`;
-      navigator.clipboard.writeText(code).then(() => {
-        const toast = document.getElementById('toastCopy');
-        toast.style.display = 'block';
-        setTimeout(() => toast.style.display = 'none', 3000);
-      });
-    }
-
-    async function toggleStatus(empresaId, novoStatus) {
-      if (!confirm(`Deseja alterar o status da empresa para "${novoStatus}"?`)) return;
-
-      try {
-        const res = await fetch('/api/admin', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'x-admin-key': globalAdminSecret
-          },
-          body: JSON.stringify({
-            action: 'update_status',
-            empresaId,
-            novoStatus
-          })
-        });
-
-        if (res.ok) {
-          loadDashboardData();
-        } else {
-          alert('Erro ao atualizar status.');
-        }
-      } catch (e) {
-        alert('Falha na requisição.');
+    // TAB 4: RENDER OCORRÊNCIAS (Seção 21)
+    function renderOcorrencias(ocorrencias) {
+      const tbody = document.getElementById('ocorrenciasTableBody');
+      if (!ocorrencias.length) {
+        tbody.innerHTML = '<tr><td colspan="6" style="text-align: center; color: var(--text-muted); padding: 30px;">Nenhuma ocorrência registrada.</td></tr>';
+        return;
       }
+
+      tbody.innerHTML = ocorrencias.map(o => {
+        const data = o.criado_em ? new Date(o.criado_em).toLocaleString('pt-PT') : '-';
+        const vereditoBadge = o.veredito === 'golpe' ? 'badge-suspenso' : 'badge-severidade-suspeita';
+
+        return `
+          <tr>
+            <td style="font-size: 0.85rem; color: var(--text-muted);">${data}</td>
+            <td style="font-weight: 700; color: #fff;">${escapeHtml(o.empresa_nome || o.marca_mencionada || '–')}</td>
+            <td style="font-family: 'JetBrains Mono', monospace; font-size: 0.85rem;">${escapeHtml(o.canal_mencionado || '–')}</td>
+            <td><span class="badge ${vereditoBadge}">${escapeHtml(o.veredito)}</span></td>
+            <td style="font-weight: 700;">${o.confianca}%</td>
+            <td style="color: var(--text-muted);">${escapeHtml(o.tipo || '–')}</td>
+          </tr>
+        `;
+      }).join('');
     }
 
+    // MODAL HANDLERS
     function openNewEmpresaModal() {
+      document.getElementById('formNewEmpresa').reset();
+      document.getElementById('modalMonitorizacao').checked = true;
+      document.getElementById('modalCriarSelo').checked = true;
       document.getElementById('newEmpresaModal').style.display = 'flex';
-    }
-
-    function closeModal() {
-      document.getElementById('newEmpresaModal').style.display = 'none';
-      document.getElementById('newEmpresaForm').reset();
     }
 
     async function handleCreateEmpresa(e) {
       e.preventDefault();
-      const btn = document.getElementById('btnModalSubmit');
-      btn.disabled = true;
-      btn.textContent = 'Emitindo...';
-
       const payload = {
         action: 'create_empresa',
-        empresaData: {
-          nome: document.getElementById('modalNome').value,
-          dominio: document.getElementById('modalDominio').value,
-          cnpj_nif: document.getElementById('modalCnpj').value,
-          plano: document.getElementById('modalPlano').value,
-          whatsapp_oficial: document.getElementById('modalWhatsApp').value,
-          instagram_oficial: document.getElementById('modalInstagram').value,
-          contato_email: document.getElementById('modalEmail').value,
-          contato_responsavel: document.getElementById('modalResponsavel').value
-        }
+        nome: document.getElementById('modalNome').value.trim(),
+        dominio_oficial: document.getElementById('modalDominio').value.trim(),
+        email_oficial: document.getElementById('modalEmail').value.trim(),
+        telefone_oficial: document.getElementById('modalTelefone').value.trim(),
+        apelidos_marca: document.getElementById('modalApelidos').value.trim(),
+        dominio_verificado: document.getElementById('modalDominioVerificado').checked,
+        email_verificado: document.getElementById('modalEmailVerificado').checked,
+        telefone_verificado: document.getElementById('modalTelefoneVerificado').checked,
+        plano: document.getElementById('modalPlano').value,
+        status: document.getElementById('modalStatus').value,
+        monitorizacao_impersonation: document.getElementById('modalMonitorizacao').checked,
+        criar_selo: document.getElementById('modalCriarSelo').checked
       };
 
       try {
         const res = await fetch('/api/admin', {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'x-admin-key': globalAdminSecret
-          },
+          headers: { 'Content-Type': 'application/json', 'x-admin-key': globalAdminSecret },
           body: JSON.stringify(payload)
         });
-
-        const data = await res.json();
-        if (!res.ok) throw new Error(data.error || 'Erro ao emitir selo');
-
-        closeModal();
+        if (!res.ok) throw new Error(await res.text());
+        closeModals();
         loadDashboardData();
-        alert(`Selo emitido com sucesso para ${data.empresa.nome}!\n\nSlug: ${data.empresa.slug}\nToken: ${data.empresa.selo_token}`);
       } catch (err) {
-        alert('Erro: ' + err.message);
-      } finally {
-        btn.disabled = false;
-        btn.textContent = 'Emitir e Ativar Selo 🛡️';
+        alert('Erro ao criar empresa: ' + err.message);
       }
     }
 
-    function escapeHtml(text) {
-      if (!text) return '';
-      return text.toString()
+    function editarEmpresa(id) {
+      const emp = (dashboardState.empresas || []).find(e => e.id === id);
+      if (!emp) return;
+
+      document.getElementById('editEmpresaId').value = emp.id;
+      document.getElementById('editNome').value = emp.nome || '';
+      document.getElementById('editDominio').value = emp.dominio_oficial || '';
+      document.getElementById('editEmail').value = emp.email_oficial || '';
+      document.getElementById('editTelefone').value = emp.telefone_oficial || '';
+      document.getElementById('editApelidos').value = Array.isArray(emp.apelidos_marca) ? emp.apelidos_marca.join(', ') : (emp.apelidos_marca || '');
+      document.getElementById('editDominioVerificado').checked = !!emp.dominio_verificado;
+      document.getElementById('editEmailVerificado').checked = !!emp.email_verificado;
+      document.getElementById('editTelefoneVerificado').checked = !!emp.telefone_verificado;
+      document.getElementById('editPlano').value = emp.plano || 'business';
+      document.getElementById('editStatus').value = emp.status || 'ativo';
+
+      document.getElementById('editEmpresaModal').style.display = 'flex';
+    }
+
+    async function handleUpdateEmpresa(e) {
+      e.preventDefault();
+      const id = document.getElementById('editEmpresaId').value;
+      const payload = {
+        action: 'update_empresa',
+        id,
+        nome: document.getElementById('editNome').value.trim(),
+        dominio_oficial: document.getElementById('editDominio').value.trim(),
+        email_oficial: document.getElementById('editEmail').value.trim(),
+        telefone_oficial: document.getElementById('editTelefone').value.trim(),
+        apelidos_marca: document.getElementById('editApelidos').value.trim(),
+        dominio_verificado: document.getElementById('editDominioVerificado').checked,
+        email_verificado: document.getElementById('editEmailVerificado').checked,
+        telefone_verificado: document.getElementById('editTelefoneVerificado').checked,
+        plano: document.getElementById('editPlano').value,
+        status: document.getElementById('editStatus').value
+      };
+
+      try {
+        const res = await fetch('/api/admin', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'x-admin-key': globalAdminSecret },
+          body: JSON.stringify(payload)
+        });
+        if (!res.ok) throw new Error(await res.text());
+        closeModals();
+        loadDashboardData();
+      } catch (err) {
+        alert('Erro ao atualizar empresa: ' + err.message);
+      }
+    }
+
+    async function toggleStatusEmpresa(id, novoStatus) {
+      if (!confirm(`Deseja alterar o status desta empresa para "${novoStatus}"?`)) return;
+      try {
+        const res = await fetch('/api/admin', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'x-admin-key': globalAdminSecret },
+          body: JSON.stringify({ action: 'set_empresa_status', id, status: novoStatus })
+        });
+        if (!res.ok) throw new Error(await res.text());
+        loadDashboardData();
+      } catch (err) {
+        alert('Erro ao alterar status: ' + err.message);
+      }
+    }
+
+    // MODAL DETALHE DA EMPRESA (Seção 20)
+    function verEmpresa(id) {
+      const emp = (dashboardState.empresas || []).find(e => e.id === id);
+      if (!emp) return;
+
+      const selos = (dashboardState.selos || []).filter(s => s.empresa_id === emp.id);
+      const selo = selos[0];
+      const radarRow = (dashboardState.radar || []).find(r => r.empresa_id === emp.id);
+
+      document.getElementById('detNome').textContent = emp.nome;
+      document.getElementById('detStatus').textContent = emp.status;
+      document.getElementById('detPlano').textContent = emp.plano;
+      document.getElementById('detApelidos').textContent = Array.isArray(emp.apelidos_marca) && emp.apelidos_marca.length ? emp.apelidos_marca.join(', ') : 'Nenhum';
+
+      document.getElementById('detDominio').textContent = emp.dominio_oficial
+        ? `${emp.dominio_oficial} [${emp.dominio_verificado ? 'verificado' : 'registado'}]`
+        : '–';
+      document.getElementById('detEmail').textContent = emp.email_oficial
+        ? `${emp.email_oficial} [${emp.email_verificado ? 'verificado' : 'registado'}]`
+        : '–';
+      document.getElementById('detTelefone').textContent = emp.telefone_oficial
+        ? `${emp.telefone_oficial} [${emp.telefone_verificado ? 'verificado' : 'registado'}]`
+        : '–';
+
+      if (selo) {
+        document.getElementById('detSeloCodigo').textContent = selo.codigo;
+        document.getElementById('detSeloEstado').textContent = emp.status === 'ativo' ? 'Ativo' : 'Inativo';
+        document.getElementById('detSeloValidade').textContent = selo.valido_ate ? new Date(selo.valido_ate).toLocaleDateString('pt-PT') : 'Indeterminada';
+        document.getElementById('detSeloUrl').innerHTML = `<a href="/verify/${selo.codigo}" target="_blank" style="color: var(--primary);">/verify/${selo.codigo} ↗</a>`;
+      } else {
+        document.getElementById('detSeloCodigo').textContent = 'Nenhum selo emitido';
+        document.getElementById('detSeloEstado').textContent = '-';
+        document.getElementById('detSeloValidade').textContent = '-';
+        document.getElementById('detSeloUrl').textContent = '-';
+      }
+
+      document.getElementById('detRadarStatus').textContent = (selo && selo.monitorizacao_impersonation) ? 'Ativo' : 'Inativo';
+      document.getElementById('detRadarOcorrencias').textContent = radarRow ? radarRow.ocorrencias : 0;
+      document.getElementById('detRadarUltima').textContent = radarRow && radarRow.ultima_deteccao ? new Date(radarRow.ultima_deteccao).toLocaleString('pt-PT') : 'Nenhuma ocorrência';
+
+      document.getElementById('detalheEmpresaModal').style.display = 'flex';
+    }
+
+    // MODAL DETALHE DO RADAR (Seção 21)
+    function abrirDetalheRadar(empresaId) {
+      const radarRow = (dashboardState.radar || []).find(r => r.empresa_id === empresaId);
+      if (!radarRow) return;
+
+      document.getElementById('radarEmpresaNome').textContent = radarRow.empresa;
+      document.getElementById('radarOcorrenciasTotal').textContent = radarRow.ocorrencias;
+      document.getElementById('radarCanaisDistintos').textContent = radarRow.canais_distintos;
+      document.getElementById('radarPrimeira').textContent = radarRow.primeira_deteccao ? new Date(radarRow.primeira_deteccao).toLocaleString('pt-PT') : '-';
+      document.getElementById('radarUltima').textContent = radarRow.ultima_deteccao ? new Date(radarRow.ultima_deteccao).toLocaleString('pt-PT') : '-';
+
+      const empOcorrencias = (dashboardState.ocorrencias || []).filter(o => o.empresa_id === empresaId);
+      const tbody = document.getElementById('radarOcorrenciasTable');
+
+      if (!empOcorrencias.length) {
+        tbody.innerHTML = '<tr><td colspan="4" style="text-align: center; color: var(--text-muted); padding: 15px;">Nenhuma ocorrência detalhada encontrada.</td></tr>';
+      } else {
+        tbody.innerHTML = empOcorrencias.map(o => `
+          <tr>
+            <td style="font-size: 0.85rem; color: var(--text-muted);">${o.criado_em ? new Date(o.criado_em).toLocaleDateString('pt-PT') : '-'}</td>
+            <td style="font-family: 'JetBrains Mono', monospace; font-size: 0.85rem;">${escapeHtml(o.canal_mencionado || '–')}</td>
+            <td><span class="badge ${o.veredito === 'golpe' ? 'badge-suspenso' : 'badge-severidade-suspeita'}">${escapeHtml(o.veredito)}</span></td>
+            <td style="font-weight: 700;">${o.confianca}%</td>
+          </tr>
+        `).join('');
+      }
+
+      document.getElementById('detalheRadarModal').style.display = 'flex';
+    }
+
+    // SELO HANDLERS
+    function openNewSeloModal() {
+      const select = document.getElementById('seloEmpresaSelect');
+      select.innerHTML = '<option value="">Selecione uma empresa...</option>' +
+        (dashboardState.empresas || []).map(e => `<option value="${e.id}">${escapeHtml(e.nome)}</option>`).join('');
+
+      document.getElementById('newSeloModal').style.display = 'flex';
+    }
+
+    async function handleCreateSelo(e) {
+      e.preventDefault();
+      const empresa_id = document.getElementById('seloEmpresaSelect').value;
+      const validadeVal = document.getElementById('seloValidade').value;
+      const monitorizacao = document.getElementById('seloMonitorizacao').checked;
+
+      try {
+        const res = await fetch('/api/admin', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'x-admin-key': globalAdminSecret },
+          body: JSON.stringify({
+            action: 'create_selo',
+            empresa_id,
+            valido_ate: validadeVal ? new Date(validadeVal).toISOString() : null,
+            monitorizacao_impersonation: monitorizacao
+          })
+        });
+        if (!res.ok) throw new Error(await res.text());
+        closeModals();
+        loadDashboardData();
+      } catch (err) {
+        alert('Erro ao criar selo: ' + err.message);
+      }
+    }
+
+    async function regenerarSelo(selo_id) {
+      if (!confirm('Deseja gerar um novo código aleatório para este selo? O código anterior deixará de funcionar.')) return;
+      try {
+        const res = await fetch('/api/admin', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'x-admin-key': globalAdminSecret },
+          body: JSON.stringify({ action: 'regenerar_selo', selo_id })
+        });
+        if (!res.ok) throw new Error(await res.text());
+        loadDashboardData();
+      } catch (err) {
+        alert('Erro ao regenerar selo: ' + err.message);
+      }
+    }
+
+    async function excluirSelo(selo_id) {
+      if (!confirm('Tem a certeza que deseja remover este selo?')) return;
+      try {
+        const res = await fetch('/api/admin', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'x-admin-key': globalAdminSecret },
+          body: JSON.stringify({ action: 'delete_selo', selo_id })
+        });
+        if (!res.ok) throw new Error(await res.text());
+        loadDashboardData();
+      } catch (err) {
+        alert('Erro ao remover selo: ' + err.message);
+      }
+    }
+
+    function escapeHtml(str) {
+      if (str === null || str === undefined) return '';
+      return String(str)
         .replace(/&/g, '&amp;')
         .replace(/</g, '&lt;')
         .replace(/>/g, '&gt;')
         .replace(/"/g, '&quot;')
-        .replace(/'/g, '&#039;');
+        .replace(/'/g, '&#39;');
     }
   </script>
 </body>

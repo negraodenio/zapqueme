@@ -1,9 +1,11 @@
 -- ==============================================================================
--- ZAP, QUEM É? — BANCO DE DADOS SUPABASE (B2C & B2B: ZAP VERIFIED & THREAT RADAR)
--- Executa isto no Supabase: painel do projeto → SQL Editor → New query → Run.
+-- ZAP, QUEM É? — MIGRATION: ZAP VERIFIED & THREAT RADAR
+-- Arquivo: supabase/migrations/20260924_zap_verified_radar.sql
+-- Especificação Fechada de Implementação B2B
+-- Idempotente: seguro para ser executado múltiplas vezes.
 -- ==============================================================================
 
--- 1. TABELA EMPRESAS (B2B)
+-- 1. TABELA EMPRESAS
 create table if not exists empresas (
   id uuid primary key default gen_random_uuid(),
   criado_em timestamptz not null default now(),
@@ -26,7 +28,7 @@ create table if not exists empresas (
   stripe_customer_id text
 );
 
--- 2. TABELA SELOS (ZAP VERIFIED)
+-- 2. TABELA SELOS
 create table if not exists selos (
   id uuid primary key default gen_random_uuid(),
 
@@ -48,7 +50,7 @@ create table if not exists selos (
 create index if not exists idx_selos_codigo on selos (codigo);
 create index if not exists idx_selos_empresa on selos (empresa_id);
 
--- 3. TABELA ANALISES (B2C + RADAR DE IMPERSONATION)
+-- 3. ALTERAÇÃO DA TABELA ANALISES
 create table if not exists analises (
   id uuid primary key default gen_random_uuid(),
   criado_em timestamptz not null default now(),
@@ -102,11 +104,3 @@ where a.impersonation = true
 group by e.id, e.nome
 
 order by ocorrencias desc;
-
--- 5. TABELA FEEDBACK (B2C)
-create table if not exists feedback (
-  id uuid primary key default gen_random_uuid(),
-  criado_em timestamptz not null default now(),
-  analise_id uuid references analises(id),
-  positivo boolean not null
-);
