@@ -35,45 +35,52 @@ export default async function handler(req, res) {
     return res.status(400).json({ error: 'Envia um texto ou uma imagem.' });
   }
 
-  const apiKey = process.env.ANTHROPIC_API_KEY;
+  const apiKey = process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY;
   if (!apiKey) {
-    return res.status(500).json({ error: 'ANTHROPIC_API_KEY não configurada no servidor.' });
+    return res.status(500).json({ error: 'GEMINI_API_KEY não configurada no servidor.' });
   }
 
-  // Monta o conteúdo da mensagem (texto + imagem opcional)
-  const content = [];
+  // Monta as partes do conteúdo (imagem opcional + texto)
+  const parts = [];
   if (imagemBase64) {
-    content.push({
-      type: 'image',
-      source: {
-        type: 'base64',
-        media_type: imagemTipo || 'image/jpeg',
+    parts.push({
+      inlineData: {
+        mimeType: imagemTipo || 'image/jpeg',
         data: imagemBase64
       }
     });
   }
-  content.push({
-    type: 'text',
+  parts.push({
     text: texto
       ? `Analisa esta mensagem: "${texto}"`
       : 'Analisa o print/imagem enviada. Extrai o texto relevante e avalia se é golpe.'
   });
 
   try {
-    const response = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-api-key': apiKey,
-        'anthropic-version': '2023-06-01'
-      },
-      body: JSON.stringify({
-        model: 'claude-sonnet-5',
-        max_tokens: 500,
-        system: SYSTEM_PROMPT,
-        messages: [{ role: 'user', content }]
-      })
-    });
+    const response = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          systemInstruction: {
+            parts: [{ text: SYSTEM_PROMPT }]
+          },
+          contents: [
+            {
+              role: 'user',
+              parts
+            }
+          ],
+          generationConfig: {
+            responseMimeType: 'application/json',
+            temperature: 0.2
+          }
+        })
+      }
+    );
 
     if (!response.ok) {
       const errText = await response.text();
@@ -81,7 +88,7 @@ export default async function handler(req, res) {
     }
 
     const data = await response.json();
-    const rawText = data.content?.find(b => b.type === 'text')?.text || '';
+    const rawText = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
 
     // Remove eventuais fences de markdown antes de fazer parse
     const clean = rawText.replace(/```json|```/g, '').trim();

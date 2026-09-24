@@ -10,7 +10,7 @@ se é golpe, porquê, e o que fazer.
    (`git init && git add . && git commit -m "mvp" && git push`).
 3. Na Vercel: **Add New Project** → importa o repositório.
 4. Em **Settings → Environment Variables**, adiciona:
-   - `ANTHROPIC_API_KEY` = a tua chave de https://console.anthropic.com/settings/keys
+   - `GEMINI_API_KEY` = chave gratuita criada em https://aistudio.google.com/app/apikey
    - `UPSTASH_REDIS_REST_URL` e `UPSTASH_REDIS_REST_TOKEN` (opcional, mas recomendado — ver abaixo)
    - `SUPABASE_URL` e `SUPABASE_SERVICE_ROLE_KEY` (opcional, para guardar histórico e métricas — ver abaixo)
 5. Clica **Deploy**. Em ~1 minuto tens um link tipo `e-golpe.vercel.app`.
@@ -69,13 +69,11 @@ como Serverless Functions.
 npm i -g vercel
 vercel dev
 ```
-Cria um ficheiro `.env.local` com `ANTHROPIC_API_KEY=sk-ant-...` antes de correr.
+Cria um ficheiro `.env.local` com `GEMINI_API_KEY=AIzaSy...` antes de correr.
 
-## Custo estimado
+## Custo
 
-Cada análise custa poucos cêntimos em tokens de API (imagem + resposta curta).
-Para controlar custo: considera trocar `claude-sonnet-5` por um modelo mais barato
-se o volume crescer muito, ou limitar a 3 análises grátis por IP/dia (próximo passo).
+Zero! O modelo `gemini-2.0-flash` no Google AI Studio possui plano gratuito generoso (15 requisições por minuto e até 1.500 requisições por dia grátis), ideal para MVP com visão multimodal.
 
 ## Próximos passos sugeridos (depois do dia 1)
 
