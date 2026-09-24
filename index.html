@@ -8,69 +8,138 @@
   :root{
     --bg:#0f1115; --card:#1a1d24; --text:#eaeaea; --muted:#9aa0aa;
     --green:#22c55e; --yellow:#eab308; --red:#ef4444; --accent:#0F6E56;
+    --card-border: #272b36;
   }
   *{box-sizing:border-box}
   body{margin:0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
     background:var(--bg);color:var(--text);min-height:100vh;padding:20px;}
-  .wrap{max-width:520px;margin:0 auto;}
-  h1{font-size:1.5rem;text-align:center;margin-bottom:4px;}
-  .sub{color:var(--muted);text-align:center;margin-bottom:24px;font-size:.95rem;}
-  .card{background:var(--card);border-radius:16px;padding:20px;margin-bottom:16px;}
-  textarea{width:100%;min-height:100px;background:#0f1115;color:var(--text);
+  .wrap{max-width:540px;margin:0 auto;}
+  .header{text-align:center;margin-bottom:20px;}
+  h1{font-size:1.6rem;margin-bottom:4px;letter-spacing:-0.02em;}
+  .sub{color:var(--muted);margin:0 0 16px;font-size:.95rem;}
+  .btn-fui-vitima{display:inline-block;background:rgba(239,68,68,.12);border:1px solid rgba(239,68,68,.3);color:#f87171;padding:6px 14px;border-radius:20px;font-size:.85rem;font-weight:600;cursor:pointer;text-decoration:none;transition:0.2s;}
+  .btn-fui-vitima:hover{background:rgba(239,68,68,.25);}
+
+  .card{background:var(--card);border:1px solid var(--card-border);border-radius:16px;padding:20px;margin-bottom:16px;}
+  textarea{width:100%;min-height:105px;background:#0f1115;color:var(--text);
     border:1px solid #333;border-radius:10px;padding:12px;font-size:1rem;resize:vertical;}
+  textarea:focus{outline:none;border-color:var(--accent);}
   input[type=file]{width:100%;margin-top:10px;color:var(--muted);}
   button{width:100%;padding:14px;border:none;border-radius:12px;background:var(--accent);
-    color:white;font-size:1.05rem;font-weight:600;margin-top:14px;cursor:pointer;}
-  button:disabled{opacity:.5;}
-  button.secondary{background:#2a2d36;margin-top:8px;}
+    color:white;font-size:1.05rem;font-weight:600;margin-top:14px;cursor:pointer;transition:0.15s;}
+  button:hover{opacity:0.92;}
+  button:disabled{opacity:.5;cursor:not-allowed;}
+  
   .result{display:none;}
-  .veredito{font-size:1.4rem;font-weight:800;padding:14px;border-radius:12px;text-align:center;margin-bottom:12px;}
+  .veredito{font-size:1.4rem;font-weight:800;padding:14px;border-radius:12px;text-align:center;margin-bottom:14px;}
   .veredito.golpe{background:rgba(239,68,68,.15);color:var(--red);border:1px solid var(--red);}
   .veredito.suspeito{background:rgba(234,179,8,.15);color:var(--yellow);border:1px solid var(--yellow);}
   .veredito.legitimo{background:rgba(34,197,94,.15);color:var(--green);border:1px solid var(--green);}
-  .conf{color:var(--muted);text-align:center;margin-bottom:16px;font-size:.9rem;}
+
+  /* Termômetro de Risco */
+  .risk-container{background:#0f1115;border-radius:12px;padding:14px;margin-bottom:16px;border:1px solid #282b33;}
+  .risk-header{display:flex;justify-content:space-between;font-size:.85rem;font-weight:700;margin-bottom:8px;}
+  .risk-title{color:var(--muted);text-transform:uppercase;letter-spacing:0.04em;}
+  .risk-val{font-size:.95rem;}
+  .risk-track{background:#232730;height:10px;border-radius:5px;overflow:hidden;position:relative;}
+  .risk-fill{height:100%;width:0%;border-radius:5px;transition:width 0.6s ease-in-out;}
+
   .reportada{background:rgba(239,68,68,.12);border:1px solid var(--red);color:var(--red);
     padding:10px 14px;border-radius:10px;text-align:center;font-weight:600;font-size:.9rem;margin-bottom:16px;}
+  .alerta-link{background:rgba(234,179,8,.12);border:1px solid var(--yellow);color:var(--yellow);
+    padding:10px 14px;border-radius:10px;font-size:.9rem;margin-bottom:16px;line-height:1.4;}
   ul{padding-left:20px;margin:8px 0;}
   li{margin-bottom:6px;}
   .label{font-weight:700;font-size:.85rem;text-transform:uppercase;color:var(--muted);margin-top:14px;margin-bottom:4px;}
-  .acao{background:#0f1115;padding:12px;border-radius:10px;border-left:3px solid var(--accent);}
+  .acao{background:#0f1115;padding:14px;border-radius:10px;border-left:3px solid var(--accent);line-height:1.45;}
   .fb{display:flex;gap:10px;margin-top:16px;}
-  .fb button{flex:1;background:#2a2d36;font-size:1.3rem;}
+  .fb button{flex:1;background:#2a2d36;font-size:1.15rem;margin-top:0;}
+  
+  /* Seção de Emergência Fui Vítima */
+  .emergency-card{background:rgba(239,68,68,.06);border:1px solid rgba(239,68,68,.3);margin-top:14px;}
+  .emergency-title{color:#f87171;font-size:1.05rem;font-weight:700;margin-bottom:6px;}
+  .emergency-sub{color:var(--muted);font-size:.85rem;margin:0 0 14px;line-height:1.4;}
+  .step-box{background:#111317;padding:12px 14px;border-radius:10px;margin-bottom:8px;font-size:.9rem;line-height:1.45;}
+  .step-box strong{color:#eaeaea;display:block;margin-bottom:2px;}
+
   .disclaimer{font-size:.75rem;color:var(--muted);text-align:center;margin-top:20px;line-height:1.4;}
-  .loading{text-align:center;color:var(--muted);display:none;}
+  .loading{text-align:center;color:var(--muted);display:none;margin-top:12px;}
 </style>
 </head>
 <body>
 <div class="wrap">
-  <h1>⚡ Zap, quem é?</h1>
-  <p class="sub">Cola o texto ou manda o print da mensagem suspeita</p>
+  <div class="header">
+    <h1>⚡ Zap, quem é?</h1>
+    <p class="sub">Cola o texto ou manda o print da mensagem suspeita</p>
+    <a href="#emergencia" class="btn-fui-vitima" id="btnToggleEmergencia">🆘 Já caiu em um golpe? O que fazer</a>
+  </div>
 
+  <!-- Card Principal de Verificação -->
   <div class="card">
     <textarea id="texto" placeholder="Cola aqui o texto do SMS/WhatsApp suspeito..."></textarea>
     <input type="file" id="imagem" accept="image/*">
     <button id="btnVerificar">Zap, quem é? 👀</button>
-    <p class="loading" id="loading">Analisando... 🕵️</p>
+    <p class="loading" id="loading">Analisando com Inteligência Artificial... 🕵️</p>
   </div>
 
+  <!-- Resultado da Análise -->
   <div class="card result" id="resultado">
     <div class="veredito" id="veredito"></div>
-    <div class="conf" id="confianca"></div>
+    
+    <!-- Termômetro de Risco -->
+    <div class="risk-container">
+      <div class="risk-header">
+        <span class="risk-title">Nível de Risco Aparente</span>
+        <span class="risk-val" id="riskLabel">--/100</span>
+      </div>
+      <div class="risk-track">
+        <div class="risk-fill" id="riskBar"></div>
+      </div>
+    </div>
+
     <div class="reportada" id="reportada" style="display:none;"></div>
-    <div class="label">Sinais de alerta</div>
+    <div class="alerta-link" id="alertaLink" style="display:none;"></div>
+    
+    <div class="label">Sinais de alerta identificados</div>
     <ul id="sinais"></ul>
-    <div class="label">O que fazer</div>
+    
+    <div class="label">O que fazer agora</div>
     <div class="acao" id="acao"></div>
+    
     <button id="btnPartilhar">📲 Partilhar no WhatsApp</button>
+    
     <div class="fb">
       <button id="fbUp">👍 Ajudou</button>
       <button id="fbDown">👎 Não ajudou</button>
     </div>
   </div>
 
+  <!-- Protocolo de Emergência: Fui Vítima -->
+  <div class="card emergency-card" id="emergencia" style="display:none;">
+    <div class="emergency-title">🆘 Protocolo de Emergência — Fui Vítima</div>
+    <p class="emergency-sub">Se você já realizou pagamentos, enviou PIX ou informou senhas, aja agora. Cada minuto conta:</p>
+    
+    <div class="step-box">
+      <strong>1️⃣ Ligue para o seu banco imediatamente:</strong>
+      No Brasil, exija o acionamento do <em>MED (Mecanismo Especial de Devolução do PIX)</em> para bloquear o valor na conta de destino. Em Portugal, solicite o cancelamento urgente de cartões e estorno de transferências.
+    </div>
+    <div class="step-box">
+      <strong>2️⃣ Guarde todas as provas:</strong>
+      Tire prints de toda a conversa, número do remetente, comprovantes de transação e chaves PIX/IBAN antes que o criminoso apague.
+    </div>
+    <div class="step-box">
+      <strong>3️⃣ Registre Boletim de Ocorrência / Queixa:</strong>
+      No Brasil, registre online na <em>Delegacia Eletrônica</em> por fraude/estelionato. Em Portugal, registre queixa no portal da Polícia Judiciária / Ministério Público ou na PSP/GNR.
+    </div>
+    <div class="step-box">
+      <strong>4️⃣ Blinde seus acessos:</strong>
+      Altere senhas do seu e-mail e ative a <em>Confirmação em Duas Etapas (com código PIN)</em> no WhatsApp para evitar clonagem.
+    </div>
+  </div>
+
   <p class="disclaimer">
-    Isto é um alerta automático, não substitui a polícia, o teu banco ou uma autoridade oficial.
-    As tuas mensagens não são guardadas nem usadas para treinar modelos.
+    Isto é um alerta automático e informativo, não substitui a polícia, o teu banco ou uma autoridade oficial.
+    As mensagens não são partilhadas publicamente nem usadas para treinar modelos de terceiros.
   </p>
 </div>
 
@@ -78,6 +147,16 @@
 const btn = document.getElementById('btnVerificar');
 const loading = document.getElementById('loading');
 const resultado = document.getElementById('resultado');
+const btnToggleEmergencia = document.getElementById('btnToggleEmergencia');
+const cardEmergencia = document.getElementById('emergencia');
+
+btnToggleEmergencia.addEventListener('click', (e) => {
+  e.preventDefault();
+  cardEmergencia.style.display = cardEmergencia.style.display === 'none' ? 'block' : 'none';
+  if (cardEmergencia.style.display === 'block') {
+    cardEmergencia.scrollIntoView({ behavior: 'smooth' });
+  }
+});
 
 btn.addEventListener('click', async () => {
   const texto = document.getElementById('texto').value.trim();
@@ -118,12 +197,26 @@ btn.addEventListener('click', async () => {
 
 function mostrarResultado(data) {
   const vEl = document.getElementById('veredito');
-  const labels = { golpe: '🚨 PROVÁVEL GOLPE', suspeito: '⚠️ SUSPEITO', legitimo: '✅ PARECE LEGÍTIMO' };
+  const labels = { golpe: '🚨 PROVÁVEL GOLPE', suspeito: '⚠️ MENSAGEM SUSPEITA', legitimo: '✅ PARECE LEGÍTIMO' };
   vEl.textContent = labels[data.veredito] || data.veredito;
   vEl.className = 'veredito ' + data.veredito;
 
-  document.getElementById('confianca').textContent = `Confiança: ${data.confianca}%`;
+  // Atualiza Termômetro de Risco
+  const score = data.risco_score !== undefined 
+    ? data.risco_score 
+    : (data.veredito === 'golpe' ? data.confianca : (data.veredito === 'suspeito' ? 55 : Math.max(5, 100 - data.confianca)));
+  
+  const riskLabel = document.getElementById('riskLabel');
+  const riskBar = document.getElementById('riskBar');
+  const nivel = score >= 80 ? 'CRÍTICO' : score >= 65 ? 'ALTO' : score >= 40 ? 'MODERADO' : 'BAIXO';
+  const cor = score >= 65 ? '#ef4444' : score >= 40 ? '#eab308' : '#22c55e';
+  
+  riskLabel.textContent = `${score}/100 [${nivel}]`;
+  riskLabel.style.color = cor;
+  riskBar.style.width = `${score}%`;
+  riskBar.style.background = cor;
 
+  // Alerta de Mensagem Repetida
   const reportadaEl = document.getElementById('reportada');
   if (data.vezes_reportada && data.vezes_reportada > 1) {
     reportadaEl.textContent = `⚠️ Esta mensagem já foi verificada ${data.vezes_reportada} vezes por outras pessoas`;
@@ -132,6 +225,16 @@ function mostrarResultado(data) {
     reportadaEl.style.display = 'none';
   }
 
+  // Alerta de Link / Typosquatting
+  const alertaLinkEl = document.getElementById('alertaLink');
+  if (data.alerta_link) {
+    alertaLinkEl.innerHTML = `<strong>🔗 Alerta de Link:</strong> ${data.alerta_link}`;
+    alertaLinkEl.style.display = 'block';
+  } else {
+    alertaLinkEl.style.display = 'none';
+  }
+
+  // Sinais de alerta
   const sinaisEl = document.getElementById('sinais');
   sinaisEl.innerHTML = '';
   (data.sinais || []).forEach(s => {
@@ -144,8 +247,13 @@ function mostrarResultado(data) {
   resultado.style.display = 'block';
   resultado.scrollIntoView({ behavior: 'smooth' });
 
+  // Exibe o card de emergência automaticamente se for golpe
+  if (data.veredito === 'golpe' || score >= 75) {
+    cardEmergencia.style.display = 'block';
+  }
+
   document.getElementById('btnPartilhar').onclick = () => {
-    const msg = `⚡ Zap, quem é? disse: ${labels[data.veredito]} (${data.confianca}% de confiança)\n\n${data.explicacao_simples}\n\nVerifica a tua também: [seu-dominio.pt]`;
+    const msg = `⚡ Zap, quem é? analisou:\n${labels[data.veredito]} (Risco: ${score}/100)\n\n${data.explicacao_simples}\n\nVerifica a tua mensagem também: [seu-link]`;
     window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`, '_blank');
   };
 

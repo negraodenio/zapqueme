@@ -1,5 +1,5 @@
 // api/whatsapp.js — Twilio WhatsApp Sandbox Webhook
-import { analyzeContent, formatWhatsAppMessage } from '../lib/scanner.js';
+import { analyzeContent, formatWhatsAppMessage, getEmergencyVictimGuide } from '../lib/scanner.js';
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
@@ -24,14 +24,25 @@ export default async function handler(req, res) {
     const numMedia = parseInt(body?.NumMedia || '0', 10);
     const mediaUrl = body?.MediaUrl0;
     const mediaContentType = body?.MediaContentType0 || 'image/jpeg';
+    const lower = incomingText.toLowerCase();
+
+    // Protocolo de Emergência: se a pessoa já caiu no golpe ou pagou
+    const emergencyTriggers = [
+      'fui vitima', 'fui vítima', 'ja paguei', 'já paguei', 'cai no golpe', 'caí no golpe',
+      'fiz o pix', 'fiz pix', 'já transferi', 'ja transferi', 'me roubaram', 'perdi dinheiro',
+      'socorro', 'emergencia', 'emergência'
+    ];
+    const isEmergency = emergencyTriggers.some(t => lower.includes(t));
+    if (isEmergency && numMedia === 0) {
+      return sendTwiml(res, getEmergencyVictimGuide());
+    }
 
     // Boas-vindas / Ajuda ou ativação inicial da sandbox ("join...")
-    const lower = incomingText.toLowerCase();
     const isGreeting = ['oi', 'olá', 'ola', 'ajuda', 'help', 'menu', 'iniciar', 'start'].includes(lower)
       || lower.startsWith('join ');
 
     if ((!incomingText && numMedia === 0) || (isGreeting && numMedia === 0)) {
-      const welcome = `Olá! 👋 Eu sou o *Zap, quem é?*\n\nMe encaminhe qualquer mensagem suspeita ou envie um print (foto do SMS ou conversa do WhatsApp) que eu analiso na hora se é golpe ou legítimo! 🕵️\n\n_Pode colar o texto ou enviar a imagem direto aqui._`;
+      const welcome = `Olá! 👋 Eu sou o *Zap, quem é?*\n\nMe encaminhe qualquer mensagem suspeita ou envie um print (foto do SMS ou conversa do WhatsApp) que eu analiso na hora se é golpe ou legítimo! 🕵️\n\n_Pode colar o texto ou enviar a imagem direto aqui._\n\n💡 _Se você já foi vítima de um golpe e precisa de ajuda imediata, envie *fui vítima*._`;
       return sendTwiml(res, welcome);
     }
 
@@ -55,7 +66,7 @@ export default async function handler(req, res) {
       imagemBase64 = Buffer.from(arrayBuf).toString('base64');
     }
 
-    // Executa a análise via Google Gemini 2.0 Flash
+    // Executa a análise via Google Gemini
     const resultado = await analyzeContent({
       texto: incomingText || null,
       imagemBase64,
