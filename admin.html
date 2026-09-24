@@ -1126,21 +1126,23 @@
         </div>
       </div>
 
-      <!-- Seleção de Formato do Badge (Seção 6) -->
-      <div style="margin-bottom: 12px;">
-        <div style="font-size: 0.78rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; margin-bottom: 8px; letter-spacing: 0.06em;">Badges Disponíveis</div>
-        <div style="display: flex; gap: 8px; flex-wrap: wrap;">
-          <button id="btnFmtHorizontal" class="btn-xs btn-xs-primary" onclick="setKitFormato('horizontal')">Badge Horizontal</button>
-          <button id="btnFmtPrincipal" class="btn-xs" onclick="setKitFormato('principal')">Badge Principal</button>
-          <button id="btnFmtCircular" class="btn-xs" onclick="setKitFormato('circular')">Badge Circular</button>
+      <!-- Seleção de Formato do Badge (Modelos Oficiais e SVG) -->
+      <div style="margin-bottom: 14px;">
+        <div style="display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 8px;">
+          <div style="font-size: 0.78rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.06em;">Modelos Oficiais de Badge</div>
+          <span id="kitBadgeDesc" style="font-size: 0.75rem; color: var(--primary); font-weight: 600;"></span>
+        </div>
+        <div id="kitBadgeButtons" style="display: flex; gap: 6px; flex-wrap: wrap;">
+          <!-- Preenchido dinamicamente pelo JS -->
         </div>
       </div>
 
       <!-- Preview Interativo do Badge Selecionado -->
-      <div style="background: #070a12; border: 1px solid var(--card-border); border-radius: 12px; padding: 24px; text-align: center; margin-bottom: 18px; min-height: 140px; display: flex; align-items: center; justify-content: center; overflow: hidden;">
-        <div id="kitBadgePreview" style="display: inline-block;">
-          <!-- SVG renderizado aqui -->
+      <div style="background: #070a12; border: 1px solid var(--card-border); border-radius: 12px; padding: 22px; text-align: center; margin-bottom: 18px; min-height: 180px; display: flex; flex-direction: column; align-items: center; justify-content: center; overflow: hidden;">
+        <div id="kitBadgePreview" style="display: inline-flex; align-items: center; justify-content: center; max-width: 100%;">
+          <!-- Conteúdo do Badge (PNG ou SVG) -->
         </div>
+        <div id="kitBadgeDimension" style="margin-top: 10px; font-size: 0.75rem; color: #64748b; font-family: 'JetBrains Mono', monospace;"></div>
       </div>
 
       <!-- Snippet HTML Embed (Seção 9) -->
@@ -1158,7 +1160,7 @@
           🛡️ O badge aponta para a verificação oficial dos canais da empresa.
         </div>
         <div style="display: flex; gap: 8px;">
-          <button type="button" class="btn-secondary" onclick="baixarKitSvg()">⬇ Baixar SVG</button>
+          <button id="kitBtnDownload" type="button" class="btn-secondary" onclick="baixarKitAsset()">⬇ Baixar Imagem</button>
           <a id="kitBtnAbrirPublico" href="#" target="_blank" class="btn-action" style="padding: 8px 16px; font-size: 0.85rem; text-decoration: none;">Abrir Verificação ↗</a>
         </div>
       </div>
@@ -1421,11 +1423,9 @@
     function abrirKitBadge(seloId) {
       const selo = (dashboardState.selos || []).find(s => s.id === seloId);
       if (!selo) return;
-
       const emp = (dashboardState.empresas || []).find(e => e.id === selo.empresa_id);
       currentKitSelo = selo;
       currentKitEmpresa = emp;
-      currentKitFormato = 'horizontal';
 
       const agora = new Date();
       const expirado = selo.valido_ate ? new Date(selo.valido_ate) < agora : false;
@@ -1456,30 +1456,51 @@
 
       document.getElementById('kitBtnAbrirPublico').href = publicUrl;
 
-      // Canais Verificados (Seção 7: apenas verificado se boolean for true)
+      // Canais Verificados (com ícones oficiais recortados e links para download)
       const canaisLista = document.getElementById('kitCanaisLista');
       let canaisHtml = '';
 
       if (emp) {
         // Domínio
         if (emp.dominio_verificado && emp.dominio_oficial) {
-          canaisHtml += `<div style="display: flex; align-items: center; gap: 8px; font-size: 0.85rem; color: #34d399;"><strong style="font-size: 1rem;">✓</strong> <span>DOMÍNIO OFICIAL VERIFICADO: <strong>${escapeHtml(emp.dominio_oficial)}</strong></span></div>`;
+          canaisHtml += `
+            <div style="display: flex; align-items: center; justify-content: space-between; padding: 8px 12px; background: rgba(16, 185, 129, 0.08); border-radius: 8px; border: 1px solid rgba(16, 185, 129, 0.25);">
+              <div style="display: flex; align-items: center; gap: 10px;">
+                <img src="/badges/canal-dominio-verificado.png" alt="Domínio Verificado" style="width: 26px; height: 26px; object-fit: contain;" />
+                <span style="font-size: 0.85rem; color: #34d399;">DOMÍNIO VERIFICADO: <strong style="color: #fff;">${escapeHtml(emp.dominio_oficial)}</strong></span>
+              </div>
+              <a href="/badges/canal-dominio-verificado.png" download="canal-dominio-verificado.png" class="btn-xs" style="text-decoration: none;">⬇ Ícone</a>
+            </div>`;
         } else if (emp.dominio_oficial) {
-          canaisHtml += `<div style="display: flex; align-items: center; gap: 8px; font-size: 0.85rem; color: #94a3b8;"><span>–</span> <span>DOMÍNIO OFICIAL REGISTADO: ${escapeHtml(emp.dominio_oficial)}</span></div>`;
+          canaisHtml += `<div style="display: flex; align-items: center; gap: 8px; font-size: 0.85rem; color: #94a3b8; padding: 6px 10px;"><span>–</span> <span>DOMÍNIO REGISTADO (NÃO VERIFICADO): ${escapeHtml(emp.dominio_oficial)}</span></div>`;
         }
 
         // Email
         if (emp.email_verificado && emp.email_oficial) {
-          canaisHtml += `<div style="display: flex; align-items: center; gap: 8px; font-size: 0.85rem; color: #34d399;"><strong style="font-size: 1rem;">✓</strong> <span>EMAIL OFICIAL VERIFICADO: <strong>${escapeHtml(emp.email_oficial)}</strong></span></div>`;
+          canaisHtml += `
+            <div style="display: flex; align-items: center; justify-content: space-between; padding: 8px 12px; background: rgba(16, 185, 129, 0.08); border-radius: 8px; border: 1px solid rgba(16, 185, 129, 0.25);">
+              <div style="display: flex; align-items: center; gap: 10px;">
+                <img src="/badges/canal-email-verificado.png" alt="Email Verificado" style="width: 26px; height: 26px; object-fit: contain;" />
+                <span style="font-size: 0.85rem; color: #34d399;">EMAIL VERIFICADO: <strong style="color: #fff;">${escapeHtml(emp.email_oficial)}</strong></span>
+              </div>
+              <a href="/badges/canal-email-verificado.png" download="canal-email-verificado.png" class="btn-xs" style="text-decoration: none;">⬇ Ícone</a>
+            </div>`;
         } else if (emp.email_oficial) {
-          canaisHtml += `<div style="display: flex; align-items: center; gap: 8px; font-size: 0.85rem; color: #94a3b8;"><span>–</span> <span>EMAIL OFICIAL REGISTADO: ${escapeHtml(emp.email_oficial)}</span></div>`;
+          canaisHtml += `<div style="display: flex; align-items: center; gap: 8px; font-size: 0.85rem; color: #94a3b8; padding: 6px 10px;"><span>–</span> <span>EMAIL REGISTADO (NÃO VERIFICADO): ${escapeHtml(emp.email_oficial)}</span></div>`;
         }
 
         // Telefone
         if (emp.telefone_verificado && emp.telefone_oficial) {
-          canaisHtml += `<div style="display: flex; align-items: center; gap: 8px; font-size: 0.85rem; color: #34d399;"><strong style="font-size: 1rem;">✓</strong> <span>TELEFONE OFICIAL VERIFICADO: <strong>${escapeHtml(emp.telefone_oficial)}</strong></span></div>`;
+          canaisHtml += `
+            <div style="display: flex; align-items: center; justify-content: space-between; padding: 8px 12px; background: rgba(16, 185, 129, 0.08); border-radius: 8px; border: 1px solid rgba(16, 185, 129, 0.25);">
+              <div style="display: flex; align-items: center; gap: 10px;">
+                <img src="/badges/canal-telefone-verificado.png" alt="Telefone Verificado" style="width: 26px; height: 26px; object-fit: contain;" />
+                <span style="font-size: 0.85rem; color: #34d399;">TELEFONE VERIFICADO: <strong style="color: #fff;">${escapeHtml(emp.telefone_oficial)}</strong></span>
+              </div>
+              <a href="/badges/canal-telefone-verificado.png" download="canal-telefone-verificado.png" class="btn-xs" style="text-decoration: none;">⬇ Ícone</a>
+            </div>`;
         } else if (emp.telefone_oficial) {
-          canaisHtml += `<div style="display: flex; align-items: center; gap: 8px; font-size: 0.85rem; color: #94a3b8;"><span>–</span> <span>TELEFONE OFICIAL REGISTADO: ${escapeHtml(emp.telefone_oficial)}</span></div>`;
+          canaisHtml += `<div style="display: flex; align-items: center; gap: 8px; font-size: 0.85rem; color: #94a3b8; padding: 6px 10px;"><span>–</span> <span>TELEFONE REGISTADO (NÃO VERIFICADO): ${escapeHtml(emp.telefone_oficial)}</span></div>`;
         }
       }
 
@@ -1488,18 +1509,49 @@
       }
       canaisLista.innerHTML = canaisHtml;
 
-      // Renderiza formato inicial
-      setKitFormato('horizontal');
+      // Renderizar botões de seleção de badges (14 modelos)
+      const btnContainer = document.getElementById('kitBadgeButtons');
+      btnContainer.innerHTML = BADGE_DEFINITIONS.map(b => `
+        <button id="btnBadge_${b.id}" class="btn-xs ${b.id === 'badge-principal' ? 'btn-xs-primary' : ''}" onclick="setKitFormato('${b.id}')" title="${b.desc}">
+          ${b.name}
+        </button>
+      `).join('');
+
+      // Inicia com o badge principal oficial recortado
+      setKitFormato('badge-principal');
       document.getElementById('kitBadgeModal').style.display = 'flex';
     }
 
-    function setKitFormato(formato) {
-      currentKitFormato = formato;
+    const BADGE_DEFINITIONS = [
+      { id: 'badge-principal', name: '🛡️ Emblema Vertical', type: 'png', path: '/badges/badge-principal.png', dim: '255 × 400 px', desc: 'Emblema vertical oficial com mascote, lupa e canais' },
+      { id: 'badge-circular', name: '⭕ Circular Grande', type: 'png', path: '/badges/badge-circular.png', dim: '405 × 390 px', desc: 'Selo redondo oficial com mascote e borda verde' },
+      { id: 'badge-horizontal-dark', name: '🌙 Horizontal Dark', type: 'png', path: '/badges/badge-horizontal-dark.png', dim: '295 × 85 px', desc: 'Badge arredondado com mascote para fundos escuros' },
+      { id: 'badge-horizontal-light', name: '☀️ Horizontal Light', type: 'png', path: '/badges/badge-horizontal-light.png', dim: '295 × 85 px', desc: 'Badge arredondado com mascote para fundos claros' },
+      { id: 'badge-horizontal-clean-dark', name: '✨ Clean Dark', type: 'png', path: '/badges/badge-horizontal-clean-dark.png', dim: '295 × 70 px', desc: 'Selo compacto minimalista escuro com escudo' },
+      { id: 'badge-horizontal-clean-light', name: '✨ Clean Light', type: 'png', path: '/badges/badge-horizontal-clean-light.png', dim: '295 × 70 px', desc: 'Selo compacto minimalista claro com escudo' },
+      { id: 'badge-bar-dark', name: '📊 Barra Canais Dark', type: 'png', path: '/badges/badge-bar-dark.png', dim: '500 × 85 px', desc: 'Barra completa com mascote e os 3 canais' },
+      { id: 'badge-bar-light', name: '📊 Barra Canais Light', type: 'png', path: '/badges/badge-bar-light.png', dim: '480 × 85 px', desc: 'Barra completa com mascote em fundo claro' },
+      { id: 'selo-mascote-circular', name: '🕵️ Mascote Redondo', type: 'png', path: '/badges/selo-mascote-circular.png', dim: '150 × 140 px', desc: 'Selo circular com mascote e Empresa Verificada' },
+      { id: 'selo-circular-verde', name: '✓ Selo Verde Minimal', type: 'png', path: '/badges/selo-circular-verde.png', dim: '140 × 140 px', desc: 'Selo circular verde com checkmark central' },
+      { id: 'selo-shield', name: '🔰 Selo Escudo', type: 'png', path: '/badges/selo-shield.png', dim: '130 × 140 px', desc: 'Selo em formato de escudo clássico' },
+      { id: 'svg-horizontal', name: '⚡ SVG Horizontal', type: 'svg', svgFormat: 'horizontal', dim: '310 × 64 px (Vetorial)', desc: 'SVG dinâmico com status em tempo real' },
+      { id: 'svg-principal', name: '⚡ SVG Vertical', type: 'svg', svgFormat: 'principal', dim: '220 × 250 px (Vetorial)', desc: 'SVG vertical dinâmico com status em tempo real' },
+      { id: 'svg-circular', name: '⚡ SVG Circular', type: 'svg', svgFormat: 'circular', dim: '160 × 160 px (Vetorial)', desc: 'SVG circular dinâmico com status em tempo real' }
+    ];
+
+    function setKitFormato(badgeId) {
+      currentKitFormato = badgeId;
+      const badge = BADGE_DEFINITIONS.find(b => b.id === badgeId) || BADGE_DEFINITIONS[0];
 
       // Atualiza botões
-      document.getElementById('btnFmtHorizontal').className = formato === 'horizontal' ? 'btn-xs btn-xs-primary' : 'btn-xs';
-      document.getElementById('btnFmtPrincipal').className = formato === 'principal' ? 'btn-xs btn-xs-primary' : 'btn-xs';
-      document.getElementById('btnFmtCircular').className = formato === 'circular' ? 'btn-xs btn-xs-primary' : 'btn-xs';
+      BADGE_DEFINITIONS.forEach(b => {
+        const btn = document.getElementById(`btnBadge_${b.id}`);
+        if (btn) btn.className = b.id === badge.id ? 'btn-xs btn-xs-primary' : 'btn-xs';
+      });
+
+      // Atualiza descrição e dimensão
+      document.getElementById('kitBadgeDesc').textContent = badge.desc;
+      document.getElementById('kitBadgeDimension').textContent = `Dimensões: ${badge.dim}`;
 
       if (!currentKitSelo) return;
 
@@ -1508,23 +1560,33 @@
       const status = currentKitEmpresa?.status === 'suspenso' ? 'suspenso' : (expirado ? 'expirado' : (currentKitEmpresa?.status === 'ativo' ? 'ativo' : 'inativo'));
       const empresaNome = currentKitEmpresa ? currentKitEmpresa.nome : 'Empresa';
       const codigo = currentKitSelo.codigo;
+      const verifyUrl = `${window.location.origin}/verify/${codigo}`;
 
-      // Gera SVG para o preview local
-      let svg = '';
-      if (formato === 'principal') {
-        svg = generatePrincipalBadgeSvg(codigo, empresaNome, status);
-      } else if (formato === 'circular') {
-        svg = generateCircularBadgeSvg(codigo, empresaNome, status);
+      const previewEl = document.getElementById('kitBadgePreview');
+      const btnDownload = document.getElementById('kitBtnDownload');
+
+      let embedCode = '';
+      if (badge.type === 'png') {
+        const fullImgUrl = `${window.location.origin}${badge.path}`;
+        previewEl.innerHTML = `<img src="${badge.path}" alt="${escapeHtml(badge.name)}" style="max-height: 200px; max-width: 100%; object-fit: contain; filter: drop-shadow(0 8px 20px rgba(0,0,0,0.6)); border-radius: 8px;" />`;
+        btnDownload.textContent = '⬇ Baixar PNG';
+        embedCode = `<a href="${verifyUrl}" target="_blank" rel="noopener noreferrer">\n  <img src="${fullImgUrl}" alt="ZAP VERIFIED — Canais oficiais confirmados" />\n</a>`;
       } else {
-        svg = generateHorizontalBadgeSvg(codigo, empresaNome, status);
+        // SVG Dinâmico
+        let svg = '';
+        if (badge.svgFormat === 'principal') {
+          svg = generatePrincipalBadgeSvg(codigo, empresaNome, status);
+        } else if (badge.svgFormat === 'circular') {
+          svg = generateCircularBadgeSvg(codigo, empresaNome, status);
+        } else {
+          svg = generateHorizontalBadgeSvg(codigo, empresaNome, status);
+        }
+        previewEl.innerHTML = svg;
+        btnDownload.textContent = '⬇ Baixar SVG';
+        const badgeImageUrl = `${window.location.origin}/api/badge?codigo=${codigo}&formato=${badge.svgFormat}`;
+        embedCode = `<a href="${verifyUrl}" target="_blank" rel="noopener noreferrer">\n  <img src="${badgeImageUrl}" alt="ZAP VERIFIED — Canais oficiais confirmados" />\n</a>`;
       }
 
-      document.getElementById('kitBadgePreview').innerHTML = svg;
-
-      // Atualiza o snippet de código HTML Embed (Seção 9)
-      const verifyUrl = `${window.location.origin}/verify/${codigo}`;
-      const badgeImageUrl = `${window.location.origin}/api/badge?codigo=${codigo}&formato=${formato}`;
-      const embedCode = `<a href="${verifyUrl}" target="_blank" rel="noopener noreferrer">\n  <img src="${badgeImageUrl}" alt="ZAP VERIFIED — Canais oficiais confirmados" />\n</a>`;
       document.getElementById('kitHtmlEmbed').value = embedCode;
     }
 
@@ -1544,21 +1606,34 @@
       });
     }
 
-    function baixarKitSvg() {
-      const container = document.getElementById('kitBadgePreview');
-      const svg = container ? container.innerHTML : '';
-      if (!svg) return;
+    function baixarKitAsset() {
+      const badge = BADGE_DEFINITIONS.find(b => b.id === currentKitFormato) || BADGE_DEFINITIONS[0];
+      const codigo = currentKitSelo?.codigo || 'badge';
 
-      const blob = new Blob([svg], { type: 'image/svg+xml;charset=utf-8' });
-      const dlUrl = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = dlUrl;
-      a.download = `zap-verified-${currentKitSelo?.codigo || 'badge'}-${currentKitFormato}.svg`;
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(dlUrl);
-      showToast('Arquivo SVG baixado com sucesso!');
+      if (badge.type === 'png') {
+        const a = document.createElement('a');
+        a.href = badge.path;
+        a.download = `zap-verified-${codigo}-${badge.id}.png`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        showToast('Badge PNG baixado com sucesso!');
+      } else {
+        const container = document.getElementById('kitBadgePreview');
+        const svg = container ? container.innerHTML : '';
+        if (!svg) return;
+
+        const blob = new Blob([svg], { type: 'image/svg+xml;charset=utf-8' });
+        const dlUrl = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = dlUrl;
+        a.download = `zap-verified-${codigo}-${badge.svgFormat}.svg`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(dlUrl);
+        showToast('Arquivo SVG baixado com sucesso!');
+      }
     }
 
     // Geradores de SVG no cliente (Preview em tempo real sem latência)

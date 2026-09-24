@@ -183,7 +183,7 @@ export function renderVerifyHtml({ selo, empresa, statusPublico, statusClasse })
   if (empresa.dominio_verificado && empresa.dominio_oficial) {
     domHtml = `
       <div class="channel-badge badge-verified">
-        <span class="icon">✓</span>
+        <img src="/badges/canal-dominio-verificado.png" alt="Verificado" style="width: 28px; height: 28px; object-fit: contain; flex-shrink: 0;" />
         <div class="channel-detail">
           <span class="channel-type">Canal verificado</span>
           <span class="channel-val">${escapeHtml(empresa.dominio_oficial)}</span>
@@ -207,7 +207,7 @@ export function renderVerifyHtml({ selo, empresa, statusPublico, statusClasse })
   if (empresa.email_verificado && empresa.email_oficial) {
     emailHtml = `
       <div class="channel-badge badge-verified">
-        <span class="icon">✓</span>
+        <img src="/badges/canal-email-verificado.png" alt="Verificado" style="width: 28px; height: 28px; object-fit: contain; flex-shrink: 0;" />
         <div class="channel-detail">
           <span class="channel-type">Canal verificado</span>
           <span class="channel-val">${escapeHtml(empresa.email_oficial)}</span>
@@ -231,7 +231,7 @@ export function renderVerifyHtml({ selo, empresa, statusPublico, statusClasse })
   if (empresa.telefone_verificado && empresa.telefone_oficial) {
     telHtml = `
       <div class="channel-badge badge-verified">
-        <span class="icon">✓</span>
+        <img src="/badges/canal-telefone-verificado.png" alt="Verificado" style="width: 28px; height: 28px; object-fit: contain; flex-shrink: 0;" />
         <div class="channel-detail">
           <span class="channel-type">Canal verificado</span>
           <span class="channel-val">${escapeHtml(empresa.telefone_oficial)}</span>
@@ -495,6 +495,9 @@ export function renderVerifyHtml({ selo, empresa, statusPublico, statusClasse })
 
     <article class="cert-card">
       <div class="cert-header">
+        <div style="display: flex; justify-content: center; margin-bottom: 16px;">
+          <img src="/badges/badge-principal.png" alt="ZAP VERIFIED Selo Oficial" style="width: 140px; height: auto; filter: drop-shadow(0 10px 20px rgba(0, 0, 0, 0.5)); border-radius: 8px;" />
+        </div>
         <span class="zap-verified-tag">ZAP VERIFIED</span>
         <h1 class="company-name">${nomeEmpresa}</h1>
         <p class="company-desc">Esta página confirma os canais oficiais associados a esta empresa.</p>
