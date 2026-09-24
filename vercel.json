@@ -1,0 +1,8 @@
+{
+  "cleanUrls": true,
+  "rewrites": [
+    { "source": "/admin", "destination": "/admin.html" },
+    { "source": "/empresas", "destination": "/empresas.html" },
+    { "source": "/verificar", "destination": "/verificar.html" }
+  ]
+}

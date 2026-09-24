@@ -1,0 +1,850 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Zap, quem é? Corporativo — Selo de Confiança e Proteção de Marca contra Golpes</title>
+  <meta name="description" content="Proteja sua marca de clones, passe credibilidade no checkout e reduza abandono de carrinho com o Selo Zap Seguro e Radar de Ameaças.">
+  <link rel="icon" type="image/png" href="favicon.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --bg: #070a12;
+      --card-bg: rgba(15, 23, 42, 0.7);
+      --card-border: rgba(255, 255, 255, 0.08);
+      --text: #f8fafc;
+      --text-muted: #94a3b8;
+      --primary: #10b981;
+      --primary-glow: rgba(16, 185, 129, 0.25);
+      --whatsapp: #25d366;
+      --accent: #3b82f6;
+      --radius: 16px;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+    }
+
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      overflow-x: hidden;
+      background-image: 
+        radial-gradient(circle at 50% 0%, rgba(16, 185, 129, 0.12) 0%, transparent 60%),
+        radial-gradient(circle at 100% 60%, rgba(59, 130, 246, 0.08) 0%, transparent 50%);
+    }
+
+    .container {
+      max-width: 1140px;
+      margin: 0 auto;
+      padding: 0 24px;
+    }
+
+    /* HEADER */
+    header {
+      padding: 24px 0;
+      border-bottom: 1px solid var(--card-border);
+      position: sticky;
+      top: 0;
+      background: rgba(7, 10, 18, 0.85);
+      backdrop-filter: blur(12px);
+      z-index: 100;
+    }
+
+    .nav-inner {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      text-decoration: none;
+      color: var(--text);
+    }
+
+    .brand img {
+      width: 40px;
+      height: 40px;
+      border-radius: 10px;
+      object-fit: cover;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .brand-title {
+      font-weight: 800;
+      font-size: 1.15rem;
+      letter-spacing: -0.02em;
+    }
+
+    .brand-tag {
+      font-size: 0.7rem;
+      background: rgba(16, 185, 129, 0.15);
+      color: var(--primary);
+      border: 1px solid rgba(16, 185, 129, 0.3);
+      padding: 2px 8px;
+      border-radius: 999px;
+      font-weight: 700;
+      margin-left: 6px;
+      text-transform: uppercase;
+    }
+
+    .nav-links {
+      display: flex;
+      align-items: center;
+      gap: 20px;
+    }
+
+    .nav-links a {
+      color: var(--text-muted);
+      text-decoration: none;
+      font-size: 0.9rem;
+      font-weight: 600;
+      transition: color 0.2s;
+    }
+
+    .nav-links a:hover {
+      color: var(--text);
+    }
+
+    .btn-header {
+      background: linear-gradient(135deg, var(--primary) 0%, #059669 100%);
+      color: #042f2e;
+      font-weight: 700;
+      font-size: 0.85rem;
+      padding: 8px 18px;
+      border-radius: 999px;
+      text-decoration: none;
+      transition: all 0.2s;
+    }
+
+    .btn-header:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
+    }
+
+    /* HERO */
+    .hero {
+      padding: 80px 0 60px;
+      text-align: center;
+    }
+
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(16, 185, 129, 0.1);
+      border: 1px solid rgba(16, 185, 129, 0.3);
+      color: var(--primary);
+      padding: 6px 16px;
+      border-radius: 999px;
+      font-size: 0.85rem;
+      font-weight: 700;
+      margin-bottom: 24px;
+    }
+
+    .hero h1 {
+      font-size: 3.2rem;
+      font-weight: 800;
+      letter-spacing: -0.03em;
+      line-height: 1.15;
+      margin-bottom: 24px;
+      max-width: 900px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    .hero h1 span {
+      background: linear-gradient(135deg, #10b981 0%, #34d399 50%, #60a5fa 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .hero-desc {
+      font-size: 1.2rem;
+      color: var(--text-muted);
+      max-width: 720px;
+      margin: 0 auto 36px;
+    }
+
+    .hero-cta-group {
+      display: flex;
+      justify-content: center;
+      gap: 16px;
+      flex-wrap: wrap;
+      margin-bottom: 50px;
+    }
+
+    .btn-hero-primary {
+      background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+      color: #042f2e;
+      font-weight: 800;
+      font-size: 1.05rem;
+      padding: 16px 36px;
+      border-radius: 999px;
+      text-decoration: none;
+      transition: all 0.2s;
+      box-shadow: 0 10px 25px rgba(16, 185, 129, 0.3);
+      border: none;
+      cursor: pointer;
+    }
+
+    .btn-hero-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 14px 30px rgba(16, 185, 129, 0.45);
+    }
+
+    .btn-hero-secondary {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--card-border);
+      color: var(--text);
+      font-weight: 700;
+      font-size: 1.05rem;
+      padding: 16px 32px;
+      border-radius: 999px;
+      text-decoration: none;
+      transition: all 0.2s;
+    }
+
+    .btn-hero-secondary:hover {
+      background: rgba(255, 255, 255, 0.1);
+      border-color: rgba(255, 255, 255, 0.2);
+    }
+
+    /* STATS STRIP */
+    .stats-strip {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 20px;
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: var(--radius);
+      padding: 28px;
+      margin-bottom: 80px;
+    }
+
+    .stat-box {
+      text-align: center;
+    }
+
+    .stat-number {
+      font-size: 2.2rem;
+      font-weight: 800;
+      color: #10b981;
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    .stat-label {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      font-weight: 600;
+      margin-top: 4px;
+    }
+
+    /* FEATURES GRID */
+    .section-header {
+      text-align: center;
+      margin-bottom: 50px;
+    }
+
+    .section-title {
+      font-size: 2.2rem;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      margin-bottom: 12px;
+    }
+
+    .section-subtitle {
+      color: var(--text-muted);
+      font-size: 1.05rem;
+      max-width: 620px;
+      margin: 0 auto;
+    }
+
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 24px;
+      margin-bottom: 100px;
+    }
+
+    .feature-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: var(--radius);
+      padding: 32px;
+      transition: all 0.3s;
+      position: relative;
+    }
+
+    .feature-card:hover {
+      border-color: rgba(16, 185, 129, 0.4);
+      transform: translateY(-4px);
+      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.3);
+    }
+
+    .feature-icon {
+      width: 52px;
+      height: 52px;
+      border-radius: 14px;
+      background: rgba(16, 185, 129, 0.12);
+      border: 1px solid rgba(16, 185, 129, 0.3);
+      color: #10b981;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 20px;
+    }
+
+    .feature-card h3 {
+      font-size: 1.25rem;
+      font-weight: 700;
+      margin-bottom: 12px;
+    }
+
+    .feature-card p {
+      color: var(--text-muted);
+      font-size: 0.95rem;
+      line-height: 1.6;
+    }
+
+    /* WIDGET LIVE PREVIEW SECTION */
+    .preview-box {
+      background: linear-gradient(180deg, rgba(15, 23, 42, 0.9) 0%, rgba(7, 10, 18, 0.95) 100%);
+      border: 1px solid var(--card-border);
+      border-radius: var(--radius);
+      padding: 48px 36px;
+      margin-bottom: 100px;
+      text-align: center;
+    }
+
+    .demo-store-mock {
+      background: #020617;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 14px;
+      padding: 32px;
+      max-width: 600px;
+      margin: 32px auto 0;
+      text-align: left;
+      position: relative;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+    }
+
+    .mock-header {
+      display: flex;
+      justify-content: space-between;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+      padding-bottom: 14px;
+      margin-bottom: 20px;
+      font-size: 0.9rem;
+      font-weight: 700;
+    }
+
+    .mock-checkout-btn {
+      background: #3b82f6;
+      color: #fff;
+      font-weight: 700;
+      text-align: center;
+      padding: 12px;
+      border-radius: 8px;
+      margin-top: 20px;
+      display: block;
+      text-decoration: none;
+    }
+
+    /* PLANOS / PRICING */
+    .pricing-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 24px;
+      margin-bottom: 100px;
+    }
+
+    .pricing-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: var(--radius);
+      padding: 36px 28px;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      transition: all 0.3s;
+    }
+
+    .pricing-card.featured {
+      border-color: rgba(16, 185, 129, 0.6);
+      background: rgba(16, 185, 129, 0.04);
+      transform: scale(1.03);
+      box-shadow: 0 15px 35px rgba(16, 185, 129, 0.15);
+    }
+
+    .badge-pop {
+      position: absolute;
+      top: -14px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: #10b981;
+      color: #042f2e;
+      font-weight: 800;
+      font-size: 0.75rem;
+      padding: 4px 14px;
+      border-radius: 999px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .pricing-title {
+      font-size: 1.3rem;
+      font-weight: 800;
+      margin-bottom: 8px;
+    }
+
+    .pricing-desc {
+      color: var(--text-muted);
+      font-size: 0.85rem;
+      margin-bottom: 24px;
+      min-height: 40px;
+    }
+
+    .pricing-price {
+      font-size: 2.6rem;
+      font-weight: 800;
+      color: #fff;
+      font-family: 'JetBrains Mono', monospace;
+      margin-bottom: 24px;
+    }
+
+    .pricing-price span {
+      font-size: 1rem;
+      color: var(--text-muted);
+      font-weight: 500;
+    }
+
+    .pricing-features {
+      list-style: none;
+      margin-bottom: 32px;
+      flex-grow: 1;
+    }
+
+    .pricing-features li {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 0.9rem;
+      margin-bottom: 12px;
+      color: #cbd5e1;
+    }
+
+    .pricing-features li svg {
+      color: #10b981;
+      flex-shrink: 0;
+    }
+
+    /* LEAD FORM SECTION */
+    .lead-section {
+      background: linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(15, 23, 42, 0.8) 100%);
+      border: 1px solid rgba(16, 185, 129, 0.3);
+      border-radius: var(--radius);
+      padding: 48px;
+      margin-bottom: 100px;
+    }
+
+    .lead-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 40px;
+      align-items: center;
+    }
+
+    .form-group {
+      margin-bottom: 16px;
+    }
+
+    .form-label {
+      display: block;
+      font-size: 0.85rem;
+      font-weight: 700;
+      margin-bottom: 6px;
+      color: var(--text);
+    }
+
+    .form-control {
+      width: 100%;
+      background: rgba(0, 0, 0, 0.4);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: 10px;
+      padding: 12px 16px;
+      color: #fff;
+      font-size: 0.95rem;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    .form-control:focus {
+      border-color: #10b981;
+      box-shadow: 0 0 10px rgba(16, 185, 129, 0.2);
+    }
+
+    .btn-submit {
+      width: 100%;
+      background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+      color: #042f2e;
+      font-weight: 800;
+      font-size: 1rem;
+      padding: 16px;
+      border-radius: 10px;
+      border: none;
+      cursor: pointer;
+      transition: all 0.2s;
+      margin-top: 8px;
+    }
+
+    .btn-submit:hover {
+      box-shadow: 0 6px 20px rgba(16, 185, 129, 0.4);
+      transform: translateY(-1px);
+    }
+
+    /* FOOTER */
+    footer {
+      border-top: 1px solid var(--card-border);
+      padding: 40px 0;
+      text-align: center;
+      color: var(--text-muted);
+      font-size: 0.85rem;
+    }
+
+    /* RESPONSIVE */
+    @media (max-width: 900px) {
+      .hero h1 { font-size: 2.3rem; }
+      .features-grid, .pricing-grid, .stats-strip, .lead-grid {
+        grid-template-columns: 1fr;
+      }
+      .pricing-card.featured { transform: none; }
+      .nav-links { display: none; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- HEADER -->
+  <header>
+    <div class="container nav-inner">
+      <a href="/" class="brand">
+        <img src="logo.jpg" alt="Zap, quem é?">
+        <div>
+          <span class="brand-title">Zap, quem é?</span>
+          <span class="brand-tag">B2B Empresas</span>
+        </div>
+      </a>
+      <div class="nav-links">
+        <a href="#como-funciona">Como Funciona</a>
+        <a href="#radar">Radar de Ameaças</a>
+        <a href="#planos">Planos</a>
+        <a href="/admin.html">Painel Admin</a>
+        <a href="/" style="color: var(--primary);">← Testar Bot Grátis</a>
+      </div>
+      <a href="#contato" class="btn-header">Solicitar Selo</a>
+    </div>
+  </header>
+
+  <main class="container">
+    <!-- HERO -->
+    <section class="hero">
+      <div class="hero-badge">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+        Segurança & Conversão para E-commerces
+      </div>
+      <h1>
+        Blindagem de Marca contra Golpes & <span>Aumento Real na Conversão</span>
+      </h1>
+      <p class="hero-desc">
+        84% dos consumidores desistem de fechar compra por medo de golpe ou site clonado. Com o <strong>Selo Zap Seguro</strong> e o nosso <strong>Radar Anti-Clonagem</strong>, seus canais oficiais são autenticados e sua reputação fica protegida.
+      </p>
+      <div class="hero-cta-group">
+        <a href="#contato" class="btn-hero-primary">Ativar Selo na Minha Loja</a>
+        <a href="/verificar.html?empresa=lojaprotegida" target="_blank" class="btn-hero-secondary">Ver Demonstração do Certificado ↗</a>
+      </div>
+    </section>
+
+    <!-- STATS STRIP -->
+    <section class="stats-strip">
+      <div class="stat-box">
+        <div class="stat-number">+23%</div>
+        <div class="stat-label">Aumento na confiança e conversão no checkout</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-number">&lt; 2 min</div>
+        <div class="stat-label">Instalação com 1 linha de código (Shopify, Nuvemshop, WooCommerce)</div>
+      </div>
+      <div class="stat-box">
+        <div class="stat-number">24/7</div>
+        <div class="stat-label">Monitoramento de tentativas de clonagem no WhatsApp e PIX</div>
+      </div>
+    </section>
+
+    <!-- FEATURES -->
+    <section id="como-funciona">
+      <div class="section-header">
+        <h2 class="section-title">A Solução Completa contra Golpes na Sua Marca</h2>
+        <p class="section-subtitle">
+          Golpistas criam páginas falsas com o logotipo da sua empresa todos os dias. Proteja seus clientes antes que o prejuízo chegue até você.
+        </p>
+      </div>
+
+      <div class="features-grid">
+        <div class="feature-card">
+          <div class="feature-icon">
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><polyline points="9 12 11 14 15 10"/></svg>
+          </div>
+          <h3>Selo Zap Seguro no E-commerce</h3>
+          <p>
+            Badge flutuante ou no rodapé do checkout que comprova visualmente a autenticidade do seu domínio e chave Pix legal.
+          </p>
+        </div>
+
+        <div class="feature-card" id="radar">
+          <div class="feature-icon" style="color: #3b82f6; background: rgba(59, 130, 246, 0.12); border-color: rgba(59, 130, 246, 0.3);">
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/><path d="M2 12h20"/></svg>
+          </div>
+          <h3>Radar de Uso Indevido de Marca</h3>
+          <p>
+            Nossa IA analisa milhares de mensagens suspeitas enviadas ao bot do WhatsApp. Se golpistas usarem o seu nome comercial para dar golpe, você é alertado.
+          </p>
+        </div>
+
+        <div class="feature-card">
+          <div class="feature-icon" style="color: #f59e0b; background: rgba(245, 158, 11, 0.12); border-color: rgba(245, 158, 11, 0.3);">
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+          </div>
+          <h3>WhatsApp Oficial Blindado</h3>
+          <p>
+            Seus clientes clicam para falar direto no WhatsApp corporativo oficial cadastrado, impedindo que falem com golpistas usando números clonados.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- LIVE PREVIEW SECTION -->
+    <section class="preview-box">
+      <h2 style="font-size: 1.8rem; font-weight: 800; margin-bottom: 12px;">Veja Como Fica no Seu Site</h2>
+      <p style="color: var(--text-muted); font-size: 0.95rem;">
+        O selo carrega de forma assíncrona e ultraleve, sem deixar sua loja lenta.
+      </p>
+
+      <div class="demo-store-mock">
+        <div class="mock-header">
+          <span>🛒 Minha Loja Online Oficial</span>
+          <span style="color: #94a3b8;">Checkout Seguro</span>
+        </div>
+        <p style="font-size: 0.85rem; color: #cbd5e1; margin-bottom: 12px;">
+          Tênis Esportivo Premium — R$ 289,90 (1x no Cartão ou Pix com desconto)
+        </p>
+
+        <!-- EXEMPLO DO WIDGET INLINE -->
+        <div style="background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.4); padding: 10px 14px; border-radius: 8px; display: flex; align-items: center; justify-content: space-between;">
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="m9 12 2 2 4-4"/></svg>
+            <div>
+              <div style="font-weight: 700; font-size: 0.85rem; color: #fff;">Loja Verificada • Zap, quem é? Seguro</div>
+              <div style="font-size: 0.75rem; color: #94a3b8;">Domínio e canais oficiais auditados</div>
+            </div>
+          </div>
+          <a href="/verificar.html?empresa=lojaprotegida" target="_blank" style="font-size: 0.75rem; color: #10b981; font-weight: 700; text-decoration: none;">Ver Certificado ↗</a>
+        </div>
+
+        <a href="#contato" class="mock-checkout-btn">Finalizar Compra Protegida</a>
+      </div>
+    </section>
+
+    <!-- PRICING -->
+    <section id="planos">
+      <div class="section-header">
+        <h2 class="section-title">Planos Transparentes para o Seu Negócio</h2>
+        <p class="section-subtitle">Sem contrato de fidelidade. Cancele quando quiser.</p>
+      </div>
+
+      <div class="pricing-grid">
+        <!-- PLANO START -->
+        <div class="pricing-card">
+          <div class="pricing-title">Start</div>
+          <div class="pricing-desc">Para pequenos e-commerces que precisam passar segurança no checkout.</div>
+          <div class="pricing-price">R$ 97<span>/mês</span></div>
+          <ul class="pricing-features">
+            <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg> Selo Oficial para 1 Domínio</li>
+            <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg> Certificado de Autenticidade Oficial</li>
+            <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg> WhatsApp e CNPJ auditados</li>
+            <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg> Até 50.000 visualizações do selo</li>
+          </ul>
+          <a href="#contato" onclick="selectPlan('start')" class="btn-hero-secondary" style="text-align: center;">Escolher Start</a>
+        </div>
+
+        <!-- PLANO PRO (DESTACADO) -->
+        <div class="pricing-card featured">
+          <div class="badge-pop">Mais Escolhido</div>
+          <div class="pricing-title">Pro & Radar</div>
+          <div class="pricing-desc">Para lojas em crescimento que querem proteger a marca contra golpistas e clones.</div>
+          <div class="pricing-price">R$ 297<span>/mês</span></div>
+          <ul class="pricing-features">
+            <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg> <strong>Selo Oficial para até 3 Domínios</strong></li>
+            <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg> <strong>Radar Anti-Clonagem de Marca no WhatsApp</strong></li>
+            <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg> Alertas em tempo real de mensagens falsas</li>
+            <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg> Visualizações ilimitadas de selo</li>
+            <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg> Suporte Prioritário via WhatsApp</li>
+          </ul>
+          <a href="#contato" onclick="selectPlan('pro')" class="btn-hero-primary" style="text-align: center;">Ativar Plano Pro</a>
+        </div>
+
+        <!-- PLANO ENTERPRISE -->
+        <div class="pricing-card">
+          <div class="pricing-title">Enterprise</div>
+          <div class="pricing-desc">Grandes marcas e marketplaces com múltiplos canais e alta exposição a fraudes.</div>
+          <div class="pricing-price">R$ 990<span>/mês</span></div>
+          <ul class="pricing-features">
+            <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg> Domínios e Subdomínios Ilimitados</li>
+            <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg> Radar 24/7 com IA com Visão</li>
+            <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg> Acesso à API para validação em lote</li>
+            <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg> Relatório mensal de inteligência de ameaças</li>
+            <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg> Gerente de Segurança Dedicado</li>
+          </ul>
+          <a href="#contato" onclick="selectPlan('enterprise')" class="btn-hero-secondary" style="text-align: center;">Falar com Consultor</a>
+        </div>
+      </div>
+    </section>
+
+    <!-- FORMULÁRIO DE CAPTAÇÃO DE LEADS -->
+    <section id="contato" class="lead-section">
+      <div class="lead-grid">
+        <div>
+          <span style="color: #10b981; font-weight: 800; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.05em;">Solicite Demonstração</span>
+          <h2 style="font-size: 2.2rem; font-weight: 800; margin: 8px 0 16px; line-height: 1.2;">
+            Comece a Proteger Sua Marca Hoje Mesmo
+          </h2>
+          <p style="color: var(--text-muted); font-size: 1rem; margin-bottom: 24px;">
+            Preencha seus dados para receber o código de integração do selo e ativar a proteção de marca em menos de 10 minutos.
+          </p>
+          <div style="font-size: 0.9rem; color: #cbd5e1;">
+            <p style="margin-bottom: 8px;">✓ <strong>7 dias de teste grátis</strong> sem compromisso</p>
+            <p style="margin-bottom: 8px;">✓ Ativação imediata da proteção no WhatsApp</p>
+            <p>✓ Suporte direto da nossa equipe técnica de segurança</p>
+          </div>
+        </div>
+
+        <div>
+          <form id="leadForm" onsubmit="handleLeadSubmit(event)">
+            <div class="form-group">
+              <label class="form-label">Seu Nome Completo</label>
+              <input type="text" id="leadNome" required class="form-control" placeholder="Ex: Roberto Silva">
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Nome da Empresa / Loja</label>
+              <input type="text" id="leadEmpresa" required class="form-control" placeholder="Ex: Moda Brasil Oficial">
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">E-mail Corporativo</label>
+              <input type="email" id="leadEmail" required class="form-control" placeholder="contato@sualoja.com.br">
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">WhatsApp com DDD</label>
+              <input type="tel" id="leadWhatsApp" class="form-control" placeholder="(11) 98765-4321">
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Site / Domínio da Loja</label>
+              <input type="text" id="leadWebsite" class="form-control" placeholder="www.sualoja.com.br">
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Plano de Interesse</label>
+              <select id="leadPlano" class="form-control">
+                <option value="pro">Plano Pro (R$ 297/mês) — Recomendado</option>
+                <option value="start">Plano Start (R$ 97/mês)</option>
+                <option value="enterprise">Plano Enterprise (R$ 990/mês)</option>
+              </select>
+            </div>
+
+            <button type="submit" id="btnLeadSubmit" class="btn-submit">
+              Solicitar Ativação do Selo 🚀
+            </button>
+            <div id="leadFeedback" style="display: none; margin-top: 14px; padding: 12px; border-radius: 8px; font-size: 0.9rem; text-align: center;"></div>
+          </form>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- FOOTER -->
+  <footer>
+    <div class="container">
+      <p style="margin-bottom: 8px;"><strong>Zap, quem é? Corporativo</strong> — Plataforma de Inteligência Anti-Fraude e Autenticidade Digital.</p>
+      <p style="color: #64748b; font-size: 0.8rem;">
+        © 2026 Zap, quem é? • Protegido pela tecnologia de IA e Radar de Ameaças • <a href="/" style="color: #94a3b8;">Verificar Golpe Pessoal (B2C)</a>
+      </p>
+    </div>
+  </footer>
+
+  <script>
+    function selectPlan(plan) {
+      document.getElementById('leadPlano').value = plan;
+    }
+
+    async function handleLeadSubmit(e) {
+      e.preventDefault();
+      const btn = document.getElementById('btnLeadSubmit');
+      const feedback = document.getElementById('leadFeedback');
+
+      const payload = {
+        nome: document.getElementById('leadNome').value,
+        empresa: document.getElementById('leadEmpresa').value,
+        email: document.getElementById('leadEmail').value,
+        whatsapp: document.getElementById('leadWhatsApp').value,
+        website: document.getElementById('leadWebsite').value,
+        plano_interesse: document.getElementById('leadPlano').value
+      };
+
+      btn.disabled = true;
+      btn.textContent = 'Enviando solicitação...';
+      feedback.style.display = 'none';
+
+      try {
+        const res = await fetch('/api/empresa?action=lead', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Erro ao enviar lead');
+
+        feedback.style.display = 'block';
+        feedback.style.background = 'rgba(16, 185, 129, 0.2)';
+        feedback.style.color = '#10b981';
+        feedback.style.border = '1px solid rgba(16, 185, 129, 0.5)';
+        feedback.innerHTML = '🎉 <strong>Solicitação recebida com sucesso!</strong> Em poucos minutos nossa equipe enviará as instruções de ativação para seu WhatsApp/E-mail.';
+        
+        document.getElementById('leadForm').reset();
+      } catch (err) {
+        feedback.style.display = 'block';
+        feedback.style.background = 'rgba(239, 68, 68, 0.2)';
+        feedback.style.color = '#ef4444';
+        feedback.style.border = '1px solid rgba(239, 68, 68, 0.5)';
+        feedback.textContent = 'Erro ao enviar: ' + err.message;
+      } finally {
+        btn.disabled = false;
+        btn.textContent = 'Solicitar Ativação do Selo 🚀';
+      }
+    }
+  </script>
+</body>
+</html>
