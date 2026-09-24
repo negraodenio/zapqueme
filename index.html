@@ -1,1034 +1,771 @@
 <!DOCTYPE html>
-<html lang="pt">
+<html lang="pt-BR">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Zap, quem é? — Verificador Instantâneo de Golpes</title>
-<link rel="icon" type="image/png" href="favicon.png">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-<style>
-  :root {
-    --bg: #0b0d11;
-    --card: #15181f;
-    --border: #232834;
-    --text: #f3f4f6;
-    --muted: #94a3b8;
-    --accent: #0f766e;
-    --accent-glow: rgba(15, 118, 110, 0.35);
-    --red: #ef4444;
-    --red-bg: rgba(239, 68, 68, 0.12);
-    --red-border: rgba(239, 68, 68, 0.35);
-    --yellow: #f59e0b;
-    --yellow-bg: rgba(245, 158, 11, 0.12);
-    --yellow-border: rgba(245, 158, 11, 0.35);
-    --green: #10b981;
-    --green-bg: rgba(16, 185, 129, 0.12);
-    --green-border: rgba(16, 185, 129, 0.35);
-  }
+  <meta charset="utf-8">
+  <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" name="viewport">
+  <title>Zap, quem é? — IA Antifraude</title>
+  <link rel="icon" type="image/png" href="favicon.png">
 
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  body {
-    background-color: var(--bg);
-    color: var(--text);
-    font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
-    min-height: 100vh;
-    line-height: 1.5;
-    padding-bottom: 60px;
-    background-image: radial-gradient(circle at 50% 0%, rgba(15, 118, 110, 0.15), transparent 45%);
-  }
-
-  .container {
-    max-width: 680px;
-    margin: 0 auto;
-    padding: 20px 16px;
-  }
-
-  /* Navbar */
-  .navbar {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 10px 0 20px;
-    border-bottom: 1px solid var(--border);
-    margin-bottom: 24px;
-  }
-  .brand {
-    font-size: 1.3rem;
-    font-weight: 800;
-    color: #fff;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    text-decoration: none;
-    letter-spacing: -0.02em;
-  }
-  .brand-logo-nav {
-    width: 38px;
-    height: 38px;
-    border-radius: 10px;
-    object-fit: cover;
-    box-shadow: 0 0 14px rgba(16, 185, 129, 0.4);
-    border: 1px solid rgba(16, 185, 129, 0.5);
-  }
-  .brand-badge {
-    background: rgba(16, 185, 129, 0.15);
-    color: var(--green);
-    font-size: 0.72rem;
-    font-weight: 700;
-    padding: 3px 8px;
-    border-radius: 20px;
-    border: 1px solid var(--green-border);
-    text-transform: uppercase;
-  }
-  .btn-nav-emergency {
-    background: var(--red-bg);
-    color: #fca5a5;
-    border: 1px solid var(--red-border);
-    padding: 8px 14px;
-    border-radius: 10px;
-    font-size: 0.82rem;
-    font-weight: 700;
-    cursor: pointer;
-    text-decoration: none;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    transition: 0.2s;
-  }
-  .btn-nav-emergency:hover {
-    background: rgba(239, 68, 68, 0.22);
-    border-color: var(--red);
-  }
-  .btn-nav-b2b {
-    background: rgba(16, 185, 129, 0.12);
-    color: #34d399;
-    border: 1px solid rgba(16, 185, 129, 0.35);
-    padding: 8px 14px;
-    border-radius: 10px;
-    font-size: 0.82rem;
-    font-weight: 700;
-    cursor: pointer;
-    text-decoration: none;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    transition: 0.2s;
-  }
-  .btn-nav-b2b:hover {
-    background: rgba(16, 185, 129, 0.25);
-    border-color: #10b981;
-    color: #fff;
-    transform: translateY(-1px);
-  }
-  .nav-actions {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-
-  /* Hero */
-  .hero {
-    text-align: center;
-    margin-bottom: 26px;
-  }
-  .hero-logo-box {
-    margin-bottom: 14px;
-  }
-  .hero-logo-img {
-    width: 76px;
-    height: 76px;
-    border-radius: 20px;
-    box-shadow: 0 0 25px rgba(16, 185, 129, 0.35);
-    border: 2px solid rgba(16, 185, 129, 0.6);
-    display: inline-block;
-  }
-  .hero-tag {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    font-size: 0.82rem;
-    color: var(--green);
-    background: var(--green-bg);
-    border: 1px solid var(--green-border);
-    padding: 4px 12px;
-    border-radius: 20px;
-    margin-bottom: 12px;
-    font-weight: 600;
-  }
-  .hero h1 {
-    font-size: 1.95rem;
-    font-weight: 800;
-    letter-spacing: -0.03em;
-    line-height: 1.25;
-    margin-bottom: 8px;
-  }
-  .hero p {
-    color: var(--muted);
-    font-size: 0.98rem;
-    max-width: 520px;
-    margin: 0 auto;
-  }
-
-  /* Cards */
-  .card {
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: 18px;
-    padding: 24px;
-    margin-bottom: 20px;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
-  }
-
-  /* Input Área */
-  textarea {
-    width: 100%;
-    min-height: 125px;
-    background: #0b0d11;
-    color: var(--text);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 14px;
-    font-family: inherit;
-    font-size: 0.98rem;
-    line-height: 1.5;
-    resize: vertical;
-    transition: 0.2s;
-  }
-  textarea:focus {
-    outline: none;
-    border-color: var(--green);
-    box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.15);
-  }
-
-  /* Upload Box */
-  .upload-box {
-    margin-top: 14px;
-    background: #0b0d11;
-    border: 1px dashed var(--border);
-    border-radius: 12px;
-    padding: 14px 16px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 12px;
-  }
-  .upload-info {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    color: var(--muted);
-    font-size: 0.88rem;
-  }
-  .upload-icon {
-    font-size: 1.25rem;
-  }
-  input[type=file] {
-    display: none;
-  }
-  .btn-upload {
-    background: #1e2430;
-    color: #fff;
-    border: 1px solid var(--border);
-    padding: 8px 14px;
-    border-radius: 8px;
-    font-size: 0.82rem;
-    font-weight: 600;
-    cursor: pointer;
-    white-space: nowrap;
-    transition: 0.2s;
-  }
-  .btn-upload:hover {
-    background: #273040;
-  }
-  .file-name-preview {
-    font-size: 0.82rem;
-    color: var(--green);
-    font-weight: 600;
-    display: none;
-  }
-
-  /* Botão Principal */
-  .btn-verify {
-    width: 100%;
-    padding: 15px;
-    border: none;
-    border-radius: 12px;
-    background: linear-gradient(135deg, #0f766e, #0d9488);
-    color: white;
-    font-size: 1.1rem;
-    font-weight: 800;
-    margin-top: 18px;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    box-shadow: 0 4px 16px var(--accent-glow);
-    transition: 0.2s;
-  }
-  .btn-verify:hover {
-    opacity: 0.95;
-    transform: translateY(-1px);
-  }
-  .btn-verify:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-    transform: none;
-  }
-
-  .loading-box {
-    display: none;
-    text-align: center;
-    padding: 16px 0 0;
-    color: var(--muted);
-    font-size: 0.92rem;
-  }
-  .spinner {
-    display: inline-block;
-    width: 18px;
-    height: 18px;
-    border: 2px solid rgba(255,255,255,0.2);
-    border-top-color: var(--green);
-    border-radius: 50%;
-    animation: spin 0.8s linear infinite;
-    vertical-align: middle;
-    margin-right: 8px;
-  }
-  @keyframes spin { to { transform: rotate(360deg); } }
-
-  /* CARD DE RESULTADOS */
-  .result-card {
-    display: none;
-    border-width: 2px;
-    animation: fadeIn 0.4s ease-out;
-  }
-  @keyframes fadeIn {
-    from { opacity: 0; transform: translateY(8px); }
-    to { opacity: 1; transform: translateY(0); }
-  }
-
-  .result-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 20px;
-    padding-bottom: 14px;
-    border-bottom: 1px solid var(--border);
-  }
-  .result-meta {
-    font-size: 0.8rem;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    color: var(--muted);
-  }
-  .veredito-badge {
-    padding: 6px 14px;
-    border-radius: 20px;
-    font-size: 0.88rem;
-    font-weight: 800;
-  }
-
-  /* Score Principal com Termômetro */
-  .score-display-box {
-    background: #0f1217;
-    border: 1px solid var(--border);
-    border-radius: 14px;
-    padding: 18px 20px;
-    margin-bottom: 20px;
-  }
-  .score-top {
-    display: flex;
-    justify-content: space-between;
-    align-items: baseline;
-    margin-bottom: 10px;
-  }
-  .score-title {
-    font-size: 0.85rem;
-    font-weight: 700;
-    text-transform: uppercase;
-    color: var(--muted);
-    letter-spacing: 0.03em;
-  }
-  .score-numbers {
-    display: flex;
-    align-items: baseline;
-    gap: 6px;
-  }
-  .score-big {
-    font-size: 2.2rem;
-    font-weight: 900;
-    line-height: 1;
-  }
-  .score-total {
-    font-size: 1rem;
-    color: var(--muted);
-    font-weight: 700;
-  }
-  .risk-badge {
-    padding: 3px 10px;
-    border-radius: 6px;
-    font-size: 0.78rem;
-    font-weight: 800;
-    margin-left: 8px;
-    vertical-align: middle;
-  }
-  .score-track {
-    background: #232834;
-    height: 12px;
-    border-radius: 6px;
-    overflow: hidden;
-  }
-  .score-fill {
-    height: 100%;
-    width: 0%;
-    border-radius: 6px;
-    transition: width 0.8s cubic-bezier(0.16, 1, 0.3, 1);
-  }
-
-  /* DESTAQUE DO CONTADOR DE REPETIÇÃO */
-  .redis-counter-card {
-    border-radius: 14px;
-    padding: 16px 18px;
-    margin-bottom: 20px;
-    display: flex;
-    gap: 14px;
-    align-items: flex-start;
-  }
-  .redis-counter-card.repeat-alert {
-    background: rgba(239, 68, 68, 0.14);
-    border: 2px solid rgba(239, 68, 68, 0.5);
-    color: #fecaca;
-  }
-  .redis-counter-card.single-alert {
-    background: rgba(16, 185, 129, 0.1);
-    border: 1px solid rgba(16, 185, 129, 0.35);
-    color: #a7f3d0;
-  }
-  .redis-icon {
-    font-size: 1.6rem;
-    line-height: 1;
-  }
-  .redis-badge-label {
-    font-size: 0.75rem;
-    font-weight: 800;
-    letter-spacing: 0.05em;
-    text-transform: uppercase;
-    margin-bottom: 4px;
-  }
-  .repeat-alert .redis-badge-label { color: #f87171; }
-  .single-alert .redis-badge-label { color: #34d399; }
+  <!-- Tailwind CSS v3 -->
+  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
   
-  .redis-main-message {
-    font-size: 1.02rem;
-    font-weight: 700;
-    line-height: 1.4;
-    margin-bottom: 4px;
-  }
-  .redis-main-message strong {
-    text-decoration: underline;
-    font-weight: 900;
-  }
-  .redis-sub-text {
-    font-size: 0.82rem;
-    color: var(--muted);
-    line-height: 1.4;
-  }
+  <!-- Google Fonts: Inter -->
+  <link href="https://fonts.googleapis.com" rel="preconnect">
+  <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
 
-  /* Alerta de Link / Typosquatting */
-  .link-alert-box {
-    background: var(--yellow-bg);
-    border: 1px solid var(--yellow-border);
-    color: #fde68a;
-    padding: 12px 16px;
-    border-radius: 12px;
-    font-size: 0.9rem;
-    line-height: 1.45;
-    margin-bottom: 18px;
-    display: flex;
-    gap: 10px;
-    align-items: flex-start;
-  }
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'system-ui', '-apple-system', 'sans-serif'],
+          },
+          colors: {
+            wa: {
+              top: '#0b5c53',
+              teal: '#0f6c5f',
+              green: '#25D366',
+              actionGreen: '#00a884',
+              chatBg: '#f0ebe4',
+              bubbleUser: '#d9fdd3',
+              darkText: '#111B21',
+              subText: '#667781',
+            }
+          }
+        }
+      }
+    };
+  </script>
 
-  /* Explicação & Sinais */
-  .section-label {
-    font-size: 0.8rem;
-    font-weight: 800;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    color: var(--muted);
-    margin-bottom: 8px;
-  }
-  .explanation-text {
-    font-size: 0.95rem;
-    color: #e2e8f0;
-    margin-bottom: 18px;
-    line-height: 1.55;
-  }
-  .signals-grid {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    margin-bottom: 20px;
-  }
-  .signal-pill {
-    background: #0f1217;
-    border: 1px solid var(--border);
-    border-left: 3px solid var(--yellow);
-    padding: 10px 14px;
-    border-radius: 8px;
-    font-size: 0.88rem;
-    color: #e2e8f0;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-
-  /* Ação Recomendada */
-  .action-box {
-    background: #0f1217;
-    border: 1px solid var(--border);
-    border-left: 4px solid var(--green);
-    border-radius: 10px;
-    padding: 14px 16px;
-    margin-bottom: 22px;
-    font-size: 0.92rem;
-    line-height: 1.5;
-  }
-
-  /* Botões de Ação Final */
-  .action-buttons {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-  }
-  .btn-share {
-    background: #25d366;
-    color: #0b0d11;
-    border: none;
-    border-radius: 10px;
-    padding: 14px;
-    font-weight: 800;
-    font-size: 0.95rem;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    transition: 0.2s;
-  }
-  .btn-share:hover { background: #22bf5b; }
-  
-  /* Área de Feedback Humanizada */
-  .feedback-container {
-    margin-top: 10px;
-  }
-  .feedback-row {
-    display: flex;
-    gap: 10px;
-  }
-  .btn-fb {
-    flex: 1;
-    background: #11141a;
-    border: 1px solid var(--border);
-    color: var(--muted);
-    padding: 11px;
-    border-radius: 10px;
-    font-size: 0.9rem;
-    font-weight: 600;
-    cursor: pointer;
-    transition: 0.2s;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 6px;
-  }
-  .btn-fb:hover { background: #1c222e; color: #fff; border-color: #3b82f6; }
-  
-  .feedback-thankyou {
-    display: none;
-    background: rgba(16, 185, 129, 0.12);
-    border: 1px solid var(--green-border);
-    color: #a7f3d0;
-    padding: 12px 16px;
-    border-radius: 10px;
-    text-align: center;
-    font-size: 0.9rem;
-    font-weight: 600;
-    animation: fadeIn 0.3s ease-out;
-  }
-
-  /* Seção de Emergência Fui Vítima */
-  .emergency-section {
-    background: rgba(239, 68, 68, 0.05);
-    border: 1px solid var(--red-border);
-    border-radius: 18px;
-    padding: 24px;
-    margin-top: 30px;
-  }
-  .emergency-header {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    margin-bottom: 8px;
-  }
-  .emergency-header h2 {
-    font-size: 1.25rem;
-    font-weight: 800;
-    color: #f87171;
-  }
-  .emergency-desc {
-    color: var(--muted);
-    font-size: 0.9rem;
-    margin-bottom: 18px;
-    line-height: 1.5;
-  }
-  .steps-list {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-  }
-  .step-item {
-    background: #11141b;
-    border: 1px solid rgba(239, 68, 68, 0.2);
-    border-radius: 12px;
-    padding: 14px 16px;
-    font-size: 0.9rem;
-    line-height: 1.5;
-  }
-  .step-item strong {
-    color: #fff;
-    display: block;
-    margin-bottom: 4px;
-    font-size: 0.95rem;
-  }
-  .step-item em {
-    color: #fca5a5;
-    font-style: normal;
-    font-weight: 600;
-  }
-
-  .footer-disclaimer {
-    font-size: 0.78rem;
-    color: #64748b;
-    text-align: center;
-    margin-top: 32px;
-    line-height: 1.5;
-  }
-
-  /* Toast Notification Elegante (Substituto do alert) */
-  .toast {
-    position: fixed;
-    bottom: 24px;
-    left: 50%;
-    transform: translateX(-50%) translateY(100px);
-    background: #1e2430;
-    color: #fff;
-    border: 1px solid #334155;
-    padding: 12px 20px;
-    border-radius: 30px;
-    font-size: 0.9rem;
-    font-weight: 600;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-    z-index: 9999;
-    opacity: 0;
-    transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
-    pointer-events: none;
-  }
-  .toast.show {
-    transform: translateX(-50%) translateY(0);
-    opacity: 1;
-    pointer-events: auto;
-  }
-</style>
-</head>
-<body>
-
-<div class="container">
-  <!-- Navbar com Logo do Produto -->
-  <header class="navbar">
-    <a href="#" class="brand">
-      <img src="logo.jpg" alt="Logo Zap, quem é?" class="brand-logo-nav">
-      <span>Zap, quem é?</span>
-      <span class="brand-badge">Anti-Golpe</span>
-    </a>
-    <div class="nav-actions">
-      <a href="#emergencia" class="btn-nav-emergency">
-        🆘 Fui Vítima
-      </a>
-    </div>
-  </header>
-
-  <!-- Hero com Logo em Destaque -->
-  <div class="hero">
-    <div class="hero-logo-box">
-      <img src="logo.jpg" alt="Logo Zap, quem é?" class="hero-logo-img">
-    </div>
-    <div class="hero-tag">
-      🛡️ Verificador Instantâneo de Mensagens
-    </div>
-    <h1>Verifique mensagens, links e prints suspeitos</h1>
-    <p>Cole o texto ou envie o print de uma mensagem suspeita e descubra se é golpe na hora.</p>
-  </div>
-
-  <!-- Card do Formulário -->
-  <div class="card">
-    <textarea id="texto" placeholder="Cole aqui o texto da mensagem suspeita (ex: aviso de encomenda, parente com número novo pedindo dinheiro, banco alertando compra)..."></textarea>
-
-    <div class="upload-box">
-      <div class="upload-info">
-        <span class="upload-icon">📷</span>
-        <div>
-          <div>Tem um print da conversa?</div>
-          <span class="file-name-preview" id="fileNamePreview"></span>
-        </div>
-      </div>
-      <label class="btn-upload" for="imagem">
-        Selecionar Print
-      </label>
-      <input type="file" id="imagem" accept="image/*">
-    </div>
-
-    <button id="btnVerificar" class="btn-verify">
-      <span>Zap, quem é?</span> 👀
-    </button>
-    <div class="loading-box" id="loading">
-      <span class="spinner"></span> Analisando se é golpe ou legítimo... 🕵️
-    </div>
-
-    <div style="text-align: center; margin-top: 16px;">
-      <a href="/empresas.html" style="color: var(--muted); font-size: 0.82rem; text-decoration: none; transition: color 0.2s;" onmouseover="this.style.color='#34d399'" onmouseout="this.style.color='var(--muted)'">
-        Se for empresa, clique aqui →
-      </a>
-    </div>
-  </div>
-
-  <!-- Card de Resultado -->
-  <div class="card result-card" id="resultado">
-    <div class="result-header">
-      <span class="result-meta">RESULTADO DA VERIFICAÇÃO</span>
-      <span class="veredito-badge" id="vereditoBadge">🚨 PROVÁVEL GOLPE</span>
-    </div>
-
-    <!-- Display de Nível de Risco -->
-    <div class="score-display-box">
-      <div class="score-top">
-        <span class="score-title">Nível de Risco Aparente</span>
-        <div class="score-numbers">
-          <span class="score-big" id="scoreNum">95</span>
-          <span class="score-total">/100</span>
-          <span class="risk-badge" id="riskBadge">CRÍTICO</span>
-        </div>
-      </div>
-      <div class="score-track">
-        <div class="score-fill" id="scoreFill"></div>
-      </div>
-    </div>
-
-    <!-- CONTADOR DE REPETIÇÃO -->
-    <div class="redis-counter-card" id="socialCounter" style="display:none;">
-      <div class="redis-icon" id="redisIcon">🔥</div>
-      <div>
-        <div class="redis-badge-label" id="redisBadgeLabel">ALERTA DE MENSAGEM REPETIDA</div>
-        <div class="redis-main-message" id="socialCounterText"></div>
-        <div class="redis-sub-text" id="redisSubText"></div>
-      </div>
-    </div>
-
-    <!-- Alerta de Link -->
-    <div class="link-alert-box" id="linkAlert" style="display:none;">
-      <span style="font-size:1.2rem;">🔗</span>
-      <div id="linkAlertText"></div>
-    </div>
-
-    <!-- Explicação Simples -->
-    <div class="section-label">O que descobrimos</div>
-    <p class="explanation-text" id="explicacao"></p>
-
-    <!-- Sinais de Alerta -->
-    <div class="section-label">Sinais de Risco Identificados</div>
-    <div class="signals-grid" id="signalsContainer"></div>
-
-    <!-- O que Fazer -->
-    <div class="section-label">Recomendação de Segurança</div>
-    <div class="action-box" id="acaoRecomendada"></div>
-
-    <!-- Ações e Compartilhamento -->
-    <div class="action-buttons">
-      <button class="btn-share" id="btnShareWhatsApp">
-        <span>📲</span> Enviar Alerta no WhatsApp
-      </button>
-      
-      <!-- Feedback Humanizado -->
-      <div class="feedback-container">
-        <div class="feedback-row" id="feedbackButtonsRow">
-          <button class="btn-fb" id="btnFbUp">👍 Ajudou bastante</button>
-          <button class="btn-fb" id="btnFbDown">👎 Não ajudou</button>
-        </div>
-        <div class="feedback-thankyou" id="feedbackThankyou">
-          ✨ Obrigado pelo carinho! A sua opinião ajuda a proteger cada vez mais pessoas contra golpes.
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Protocolo de Emergência: Fui Vítima -->
-  <section class="emergency-section" id="emergencia">
-    <div class="emergency-header">
-      <span style="font-size:1.5rem;">🆘</span>
-      <h2>Protocolo de Emergência — Fui Vítima</h2>
-    </div>
-    <p class="emergency-desc">Se você já enviou dinheiro, fez transferência/PIX ou passou senhas e dados do cartão, <strong>aja imediatamente</strong>. Cada minuto é vital para bloquear o valor:</p>
-    
-    <div class="steps-list">
-      <div class="step-item">
-        <strong>1️⃣ Ligue para o seu banco agora mesmo:</strong>
-        • <em>No Brasil:</em> Peça a abertura imediata do <em>MED (Mecanismo Especial de Devolução do PIX)</em>. O banco pode rastrear e bloquear o valor na conta de destino.<br>
-        • <em>Em Portugal:</em> Contacte a linha de apoio de urgência do seu banco ou SIBS para bloquear cartões e tentar travar transferências imediatas.
-      </div>
-      <div class="step-item">
-        <strong>2️⃣ Guarde todas as provas:</strong>
-        Tire prints de toda a conversa, número do golpista, comprovantes de transferência, links recebidos e chaves PIX/IBAN antes que o criminoso apague a conversa.
-      </div>
-      <div class="step-item">
-        <strong>3️⃣ Registre Boletim de Ocorrência / Queixa-crime:</strong>
-        • <em>No Brasil:</em> Registre online na <em>Delegacia Eletrônica</em> da Polícia Civil do seu Estado por estelionato virtual / fraude.<br>
-        • <em>Em Portugal:</em> Apresente queixa no portal da <em>Polícia Judiciária / Ministério Público</em> ou presencialmente no posto da PSP/GNR.
-      </div>
-      <div class="step-item">
-        <strong>4️⃣ Blinde seus acessos:</strong>
-        Altere senhas do seu e-mail e ative a <em>Confirmação em Duas Etapas (com código PIN)</em> no WhatsApp para evitar invasões da sua conta.
-      </div>
-    </div>
-  </section>
-
-  <div style="text-align: center; margin: 30px 0 16px; font-size: 0.85rem; color: var(--muted); display: flex; justify-content: center; gap: 20px; flex-wrap: wrap;">
-    <a href="/empresas.html" style="color: var(--green); text-decoration: none; font-weight: 700;">🏢 Selo Zap Seguro para E-commerce</a>
-    <a href="/verificar.html?empresa=lojaprotegida" style="color: var(--muted); text-decoration: none;">🛡️ Ver Certificado Exemplo</a>
-    <a href="/admin.html" style="color: #64748b; text-decoration: none;">⚙️ Área do Administrador</a>
-  </div>
-
-  <p class="footer-disclaimer">
-    Aviso: Esta ferramenta tem caráter informativo e de proteção comunitária. A análise é gerada automaticamente e não substitui órgãos policiais ou o seu banco. Suas mensagens são tratadas com total privacidade.
-  </p>
-</div>
-
-<!-- Toast Suave (Adeus alert feio do navegador!) -->
-<div id="toast" class="toast"></div>
-
-<script>
-function showToast(mensagem, icone = '✨') {
-  const toast = document.getElementById('toast');
-  toast.innerHTML = `<span style="font-size:1.2rem;">${icone}</span> <span>${mensagem}</span>`;
-  toast.className = 'toast show';
-  clearTimeout(window.toastTimer);
-  window.toastTimer = setTimeout(() => {
-    toast.className = 'toast';
-  }, 4000);
-}
-
-const imagemInput = document.getElementById('imagem');
-const fileNamePreview = document.getElementById('fileNamePreview');
-imagemInput.addEventListener('change', () => {
-  if (imagemInput.files && imagemInput.files[0]) {
-    fileNamePreview.textContent = 'Print anexado: ' + imagemInput.files[0].name;
-    fileNamePreview.style.display = 'block';
-  } else {
-    fileNamePreview.style.display = 'none';
-  }
-});
-
-const btnVerificar = document.getElementById('btnVerificar');
-const loading = document.getElementById('loading');
-const resultado = document.getElementById('resultado');
-
-btnVerificar.addEventListener('click', async () => {
-  const texto = document.getElementById('texto').value.trim();
-  const file = imagemInput.files[0];
-  if (!texto && !file) {
-    showToast('Cole o texto ou escolha um print para verificar.', '✍️');
-    return;
-  }
-
-  btnVerificar.disabled = true;
-  loading.style.display = 'block';
-  resultado.style.display = 'none';
-
-  try {
-    let imagemBase64 = null;
-    if (file) {
-      imagemBase64 = await new Promise((res, rej) => {
-        const r = new FileReader();
-        r.onload = () => res(r.result.split(',')[1]);
-        r.onerror = rej;
-        r.readAsDataURL(file);
-      });
+  <style>
+    /* Textura clássica e suave do fundo do WhatsApp */
+    .whatsapp-bg {
+      background-color: #f0ebe4;
+      background-image: 
+        radial-gradient(#d6cdc3 0.75px, transparent 0.75px), 
+        radial-gradient(#d6cdc3 0.75px, #f0ebe4 0.75px);
+      background-size: 24px 24px;
+      background-position: 0 0, 12px 12px;
     }
 
-    const resp = await fetch('/api/analyze', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        texto: texto || null,
-        imagemBase64,
-        imagemTipo: file ? file.type : null
-      })
-    });
-    const data = await resp.json();
-    if (data.error) throw new Error(data.error);
+    ::-webkit-scrollbar {
+      width: 4px;
+    }
+    ::-webkit-scrollbar-thumb {
+      background: rgba(0,0,0,0.15);
+      border-radius: 4px;
+    }
+    * {
+      -webkit-tap-highlight-color: transparent;
+    }
+    
+    @keyframes pulseSlow {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.6; transform: scale(1.08); }
+    }
+    .pulse-badge {
+      animation: pulseSlow 2s infinite ease-in-out;
+    }
+  </style>
+</head>
+<body class="bg-slate-900 flex justify-center items-center min-h-screen font-sans antialiased text-gray-900 selection:bg-rose-100 p-0 sm:p-4">
 
-    renderizarResultado(data);
-  } catch (err) {
-    showToast('Tivemos um problema ao analisar agora. Tente novamente!', '⚠️');
-  } finally {
-    btnVerificar.disabled = false;
-    loading.style.display = 'none';
-  }
-});
+  <!-- Mobile Container (Formato iPhone iOS) -->
+  <main class="w-full max-w-[430px] h-[100dvh] sm:h-[880px] flex flex-col bg-white shadow-2xl relative overflow-hidden sm:rounded-[40px] border border-neutral-800">
+    
+    <!-- iOS Status Bar -->
+    <div class="bg-[#0b5c53] text-white pt-2.5 px-6 pb-1 flex justify-between items-center text-xs font-semibold select-none z-30">
+      <span id="statusBarClock">9:41</span>
+      <div class="flex items-center space-x-1.5">
+        <!-- Sinal de rede -->
+        <svg class="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24"><path d="M12 3c-4.97 0-9 4.03-9 9 0 2.12.74 4.07 1.97 5.61L4.35 19.4c-.39.39-.39 1.02 0 1.41.39.39 1.02.39 1.41 0l1.9-1.9C9.28 19.64 10.59 20 12 20c4.97 0 9-4.03 9-9s-4.03-9-9-9z" opacity=".3"></path><path d="M2 17h3v5H2v-5zm6-5h3v10H8V12zm6-5h3v15h-3V7zm6-4h3v19h-3V3z"></path></svg>
+        <!-- Wi-Fi -->
+        <svg class="w-3.5 h-3.5 fill-current" viewBox="0 0 24 24"><path d="M12 4C7.31 4 3.07 5.9 0 8.98L12 21 24 8.98A16.88 16.88 0 0012 4zm0 3c3.48 0 6.64 1.35 9 3.55L12 19.53 3 10.55C5.36 8.35 8.52 7 12 7z"></path></svg>
+        <!-- Bateria -->
+        <div class="w-5 h-2.5 border border-white rounded-sm p-0.5 flex items-center">
+          <div class="w-full h-full bg-white rounded-2xs"></div>
+        </div>
+      </div>
+    </div>
 
-function renderizarResultado(data) {
-  const score = data.risco_score !== undefined
-    ? data.risco_score
-    : (data.veredito === 'golpe' ? data.confianca : (data.veredito === 'suspeito' ? 55 : Math.max(5, 100 - data.confianca)));
+    <!-- WhatsApp Header -->
+    <header class="bg-[#0f6c5f] text-white px-3 py-2 flex items-center justify-between shadow-md z-20">
+      <div class="flex items-center space-x-2.5">
+        <!-- Botão Voltar -->
+        <a href="/" class="p-1 -ml-1 text-emerald-100 hover:text-white" title="Recarregar">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+            <path d="M15 19l-7-7 7-7" stroke-linecap="round" stroke-linejoin="round"></path>
+          </svg>
+        </a>
 
-  const scoreNum = document.getElementById('scoreNum');
-  const scoreFill = document.getElementById('scoreFill');
-  const riskBadge = document.getElementById('riskBadge');
-  const vereditoBadge = document.getElementById('vereditoBadge');
+        <!-- Avatar do Bot com badge de verificado -->
+        <div class="relative">
+          <img alt="Zap Quem É" class="w-10 h-10 rounded-full object-cover bg-amber-100 border border-emerald-300 ring-2 ring-emerald-400/30" src="logo.jpg" onerror="this.src='https://lh3.googleusercontent.com/aida-public/AB6AXuBsaLDFc_Xh3_-5ACvOBSPGt_FsEbDAZ75Iq-trF1G19bfbqbXKm24aBVAG5gTcB9lkjH9r4TwjC6pjAp0MMv1jfgiNeg_V30EtRpuce5o3v7vyeir337kCDsCmnmwfD5v2s2pMvUJfrLykjq-jofJaV5juOfpBT-KWj0zxv68oWwVXD3jhwPiNAAGHHiuOYPXdPb3s3KXG97TK2wiA3xPepcaELW2MGWOlJXIO4MaCflHvvDE4NX5yVQ'">
+          <span class="absolute -bottom-0.5 -right-0.5 bg-sky-500 text-white rounded-full p-0.5 ring-2 ring-white" title="Verificado Oficial">
+            <svg class="w-2.5 h-2.5 fill-current" viewBox="0 0 20 20">
+              <path clip-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" fill-rule="evenodd"></path>
+            </svg>
+          </span>
+        </div>
 
-  scoreNum.textContent = score;
+        <!-- Nome e Status do Bot -->
+        <div class="flex flex-col">
+          <h1 class="text-sm font-bold tracking-wide flex items-center gap-1 leading-tight text-white">
+            Zap, quem é? <span class="text-xs">🛡️</span>
+          </h1>
+          <p class="text-[11px] text-emerald-100 flex items-center gap-1 font-medium">
+            <span class="w-1.5 h-1.5 rounded-full bg-emerald-300 animate-pulse"></span>
+            IA Antifraude • Online
+          </p>
+        </div>
+      </div>
 
-  let nivelText, color, bgBadge, borderBadge;
-  if (score >= 80) {
-    nivelText = 'CRÍTICO';
-    color = '#ef4444';
-    bgBadge = 'rgba(239, 68, 68, 0.15)';
-    borderBadge = 'rgba(239, 68, 68, 0.4)';
-  } else if (score >= 65) {
-    nivelText = 'ALTO';
-    color = '#f87171';
-    bgBadge = 'rgba(248, 113, 113, 0.15)';
-    borderBadge = 'rgba(248, 113, 113, 0.4)';
-  } else if (score >= 40) {
-    nivelText = 'MODERADO';
-    color = '#f59e0b';
-    bgBadge = 'rgba(245, 158, 11, 0.15)';
-    borderBadge = 'rgba(245, 158, 11, 0.4)';
-  } else {
-    nivelText = 'BAIXO';
-    color = '#10b981';
-    bgBadge = 'rgba(16, 185, 129, 0.15)';
-    borderBadge = 'rgba(16, 185, 129, 0.4)';
-  }
+      <!-- Ícones de Ação -->
+      <div class="flex items-center space-x-2.5 text-emerald-100 text-xs">
+        <a href="empresas.html" class="bg-emerald-800/60 hover:bg-emerald-800 text-emerald-100 px-2 py-1 rounded-lg font-semibold flex items-center gap-1" title="Para Empresas">
+          🏢 B2B
+        </a>
+      </div>
+    </header>
 
-  scoreNum.style.color = color;
-  scoreFill.style.background = color;
-  scoreFill.style.width = score + '%';
+    <!-- Botões Rápidos de Demonstração (3 Cores) -->
+    <div class="bg-emerald-950/90 text-white px-3 py-1.5 flex items-center justify-between text-[11px] font-semibold overflow-x-auto gap-2 border-b border-emerald-900 z-10 shrink-0">
+      <span class="text-emerald-300 uppercase tracking-wider font-bold shrink-0">Testar:</span>
+      <div class="flex gap-1.5 shrink-0">
+        <button onclick="demoTest('critico')" class="bg-red-900/60 hover:bg-red-800 text-red-200 border border-red-500/40 px-2 py-0.5 rounded-full flex items-center gap-1 transition">
+          🔴 Golpe Falso Filho
+        </button>
+        <button onclick="demoTest('moderado')" class="bg-amber-900/60 hover:bg-amber-800 text-amber-200 border border-amber-500/40 px-2 py-0.5 rounded-full flex items-center gap-1 transition">
+          🟡 Falso CTT / Correios
+        </button>
+        <button onclick="demoTest('seguro')" class="bg-emerald-900/60 hover:bg-emerald-800 text-emerald-200 border border-emerald-500/40 px-2 py-0.5 rounded-full flex items-center gap-1 transition">
+          🟢 SMS Banco Legítimo
+        </button>
+      </div>
+    </div>
 
-  riskBadge.textContent = nivelText;
-  riskBadge.style.color = color;
-  riskBadge.style.background = bgBadge;
+    <!-- Chat Scroll Area -->
+    <div id="chatMessages" class="flex-1 overflow-y-auto px-3 py-4 space-y-4 whatsapp-bg relative">
+      <!-- Timestamp centralizado -->
+      <div class="flex justify-center">
+        <span class="bg-[#e1f3fb] text-[#54656f] text-[11px] font-medium px-2.5 py-1 rounded-lg shadow-2xs uppercase tracking-wide">
+          Hoje
+        </span>
+      </div>
 
-  const labels = {
-    golpe: '🚨 PROVÁVEL GOLPE',
-    suspeito: '⚠️ MENSAGEM SUSPEITA',
-    legitimo: '✅ PARECE LEGÍTIMO'
-  };
-  vereditoBadge.textContent = labels[data.veredito] || data.veredito.toUpperCase();
-  vereditoBadge.style.color = color;
-  vereditoBadge.style.background = bgBadge;
-  vereditoBadge.style.border = `1px solid ${borderBadge}`;
-  resultado.style.borderColor = borderBadge;
+      <!-- Balão Inicial de Boas-vindas do Robô -->
+      <div class="flex flex-col items-start max-w-[94%]">
+        <div class="bg-white rounded-2xl rounded-tl-xs p-3 shadow-sm border border-gray-100 text-sm text-gray-800 space-y-2">
+          <p class="text-[13px] leading-relaxed">
+            Olá! 👋 Eu sou o <strong>Zap, quem é?</strong> — seu assistente inteligente antifraude.
+          </p>
+          <p class="text-[12.5px] text-gray-600 leading-relaxed">
+            Recebeu uma mensagem estranha, link suspeito ou print no WhatsApp/SMS? Cole o texto abaixo ou envie a foto que eu analiso na hora com veredito em <strong>3 cores</strong>:
+          </p>
+          <div class="grid grid-cols-3 gap-1.5 pt-1 text-[11px] text-center font-bold">
+            <div class="bg-red-50 text-red-700 p-1 rounded-lg border border-red-200">🔴 Crítico</div>
+            <div class="bg-amber-50 text-amber-800 p-1 rounded-lg border border-amber-200">🟡 Suspeito</div>
+            <div class="bg-emerald-50 text-emerald-700 p-1 rounded-lg border border-emerald-200">🟢 Seguro</div>
+          </div>
+          <div class="flex justify-end text-[10px] text-gray-400 mt-1">10:00</div>
+        </div>
+      </div>
+    </div>
 
-  // CONTADOR DE REPETIÇÃO
-  const socialEl = document.getElementById('socialCounter');
-  const redisIcon = document.getElementById('redisIcon');
-  const redisBadgeLabel = document.getElementById('redisBadgeLabel');
-  const socialCounterText = document.getElementById('socialCounterText');
-  const redisSubText = document.getElementById('redisSubText');
+    <!-- Typing Indicator (Oculto por padrão) -->
+    <div id="typingIndicator" class="hidden px-4 py-1.5 bg-white/90 border-t border-gray-100 text-xs text-emerald-800 font-medium flex items-center gap-2">
+      <span class="flex h-2 w-2 relative">
+        <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+        <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+      </span>
+      <span>Zap, quem é? está analisando com IA e Inteligência de Ameaças...</span>
+    </div>
 
-  const count = data.vezes_reportada || 1;
-  if (count > 1) {
-    socialEl.className = 'redis-counter-card repeat-alert';
-    redisIcon.textContent = '🔥';
-    redisBadgeLabel.textContent = 'ALERTA: GOLPE REPETIDO EM MASSA';
-    socialCounterText.innerHTML = `⚠️ Esta mensagem exata já foi pesquisada <strong>${count} vezes</strong> por outras pessoas!`;
-    redisSubText.textContent = 'Golpistas frequentemente disparam a mesma mensagem para centenas ou milhares de vítimas.';
-    socialEl.style.display = 'flex';
-  } else {
-    socialEl.className = 'redis-counter-card single-alert';
-    redisIcon.textContent = '🛡️';
-    redisBadgeLabel.textContent = 'HISTÓRICO DE VERIFICAÇÕES';
-    socialCounterText.innerHTML = 'Primeira vez que esta mensagem é verificada no nosso sistema.';
-    redisSubText.textContent = 'O registro foi salvo para alertar imediatamente futuras pessoas se esta mensagem se repetir.';
-    socialEl.style.display = 'flex';
-  }
+    <!-- Barra Inferior de Entrada (WhatsApp Input Bar) -->
+    <footer class="bg-[#f0f2f5] px-3 py-2 border-t border-gray-200 flex items-center space-x-2">
+      <!-- Input de Arquivo Oculto -->
+      <input type="file" id="fileInput" accept="image/*" class="hidden" onchange="handleImageUpload(event)">
 
-  // Alerta de link
-  const linkAlert = document.getElementById('linkAlert');
-  if (data.alerta_link) {
-    document.getElementById('linkAlertText').innerHTML = `<strong>Atenção ao Link:</strong> ${data.alerta_link}`;
-    linkAlert.style.display = 'flex';
-  } else {
-    linkAlert.style.display = 'none';
-  }
+      <!-- Botão Anexar (+) -->
+      <button onclick="document.getElementById('fileInput').click()" aria-label="Anexar Imagem" class="text-teal-700 p-1 rounded-full hover:bg-gray-200 transition" title="Enviar print de tela">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+          <path d="M12 4v16m8-8H4" stroke-linecap="round" stroke-linejoin="round"></path>
+        </svg>
+      </button>
 
-  // Explicação
-  document.getElementById('explicacao').textContent = data.explicacao_simples || 'Análise concluída com base nos padrões conhecidos de engenharia social.';
+      <!-- Campo de Texto -->
+      <div class="flex-1 bg-white rounded-full px-4 py-2 border border-gray-200 flex items-center justify-between text-sm shadow-2xs">
+        <input 
+          id="messageInput"
+          type="text" 
+          placeholder="Envie um texto ou print de golpe..." 
+          class="w-full text-xs sm:text-[13.5px] border-none p-0 focus:ring-0 outline-none text-gray-800 placeholder-gray-400"
+          onkeydown="if(event.key === 'Enter') sendMessage()"
+        />
+        <button onclick="document.getElementById('fileInput').click()" class="text-gray-400 hover:text-gray-600 ml-1">
+          📷
+        </button>
+      </div>
 
-  // Sinais
-  const signalsContainer = document.getElementById('signalsContainer');
-  signalsContainer.innerHTML = '';
-  (data.sinais || []).forEach(s => {
-    const div = document.createElement('div');
-    div.className = 'signal-pill';
-    div.innerHTML = `<span>⚠️</span> <span>${s}</span>`;
-    signalsContainer.appendChild(div);
-  });
+      <!-- Botão Enviar / Microfone -->
+      <button 
+        id="btnSend"
+        onclick="sendMessage()" 
+        aria-label="Enviar" 
+        class="bg-[#128C7E] text-white p-2.5 rounded-full hover:bg-teal-700 shadow-xs active:scale-95 transition flex items-center justify-center"
+      >
+        <svg class="w-4 h-4 fill-current rotate-45" viewBox="0 0 24 24">
+          <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"></path>
+        </svg>
+      </button>
+    </footer>
 
-  // Ação recomendada
-  document.getElementById('acaoRecomendada').textContent = data.acao_recomendada || 'Não clique em links nem repasse valores.';
+    <!-- Home Indicator do iOS -->
+    <div class="h-3.5 bg-[#f0f2f5] flex justify-center items-center pb-1">
+      <div class="w-28 h-1 bg-gray-400 rounded-full"></div>
+    </div>
+  </main>
 
-  // Restaura botões de feedback para nova análise
-  document.getElementById('feedbackButtonsRow').style.display = 'flex';
-  document.getElementById('feedbackThankyou').style.display = 'none';
+  <!-- JAVASCRIPT DINÂMICO DO CHAT & RENDERIZADOR DAS 3 CORES -->
+  <script>
+    // Atualiza relógio do status bar
+    function updateClock() {
+      const now = new Date();
+      const h = String(now.getHours()).padStart(2, '0');
+      const m = String(now.getMinutes()).padStart(2, '0');
+      document.getElementById('statusBarClock').textContent = `${h}:${m}`;
+    }
+    updateClock();
+    setInterval(updateClock, 30000);
 
-  resultado.style.display = 'block';
-  resultado.scrollIntoView({ behavior: 'smooth' });
+    function getTimeString() {
+      const now = new Date();
+      return `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+    }
 
-  // Botão de compartilhamento
-  document.getElementById('btnShareWhatsApp').onclick = () => {
-    const shareText = `⚡ *Zap, quem é? — Alerta de Golpe*\n\nResultado: *${labels[data.veredito]}*\n📊 Nível de Risco: *${score}/100 [${nivelText}]*\n🔄 Verificada no Banco: *${count} vezes*\n\n${data.explicacao_simples}\n\nVerifique a sua mensagem também: https://zapqueme.vercel.app`;
-    window.open(`https://wa.me/?text=${encodeURIComponent(shareText)}`, '_blank');
-  };
+    function scrollToBottom() {
+      const container = document.getElementById('chatMessages');
+      container.scrollTop = container.scrollHeight;
+    }
 
-  // Feedback Humanizado
-  document.getElementById('btnFbUp').onclick = () => enviarFeedback(true, data.analise_id);
-  document.getElementById('btnFbDown').onclick = () => enviarFeedback(false, data.analise_id);
-}
+    // Enviar mensagem do usuário
+    async function sendMessage(overrideText = null, imageBase64 = null) {
+      const input = document.getElementById('messageInput');
+      const text = overrideText !== null ? overrideText : input.value.trim();
 
-function enviarFeedback(positivo, analise_id) {
-  fetch('/api/feedback', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ positivo, analise_id })
-  }).catch(() => {});
+      if (!text && !imageBase64) return;
+      if (overrideText === null) input.value = '';
 
-  // Transição elegante inline sem popup travando tela
-  document.getElementById('feedbackButtonsRow').style.display = 'none';
-  const thx = document.getElementById('feedbackThankyou');
-  thx.innerHTML = positivo
-    ? '✨ <strong>Muito obrigado!</strong> Ficamos felizes em ajudar você a se proteger.'
-    : '🙏 <strong>Obrigado pelo aviso!</strong> Vamos usar isso para melhorar as próximas respostas.';
-  thx.style.display = 'block';
+      // Adiciona o balão do usuário no chat
+      appendUserBubble(text, imageBase64);
 
-  showToast('Feedback registrado com sucesso!', '❤️');
-}
-</script>
+      // Mostra indicador de digitação
+      document.getElementById('typingIndicator').classList.remove('hidden');
+      scrollToBottom();
+
+      try {
+        const res = await fetch('/api/analyze', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            texto: text || null,
+            imagemBase64: imageBase64 || null,
+            imagemTipo: 'image/jpeg'
+          })
+        });
+
+        const data = await res.json();
+        document.getElementById('typingIndicator').classList.add('hidden');
+
+        if (!res.ok) {
+          appendErrorBubble(data.error || 'Erro ao processar análise.');
+          return;
+        }
+
+        // Renderiza o card na cor correspondente (Vermelho, Amarelo ou Verde)
+        appendBotCard(data);
+
+      } catch (err) {
+        document.getElementById('typingIndicator').classList.add('hidden');
+        appendErrorBubble('Erro de conexão com o servidor de IA. Tente novamente.');
+      }
+    }
+
+    // Trata upload de imagem
+    function handleImageUpload(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = function(evt) {
+        const base64 = evt.target.result.split(',')[1];
+        sendMessage('Analise este print de mensagem suspeita:', base64);
+      };
+      reader.readAsDataURL(file);
+      e.target.value = '';
+    }
+
+    // Balão do Usuário
+    function appendUserBubble(text, imageBase64) {
+      const container = document.getElementById('chatMessages');
+      const time = getTimeString();
+
+      let imgHtml = '';
+      if (imageBase64) {
+        imgHtml = `<img src="data:image/jpeg;base64,${imageBase64}" class="rounded-xl mb-1.5 max-h-48 object-cover border border-emerald-200">`;
+      }
+
+      const bubble = document.createElement('div');
+      bubble.className = 'flex justify-end';
+      bubble.innerHTML = `
+        <div class="max-w-[85%] bg-[#d9fdd3] rounded-2xl rounded-tr-xs p-3 shadow-xs border border-emerald-100 text-sm text-gray-800 relative">
+          <div class="flex items-center text-[11px] italic text-gray-500 mb-1 space-x-1">
+            <svg class="w-3 h-3 fill-current text-gray-400 rotate-180" viewBox="0 0 24 24"><path d="M10 9V5l-7 7 7 7v-4.1c5 0 8.5 1.6 11 5.1-1-5-4-10-11-11z"></path></svg>
+            <span>Mensagem encaminhada</span>
+          </div>
+          ${imgHtml}
+          <p class="text-[13.5px] leading-relaxed text-gray-900">${escapeHtml(text)}</p>
+          <div class="flex items-center justify-end space-x-1 mt-1 text-[10px] text-gray-500 font-normal">
+            <span>${time}</span>
+            <span class="text-sky-500 font-bold">✓✓</span>
+          </div>
+        </div>
+      `;
+      container.appendChild(bubble);
+      scrollToBottom();
+    }
+
+    function appendErrorBubble(msg) {
+      const container = document.getElementById('chatMessages');
+      const bubble = document.createElement('div');
+      bubble.className = 'flex flex-col items-start max-w-[94%]';
+      bubble.innerHTML = `
+        <div class="bg-red-50 text-red-800 rounded-2xl rounded-tl-xs p-3 border border-red-200 text-xs">
+          ⚠️ ${escapeHtml(msg)}
+        </div>
+      `;
+      container.appendChild(bubble);
+      scrollToBottom();
+    }
+
+    // -------------------------------------------------------------------------
+    // RENDERIZADOR DAS 3 CORES (VERMELHO, AMARELO, VERDE)
+    // -------------------------------------------------------------------------
+    function appendBotCard(data) {
+      const container = document.getElementById('chatMessages');
+      const time = getTimeString();
+
+      const score = data.risco_score !== undefined
+        ? data.risco_score
+        : (data.veredito === 'golpe' ? data.confianca : (data.veredito === 'suspeito' ? 65 : 5));
+
+      // Determina a categoria de criticidade
+      let mode = 'critico';
+      if (data.veredito === 'legitimo' || score < 35) {
+        mode = 'seguro';
+      } else if (data.veredito === 'suspeito' || (score >= 35 && score < 75)) {
+        mode = 'moderado';
+      } else {
+        mode = 'critico';
+      }
+
+      // 10 Barras do termômetro
+      const filledBars = Math.round(score / 10);
+      let gaugeHtml = '';
+      for (let i = 1; i <= 10; i++) {
+        if (i <= filledBars) {
+          const colorClass = mode === 'critico' ? 'bg-red-500' : (mode === 'moderado' ? 'bg-amber-500' : 'bg-emerald-500');
+          gaugeHtml += `<div class="w-1.5 h-4 rounded-full ${colorClass}"></div>`;
+        } else {
+          const emptyClass = mode === 'critico' ? 'bg-gray-200' : (mode === 'moderado' ? 'bg-amber-200' : 'bg-gray-200');
+          gaugeHtml += `<div class="w-1.5 h-4 rounded-full ${emptyClass}"></div>`;
+        }
+      }
+
+      let cardHtml = '';
+
+      // 🔴 1. MODO VERMELHO: GOLPE / RISCO CRÍTICO
+      if (mode === 'critico') {
+        const sinaisList = (data.sinais || []).map(s => `
+          <li class="flex items-start gap-1.5">
+            <span class="text-rose-600 font-bold">•</span>
+            <span>${escapeHtml(s)}</span>
+          </li>
+        `).join('');
+
+        const repeatedChip = data.vezes_reportada > 1 ? `
+          <div class="flex items-center space-x-2 bg-amber-50 text-amber-900 border border-amber-200/80 px-2.5 py-1.5 rounded-lg text-xs font-medium">
+            <span class="text-sm">🔥</span>
+            <p class="leading-tight">
+              <strong>Mensagem repetida!</strong> Pesquisada <span class="underline decoration-amber-500 decoration-2 font-bold">${data.vezes_reportada} vezes hoje</span>. Disparo em massa.
+            </p>
+          </div>
+        ` : '';
+
+        cardHtml = `
+          <div class="bg-white rounded-2xl rounded-tl-xs shadow-md border border-red-100 overflow-hidden w-full max-w-[96%]">
+            <!-- Banner Vermelho -->
+            <div class="bg-gradient-to-r from-red-600 via-rose-600 to-red-600 px-3.5 py-2.5 text-white flex items-center justify-between">
+              <div class="flex items-center space-x-2">
+                <span class="flex h-2.5 w-2.5 relative">
+                  <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-white opacity-75"></span>
+                  <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-yellow-300"></span>
+                </span>
+                <span class="font-bold tracking-tight text-xs uppercase text-white">Alerta Crítico: Provável Golpe</span>
+              </div>
+              <span class="bg-white/20 backdrop-blur-xs text-[10px] font-semibold px-2 py-0.5 rounded-full text-white uppercase">
+                ${escapeHtml(data.tipo || 'Golpe')}
+              </span>
+            </div>
+
+            <!-- Score e Mascote -->
+            <div class="p-3.5 space-y-3.5">
+              <div class="flex items-center justify-between gap-3 bg-red-50/60 p-3 rounded-xl border border-red-100">
+                <div class="flex items-center space-x-3">
+                  <img class="w-13 h-13 object-cover rounded-xl shadow-xs border-2 border-white bg-amber-50 shrink-0" src="logo.jpg" onerror="this.src='https://lh3.googleusercontent.com/aida-public/AB6AXuBsaLDFc_Xh3_-5ACvOBSPGt_FsEbDAZ75Iq-trF1G19bfbqbXKm24aBVAG5gTcB9lkjH9r4TwjC6pjAp0MMv1jfgiNeg_V30EtRpuce5o3v7vyeir337kCDsCmnmwfD5v2s2pMvUJfrLykjq-jofJaV5juOfpBT-KWj0zxv68oWwVXD3jhwPiNAAGHHiuOYPXdPb3s3KXG97TK2wiA3xPepcaELW2MGWOlJXIO4MaCflHvvDE4NX5yVQ'">
+                  <div>
+                    <span class="text-[11px] uppercase tracking-wider font-semibold text-red-600">Nível de Risco</span>
+                    <div class="flex items-baseline space-x-1.5">
+                      <span class="text-2xl font-black text-red-700 tracking-tight">${score}</span>
+                      <span class="text-xs text-gray-500 font-medium">/ 100</span>
+                      <span class="ml-1 text-[11px] font-bold px-1.5 py-0.5 bg-red-600 text-white rounded">CRÍTICO</span>
+                    </div>
+                  </div>
+                </div>
+                <div class="flex flex-col items-end gap-1">
+                  <div class="flex gap-1 h-3.5">${gaugeHtml}</div>
+                  <span class="text-[10px] font-semibold text-red-700">Perigo Extremo</span>
+                </div>
+              </div>
+
+              ${repeatedChip}
+
+              <!-- Resumo e Sinais -->
+              <div class="space-y-1.5">
+                <h2 class="text-xs font-bold text-gray-900 flex items-center gap-1.5">
+                  <span class="text-blue-500">🔍</span> Sinais claros identificados:
+                </h2>
+                <ul class="text-xs space-y-1 text-gray-700">
+                  ${sinaisList}
+                </ul>
+              </div>
+
+              <!-- Plano de Ação -->
+              <div class="bg-gray-50 p-3 rounded-xl border border-gray-200/80 space-y-2">
+                <div class="text-xs font-bold text-gray-900 flex items-center gap-1">
+                  <span>💡</span> <span>O QUE VOCÊ DEVE FAZER AGORA:</span>
+                </div>
+                <div class="grid grid-cols-1 gap-1.5 text-xs text-gray-700 font-medium">
+                  <div class="flex items-center gap-2 bg-white px-2.5 py-1.5 rounded-lg border border-gray-100 shadow-2xs">
+                    <span class="text-sm">❌</span>
+                    <span><strong>Não faça</strong> transferências, Pix ou pagamentos.</span>
+                  </div>
+                  <div class="flex items-center gap-2 bg-white px-2.5 py-1.5 rounded-lg border border-gray-100 shadow-2xs">
+                    <span class="text-sm">📞</span>
+                    <span><strong>Ligue</strong> para o número habitual para tirar a dúvida.</span>
+                  </div>
+                  <div class="flex items-center gap-2 bg-white px-2.5 py-1.5 rounded-lg border border-gray-100 shadow-2xs">
+                    <span class="text-sm">🚫</span>
+                    <span><strong>Bloqueie</strong> e denuncie este contato suspeito.</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Botões de Ação Interativos -->
+              <div class="space-y-2 pt-1">
+                <button onclick="triggerEmergency()" class="w-full bg-rose-50 hover:bg-rose-100 text-rose-700 active:scale-[0.99] transition border border-rose-200 py-2.5 px-3 rounded-xl text-xs font-bold flex items-center justify-center space-x-2">
+                  <span class="text-base">🆘</span>
+                  <span>Já fiz o Pix? Ativar Socorro Imediato</span>
+                </button>
+                <div class="grid grid-cols-2 gap-2">
+                  <button onclick="alert('Contato bloqueado mentalmente. Denuncie no WhatsApp!')" class="w-full bg-white hover:bg-gray-50 text-gray-700 active:scale-[0.99] transition border border-gray-300 py-2 px-2.5 rounded-xl text-xs font-semibold flex items-center justify-center space-x-1.5">
+                    <span class="text-sm">🛡️</span>
+                    <span>Bloquear Contato</span>
+                  </button>
+                  <button onclick="shareAlert()" class="w-full bg-emerald-50 hover:bg-emerald-100 text-emerald-800 active:scale-[0.99] transition border border-emerald-200 py-2 px-2.5 rounded-xl text-xs font-semibold flex items-center justify-center space-x-1.5">
+                    <span class="text-sm">📲</span>
+                    <span>Avisar Família</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Rodapé -->
+            <div class="bg-gray-50/70 border-t border-gray-100 px-3 py-1.5 flex justify-between items-center text-[10px] text-gray-500">
+              <span class="font-medium flex items-center gap-1 text-gray-600">
+                <span class="text-amber-500">⚡</span> Zap, quem é? • IA Antifraude
+              </span>
+              <div class="flex items-center space-x-1">
+                <span>${time}</span>
+                <span class="text-emerald-600 font-bold">✓</span>
+              </div>
+            </div>
+          </div>
+        `;
+      }
+
+      // 🟡 2. MODO AMARELO: SUSPEITO / RISCO MODERADO
+      else if (mode === 'moderado') {
+        const sinaisList = (data.sinais || []).map(s => `
+          <li class="flex items-start">
+            <span class="text-amber-600 font-bold mr-1.5">•</span>
+            <span>${escapeHtml(s)}</span>
+          </li>
+        `).join('');
+
+        cardHtml = `
+          <div class="bg-white rounded-2xl shadow-md border border-orange-200/80 overflow-hidden w-full max-w-[96%]">
+            <!-- Banner Amarelo -->
+            <header class="bg-gradient-to-r from-amber-600 via-orange-600 to-amber-600 text-white px-3.5 py-2 flex items-center justify-between shadow-sm">
+              <div class="flex items-center space-x-2">
+                <span class="w-2.5 h-2.5 rounded-full bg-yellow-300 animate-pulse"></span>
+                <h2 class="font-bold text-xs uppercase tracking-tight">ATENÇÃO: RISCO MODERADO</h2>
+              </div>
+              <span class="bg-white/20 backdrop-blur-sm text-white text-[10px] font-semibold px-2 py-0.5 rounded-full uppercase tracking-wider">
+                ${escapeHtml(data.tipo || 'Link Suspeito')}
+              </span>
+            </header>
+
+            <div class="p-3.5 space-y-3 text-slate-800">
+              <!-- Score Box -->
+              <section class="bg-amber-50/70 rounded-xl p-3 border border-amber-200/60 flex items-center justify-between">
+                <div class="flex items-center space-x-3">
+                  <div class="w-13 h-13 rounded-2xl bg-amber-100 p-1 shrink-0 shadow-inner">
+                    <img class="w-12 h-12 rounded-xl object-cover" src="logo.jpg" onerror="this.src='https://lh3.googleusercontent.com/aida-public/AB6AXuAaUmr1ZsxKP1sgcUvEekTqbwuf3LwoH8yXaP92rjOoakL4GD7Er77ICkVd7Iyvy8ChKVfZVvbQjDeez7PuoyIScYqcZ9RsO3dyxIFY28HeOA3I-c32OXEk6CS2qF59rRcdE_8ZA0terQS7mDDPdAI_Yf279HlluGc5_eD-b6JrEteu-O8Px0mJkqFhl8wHrKMh8xw3ogTPcchdzfmitYB7cU5uJuj2aAd435U7X8iK4CleX_vf5q4FNw'">
+                  </div>
+                  <div>
+                    <p class="text-[10px] font-bold uppercase tracking-wider text-amber-900/80">NÍVEL DE RISCO</p>
+                    <div class="flex items-baseline space-x-1.5">
+                      <span class="text-3xl font-black text-amber-700 tracking-tight">${score}</span>
+                      <span class="text-xs text-slate-500 font-semibold">/ 100</span>
+                      <span class="ml-1.5 bg-amber-600 text-white text-[10px] font-extrabold px-2 py-0.5 rounded-md shadow-xs">
+                        SUSPEITO
+                      </span>
+                    </div>
+                  </div>
+                </div>
+                <div class="flex flex-col items-end">
+                  <div class="flex space-x-1 mb-1">${gaugeHtml}</div>
+                  <span class="text-[10px] font-bold text-amber-800 tracking-tight">Atenção Redobrada</span>
+                </div>
+              </section>
+
+              <!-- Alerta de Domínio / Link -->
+              <aside class="bg-amber-100/70 border border-amber-300 rounded-lg p-2.5 flex items-start space-x-2 text-xs text-amber-900 leading-snug">
+                <span class="text-base select-none">⚠️</span>
+                <div>
+                  <p class="font-semibold text-amber-950">Atenção aos detalhes da mensagem!</p>
+                  <p class="text-[11px] text-amber-900 mt-0.5">
+                    ${escapeHtml(data.alerta_link || data.explicacao_simples || 'O link ou remetente não pôde ser autenticado com total segurança.')}
+                  </p>
+                </div>
+              </aside>
+
+              <!-- Sinais -->
+              <section class="space-y-1.5 text-xs text-slate-700">
+                <div class="flex items-center space-x-1 font-semibold text-slate-900">
+                  <span>🔍</span>
+                  <span>Sinais identificados:</span>
+                </div>
+                <ul class="space-y-1.5 pl-2 text-[12px] leading-snug">
+                  ${sinaisList}
+                </ul>
+              </section>
+
+              <!-- O que fazer -->
+              <section class="bg-neutral-50 rounded-xl p-2.5 border border-slate-200/80 space-y-2">
+                <div class="flex items-center space-x-1 text-slate-900 font-bold text-[11px] tracking-wide uppercase">
+                  <span>💡</span>
+                  <span>O QUE VOCÊ DEVE FAZER AGORA:</span>
+                </div>
+                <div class="flex items-center space-x-2.5 bg-white p-2 rounded-lg border border-slate-200 shadow-2xs text-xs text-slate-800">
+                  <div class="w-6 h-6 rounded-full bg-red-100 flex items-center justify-center shrink-0 text-red-600 font-black text-xs">✕</div>
+                  <span><strong class="font-bold text-slate-900">Não clique no link</strong> e não pague sem antes confirmar nos canais oficiais.</span>
+                </div>
+                <div class="flex items-center space-x-2.5 bg-white p-2 rounded-lg border border-slate-200 shadow-2xs text-xs text-slate-800">
+                  <div class="w-6 h-6 rounded-full bg-blue-100 flex items-center justify-center shrink-0 text-blue-600">🔍</div>
+                  <span><strong class="font-bold text-slate-900">Consulte diretamente</strong> pelo app ou portal oficial da empresa.</span>
+                </div>
+              </section>
+            </div>
+
+            <!-- Rodapé -->
+            <div class="bg-gray-50/70 border-t border-gray-100 px-3 py-1.5 flex justify-between items-center text-[10px] text-gray-500">
+              <span class="font-medium flex items-center gap-1 text-gray-600">
+                <span class="text-amber-500">⚡</span> Zap, quem é? • IA Antifraude
+              </span>
+              <div class="flex items-center space-x-1">
+                <span>${time}</span>
+                <span class="text-emerald-600 font-bold">✓</span>
+              </div>
+            </div>
+          </div>
+        `;
+      }
+
+      // 🟢 3. MODO VERDE: SEGURO / LEGÍTIMO
+      else {
+        cardHtml = `
+          <article class="bg-white rounded-2xl shadow-md border border-emerald-100 overflow-hidden text-gray-800 w-full max-w-[96%]">
+            <!-- Header Verde -->
+            <div class="bg-emerald-600 text-white px-3.5 py-2.5 flex items-center justify-between">
+              <div class="flex items-center space-x-2">
+                <div class="w-5 h-5 rounded-full bg-emerald-500 flex items-center justify-center shrink-0">
+                  <svg class="w-3.5 h-3.5 text-white stroke-[2.5]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" stroke-linecap="round" stroke-linejoin="round"></path>
+                  </svg>
+                </div>
+                <span class="text-xs font-bold tracking-wide uppercase">Análise Concluída: Mensagem Segura</span>
+              </div>
+              <span class="bg-emerald-700/80 text-white text-[10px] font-semibold px-2 py-0.5 rounded-full border border-emerald-400/40">
+                Canal Oficial
+              </span>
+            </div>
+
+            <div class="p-3.5 space-y-3.5">
+              <!-- Score Box -->
+              <div class="bg-emerald-50/70 border border-emerald-200/80 rounded-xl p-3 flex items-center justify-between">
+                <div class="w-14 h-14 rounded-xl overflow-hidden shadow-sm shrink-0 border border-emerald-200 bg-emerald-100">
+                  <img class="w-full h-full object-cover" src="logo.jpg" onerror="this.src='https://lh3.googleusercontent.com/aida-public/AB6AXuDHYzmSpbIzChRvndbo4ZGFrFwMEFYh2QoDBSbo3rrkSY0TVaVUQKZssboL90hm5FaTici7JivDR0JVFyGmCuLJdWJworS7AePz9ohOFyK1wmVMdxQVIuCbbrXbqai0bqUnLPwSiVPmRpGM9ezEHLBWY2fd0jpwbkO8t3nNWudmdOH5ZC6BQdVq9P-t8X386ezxjUR2kDDoP8sAAMwEtkFMO-Ci2UwEtNm6331KY1xp4AZXlW-q6MgJXA'">
+                </div>
+                <div class="flex flex-col ml-3 flex-1">
+                  <span class="text-[10px] font-bold text-emerald-800 tracking-wider uppercase">Nível de Risco</span>
+                  <div class="flex items-baseline space-x-1.5 mt-0.5">
+                    <span class="text-2xl font-black text-emerald-600">${score < 10 ? '0' + score : score}</span>
+                    <span class="text-xs font-semibold text-gray-500">/ 100</span>
+                    <span class="bg-emerald-600 text-white text-[10px] font-bold px-2 py-0.5 rounded-md ml-1 tracking-wide">
+                      SEGURO
+                    </span>
+                  </div>
+                </div>
+                <div class="flex flex-col items-end space-y-1">
+                  <div class="flex space-x-0.5">${gaugeHtml}</div>
+                  <span class="text-[10.5px] font-bold text-emerald-700">Risco Mínimo</span>
+                </div>
+              </div>
+
+              <!-- Remetente Autenticado -->
+              <div class="bg-emerald-50/50 border border-emerald-200 rounded-lg p-2.5 flex items-start space-x-2.5">
+                <div class="w-5 h-5 rounded-full bg-emerald-500 text-white flex items-center justify-center shrink-0 mt-0.5">
+                  <svg class="w-3 h-3 stroke-[3]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M5 13l4 4L19 7" stroke-linecap="round" stroke-linejoin="round"></path></svg>
+                </div>
+                <p class="text-[12px] text-emerald-950 leading-snug">
+                  <strong class="font-bold text-emerald-900">Remetente Verificado:</strong> Padrão legítimo sem sinais de engenharia social ou links clonados.
+                </p>
+              </div>
+
+              <!-- Verificações Concluídas -->
+              <div class="space-y-1.5 text-xs text-gray-700">
+                <div class="flex items-center space-x-1.5 text-gray-900 font-semibold mb-1">
+                  <span>🔍</span>
+                  <span>Verificações de segurança concluídas:</span>
+                </div>
+                <div class="flex items-start space-x-2 pl-1">
+                  <span class="w-1.5 h-1.5 rounded-full bg-emerald-600 mt-1.5 shrink-0"></span>
+                  <span class="text-[11.5px] leading-relaxed"><strong>Nenhum link suspeito</strong> ou encurtador malicioso detectado.</span>
+                </div>
+                <div class="flex items-start space-x-2 pl-1">
+                  <span class="w-1.5 h-1.5 rounded-full bg-emerald-600 mt-1.5 shrink-0"></span>
+                  <span class="text-[11.5px] leading-relaxed">Não solicita transferências urgentes nem dados bancários confidenciais.</span>
+                </div>
+              </div>
+
+              <!-- Dica -->
+              <div class="bg-gray-50 border border-gray-200/80 rounded-xl p-3 space-y-2">
+                <div class="flex items-center space-x-1.5 text-[11px] font-bold text-gray-800 uppercase tracking-wide">
+                  <span>💡</span>
+                  <span>Dicas de Segurança:</span>
+                </div>
+                <div class="bg-white p-2 rounded-lg border border-gray-200 flex items-center space-x-2.5 shadow-2xs text-xs text-gray-700">
+                  <div class="w-5 h-5 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center shrink-0">✓</div>
+                  <span class="text-[11.5px] leading-tight">Pode prosseguir com sua consulta normalmente.</span>
+                </div>
+                <div class="bg-white p-2 rounded-lg border border-gray-200 flex items-center space-x-2.5 shadow-2xs text-xs text-gray-700">
+                  <div class="w-5 h-5 rounded-full bg-amber-100 text-amber-600 flex items-center justify-center shrink-0">⚠️</div>
+                  <span class="text-[11.5px] leading-tight"><strong>Lembre-se:</strong> bancos nunca solicitam senhas ou transferências por telefone.</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Rodapé -->
+            <div class="bg-gray-50/70 border-t border-gray-100 px-3 py-1.5 flex justify-between items-center text-[10px] text-gray-500">
+              <span class="font-medium flex items-center gap-1 text-gray-600">
+                <span class="text-amber-500">⚡</span> Zap, quem é? • IA Antifraude
+              </span>
+              <div class="flex items-center space-x-1">
+                <span>${time}</span>
+                <span class="text-emerald-600 font-bold">✓</span>
+              </div>
+            </div>
+          </article>
+        `;
+      }
+
+      const bubbleWrapper = document.createElement('div');
+      bubbleWrapper.className = 'flex flex-col items-start max-w-[96%]';
+      bubbleWrapper.innerHTML = cardHtml;
+      container.appendChild(bubbleWrapper);
+      scrollToBottom();
+    }
+
+    // Protocolo de Emergência
+    function triggerEmergency() {
+      const container = document.getElementById('chatMessages');
+      const time = getTimeString();
+      const bubble = document.createElement('div');
+      bubble.className = 'flex flex-col items-start max-w-[96%]';
+      bubble.innerHTML = `
+        <div class="bg-rose-50 border-2 border-rose-500 rounded-2xl rounded-tl-xs p-3.5 shadow-md text-gray-900 space-y-2.5">
+          <div class="flex items-center space-x-2 text-rose-700 font-bold text-xs uppercase">
+            <span class="text-lg">🆘</span>
+            <span>PROTOCOLO DE SOCORRO IMEDIATO</span>
+          </div>
+          <p class="text-xs text-rose-950 font-medium">Se você já pagou ou transferiu dinheiro para os golpistas, <strong>AJA AGORA MESMO</strong>:</p>
+          <ol class="text-xs space-y-1.5 text-gray-800 list-decimal pl-4 font-normal">
+            <li><strong>Ligue para seu banco imediatamente:</strong> No Brasil, exija a ativação do <em>MED (Mecanismo Especial de Devolução do Pix)</em>. Em Portugal, ligue para a linha 24h do banco ou SIBS para estorno.</li>
+            <li><strong>Não apague o chat:</strong> Tire prints de tudo (número, comprovante de transferência, link).</li>
+            <li><strong>Boletim de Ocorrência:</strong> Registre na Delegacia Eletrônica (Brasil) ou Polícia Judiciária (Portugal).</li>
+          </ol>
+          <div class="text-[10px] text-gray-500 text-right">${time}</div>
+        </div>
+      `;
+      container.appendChild(bubble);
+      scrollToBottom();
+    }
+
+    function shareAlert() {
+      if (navigator.share) {
+        navigator.share({
+          title: 'Alerta de Golpe — Zap, quem é?',
+          text: 'Acabei de verificar esta mensagem suspeita no Zap, quem é? Cuidado, é golpe!',
+          url: window.location.href
+        }).catch(() => {});
+      } else {
+        alert('Copiado! Envie este aviso para seu grupo de família para alertá-los.');
+      }
+    }
+
+    // Demos Rápidos
+    function demoTest(tipo) {
+      if (tipo === 'critico') {
+        sendMessage('"Oi mãe, troquei de número, anota aí! Quebrou meu celular... precisa pagar uma conta urgente pra mim via Pix?"');
+      } else if (tipo === 'moderado') {
+        sendMessage('"Seu pacote Correios BR829103819 retido na alfândega. Regularize a taxa de R$ 24,90 para liberação imediata: https://correios-taxa-libera.xyz"');
+      } else if (tipo === 'seguro') {
+        sendMessage('"Código de segurança Santander: 842918. Válido por 5 minutos. Não compartilhe com ninguém."');
+      }
+    }
+
+    function escapeHtml(str) {
+      if (!str) return '';
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+    }
+  </script>
 </body>
 </html>
