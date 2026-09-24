@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Zap, quem é? — Verificador Instantâneo de Golpes</title>
+<style>
+  :root{
+    --bg:#0f1115; --card:#1a1d24; --text:#eaeaea; --muted:#9aa0aa;
+    --green:#22c55e; --yellow:#eab308; --red:#ef4444; --accent:#0F6E56;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;
+    background:var(--bg);color:var(--text);min-height:100vh;padding:20px;}
+  .wrap{max-width:520px;margin:0 auto;}
+  h1{font-size:1.5rem;text-align:center;margin-bottom:4px;}
+  .sub{color:var(--muted);text-align:center;margin-bottom:24px;font-size:.95rem;}
+  .card{background:var(--card);border-radius:16px;padding:20px;margin-bottom:16px;}
+  textarea{width:100%;min-height:100px;background:#0f1115;color:var(--text);
+    border:1px solid #333;border-radius:10px;padding:12px;font-size:1rem;resize:vertical;}
+  input[type=file]{width:100%;margin-top:10px;color:var(--muted);}
+  button{width:100%;padding:14px;border:none;border-radius:12px;background:var(--accent);
+    color:white;font-size:1.05rem;font-weight:600;margin-top:14px;cursor:pointer;}
+  button:disabled{opacity:.5;}
+  button.secondary{background:#2a2d36;margin-top:8px;}
+  .result{display:none;}
+  .veredito{font-size:1.4rem;font-weight:800;padding:14px;border-radius:12px;text-align:center;margin-bottom:12px;}
+  .veredito.golpe{background:rgba(239,68,68,.15);color:var(--red);border:1px solid var(--red);}
+  .veredito.suspeito{background:rgba(234,179,8,.15);color:var(--yellow);border:1px solid var(--yellow);}
+  .veredito.legitimo{background:rgba(34,197,94,.15);color:var(--green);border:1px solid var(--green);}
+  .conf{color:var(--muted);text-align:center;margin-bottom:16px;font-size:.9rem;}
+  .reportada{background:rgba(239,68,68,.12);border:1px solid var(--red);color:var(--red);
+    padding:10px 14px;border-radius:10px;text-align:center;font-weight:600;font-size:.9rem;margin-bottom:16px;}
+  ul{padding-left:20px;margin:8px 0;}
+  li{margin-bottom:6px;}
+  .label{font-weight:700;font-size:.85rem;text-transform:uppercase;color:var(--muted);margin-top:14px;margin-bottom:4px;}
+  .acao{background:#0f1115;padding:12px;border-radius:10px;border-left:3px solid var(--accent);}
+  .fb{display:flex;gap:10px;margin-top:16px;}
+  .fb button{flex:1;background:#2a2d36;font-size:1.3rem;}
+  .disclaimer{font-size:.75rem;color:var(--muted);text-align:center;margin-top:20px;line-height:1.4;}
+  .loading{text-align:center;color:var(--muted);display:none;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>⚡ Zap, quem é?</h1>
+  <p class="sub">Cola o texto ou manda o print da mensagem suspeita</p>
+
+  <div class="card">
+    <textarea id="texto" placeholder="Cola aqui o texto do SMS/WhatsApp suspeito..."></textarea>
+    <input type="file" id="imagem" accept="image/*">
+    <button id="btnVerificar">Zap, quem é? 👀</button>
+    <p class="loading" id="loading">Analisando... 🕵️</p>
+  </div>
+
+  <div class="card result" id="resultado">
+    <div class="veredito" id="veredito"></div>
+    <div class="conf" id="confianca"></div>
+    <div class="reportada" id="reportada" style="display:none;"></div>
+    <div class="label">Sinais de alerta</div>
+    <ul id="sinais"></ul>
+    <div class="label">O que fazer</div>
+    <div class="acao" id="acao"></div>
+    <button id="btnPartilhar">📲 Partilhar no WhatsApp</button>
+    <div class="fb">
+      <button id="fbUp">👍 Ajudou</button>
+      <button id="fbDown">👎 Não ajudou</button>
+    </div>
+  </div>
+
+  <p class="disclaimer">
+    Isto é um alerta automático, não substitui a polícia, o teu banco ou uma autoridade oficial.
+    As tuas mensagens não são guardadas nem usadas para treinar modelos.
+  </p>
+</div>
+
+<script>
+const btn = document.getElementById('btnVerificar');
+const loading = document.getElementById('loading');
+const resultado = document.getElementById('resultado');
+
+btn.addEventListener('click', async () => {
+  const texto = document.getElementById('texto').value.trim();
+  const file = document.getElementById('imagem').files[0];
+  if (!texto && !file) { alert('Cola um texto ou escolhe uma imagem primeiro.'); return; }
+
+  btn.disabled = true;
+  loading.style.display = 'block';
+  resultado.style.display = 'none';
+
+  try {
+    let imagemBase64 = null;
+    if (file) {
+      imagemBase64 = await new Promise((res, rej) => {
+        const r = new FileReader();
+        r.onload = () => res(r.result.split(',')[1]);
+        r.onerror = rej;
+        r.readAsDataURL(file);
+      });
+    }
+
+    const resp = await fetch('/api/analyze', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ texto, imagemBase64, imagemTipo: file ? file.type : null })
+    });
+    const data = await resp.json();
+    if (data.error) throw new Error(data.error);
+
+    mostrarResultado(data);
+  } catch (e) {
+    alert('Erro ao analisar: ' + e.message);
+  } finally {
+    btn.disabled = false;
+    loading.style.display = 'none';
+  }
+});
+
+function mostrarResultado(data) {
+  const vEl = document.getElementById('veredito');
+  const labels = { golpe: '🚨 PROVÁVEL GOLPE', suspeito: '⚠️ SUSPEITO', legitimo: '✅ PARECE LEGÍTIMO' };
+  vEl.textContent = labels[data.veredito] || data.veredito;
+  vEl.className = 'veredito ' + data.veredito;
+
+  document.getElementById('confianca').textContent = `Confiança: ${data.confianca}%`;
+
+  const reportadaEl = document.getElementById('reportada');
+  if (data.vezes_reportada && data.vezes_reportada > 1) {
+    reportadaEl.textContent = `⚠️ Esta mensagem já foi verificada ${data.vezes_reportada} vezes por outras pessoas`;
+    reportadaEl.style.display = 'block';
+  } else {
+    reportadaEl.style.display = 'none';
+  }
+
+  const sinaisEl = document.getElementById('sinais');
+  sinaisEl.innerHTML = '';
+  (data.sinais || []).forEach(s => {
+    const li = document.createElement('li');
+    li.textContent = s;
+    sinaisEl.appendChild(li);
+  });
+
+  document.getElementById('acao').textContent = data.acao_recomendada;
+  resultado.style.display = 'block';
+  resultado.scrollIntoView({ behavior: 'smooth' });
+
+  document.getElementById('btnPartilhar').onclick = () => {
+    const msg = `⚡ Zap, quem é? disse: ${labels[data.veredito]} (${data.confianca}% de confiança)\n\n${data.explicacao_simples}\n\nVerifica a tua também: [seu-dominio.pt]`;
+    window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`, '_blank');
+  };
+
+  document.getElementById('fbUp').onclick = () => enviarFeedback(true, data.analise_id);
+  document.getElementById('fbDown').onclick = () => enviarFeedback(false, data.analise_id);
+}
+
+function enviarFeedback(positivo, analise_id) {
+  fetch('/api/feedback', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ positivo, analise_id })
+  }).catch(() => {});
+  alert('Obrigado pelo feedback! 🙏');
+}
+</script>
+</body>
+</html>

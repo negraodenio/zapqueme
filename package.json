@@ -1,0 +1,10 @@
+{
+  "name": "e-golpe",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "MVP: verificador de golpes via print/texto usando LLM com visão.",
+  "scripts": {
+    "dev": "vercel dev"
+  }
+}
