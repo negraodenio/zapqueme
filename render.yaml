@@ -1,0 +1,13 @@
+services:
+  - type: web
+    name: zapqueme-bot
+    env: node
+    plan: free
+    region: frankfurt
+    buildCommand: npm install
+    startCommand: npm start
+    envVars:
+      - key: NODE_VERSION
+        value: 22
+      - key: OPENROUTER_MODEL
+        value: google/gemini-2.5-flash
