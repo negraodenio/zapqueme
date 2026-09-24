@@ -3,7 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Zap, quem é? — Detector de Golpes e Fraudes Online</title>
+<title>Zap, quem é? — Verificador Instantâneo de Golpes</title>
+<link rel="icon" type="image/png" href="favicon.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -15,7 +16,7 @@
     --text: #f3f4f6;
     --muted: #94a3b8;
     --accent: #0f766e;
-    --accent-glow: rgba(15, 118, 110, 0.25);
+    --accent-glow: rgba(15, 118, 110, 0.35);
     --red: #ef4444;
     --red-bg: rgba(239, 68, 68, 0.12);
     --red-border: rgba(239, 68, 68, 0.35);
@@ -35,13 +36,13 @@
     min-height: 100vh;
     line-height: 1.5;
     padding-bottom: 60px;
-    background-image: radial-gradient(circle at 50% 0%, rgba(15, 118, 110, 0.12), transparent 45%);
+    background-image: radial-gradient(circle at 50% 0%, rgba(15, 118, 110, 0.15), transparent 45%);
   }
 
   .container {
     max-width: 680px;
     margin: 0 auto;
-    padding: 24px 16px;
+    padding: 20px 16px;
   }
 
   /* Navbar */
@@ -49,9 +50,9 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 12px 0 24px;
+    padding: 10px 0 20px;
     border-bottom: 1px solid var(--border);
-    margin-bottom: 28px;
+    margin-bottom: 24px;
   }
   .brand {
     font-size: 1.3rem;
@@ -59,14 +60,22 @@
     color: #fff;
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 10px;
     text-decoration: none;
     letter-spacing: -0.02em;
+  }
+  .brand-logo-nav {
+    width: 38px;
+    height: 38px;
+    border-radius: 10px;
+    object-fit: cover;
+    box-shadow: 0 0 14px rgba(16, 185, 129, 0.4);
+    border: 1px solid rgba(16, 185, 129, 0.5);
   }
   .brand-badge {
     background: rgba(16, 185, 129, 0.15);
     color: var(--green);
-    font-size: 0.7rem;
+    font-size: 0.72rem;
     font-weight: 700;
     padding: 3px 8px;
     border-radius: 20px;
@@ -96,13 +105,24 @@
   /* Hero */
   .hero {
     text-align: center;
-    margin-bottom: 28px;
+    margin-bottom: 26px;
+  }
+  .hero-logo-box {
+    margin-bottom: 14px;
+  }
+  .hero-logo-img {
+    width: 76px;
+    height: 76px;
+    border-radius: 20px;
+    box-shadow: 0 0 25px rgba(16, 185, 129, 0.35);
+    border: 2px solid rgba(16, 185, 129, 0.6);
+    display: inline-block;
   }
   .hero-tag {
     display: inline-flex;
     align-items: center;
     gap: 6px;
-    font-size: 0.8rem;
+    font-size: 0.82rem;
     color: var(--green);
     background: var(--green-bg);
     border: 1px solid var(--green-border);
@@ -112,11 +132,11 @@
     font-weight: 600;
   }
   .hero h1 {
-    font-size: 1.9rem;
+    font-size: 1.95rem;
     font-weight: 800;
     letter-spacing: -0.03em;
     line-height: 1.25;
-    margin-bottom: 10px;
+    margin-bottom: 8px;
   }
   .hero p {
     color: var(--muted);
@@ -211,15 +231,15 @@
     border-radius: 12px;
     background: linear-gradient(135deg, #0f766e, #0d9488);
     color: white;
-    font-size: 1.05rem;
-    font-weight: 700;
+    font-size: 1.1rem;
+    font-weight: 800;
     margin-top: 18px;
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
     gap: 8px;
-    box-shadow: 0 4px 14px var(--accent-glow);
+    box-shadow: 0 4px 16px var(--accent-glow);
     transition: 0.2s;
   }
   .btn-verify:hover {
@@ -237,7 +257,7 @@
     text-align: center;
     padding: 16px 0 0;
     color: var(--muted);
-    font-size: 0.9rem;
+    font-size: 0.92rem;
   }
   .spinner {
     display: inline-block;
@@ -342,7 +362,7 @@
     transition: width 0.8s cubic-bezier(0.16, 1, 0.3, 1);
   }
 
-  /* DESTAQUE DO CONTADOR UPSTASH REDIS */
+  /* DESTAQUE DO CONTADOR DE REPETIÇÃO */
   .redis-counter-card {
     border-radius: 14px;
     padding: 16px 18px;
@@ -475,24 +495,44 @@
   }
   .btn-share:hover { background: #22bf5b; }
   
+  /* Área de Feedback Humanizada */
+  .feedback-container {
+    margin-top: 10px;
+  }
   .feedback-row {
     display: flex;
     gap: 10px;
-    margin-top: 4px;
   }
   .btn-fb {
     flex: 1;
     background: #11141a;
     border: 1px solid var(--border);
     color: var(--muted);
-    padding: 10px;
+    padding: 11px;
     border-radius: 10px;
-    font-size: 0.88rem;
+    font-size: 0.9rem;
     font-weight: 600;
     cursor: pointer;
-    transition: 0.15s;
+    transition: 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
   }
-  .btn-fb:hover { background: #1a202c; color: #fff; }
+  .btn-fb:hover { background: #1c222e; color: #fff; border-color: #3b82f6; }
+  
+  .feedback-thankyou {
+    display: none;
+    background: rgba(16, 185, 129, 0.12);
+    border: 1px solid var(--green-border);
+    color: #a7f3d0;
+    padding: 12px 16px;
+    border-radius: 10px;
+    text-align: center;
+    font-size: 0.9rem;
+    font-weight: 600;
+    animation: fadeIn 0.3s ease-out;
+  }
 
   /* Seção de Emergência Fui Vítima */
   .emergency-section {
@@ -551,15 +591,44 @@
     margin-top: 32px;
     line-height: 1.5;
   }
+
+  /* Toast Notification Elegante (Substituto do alert) */
+  .toast {
+    position: fixed;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%) translateY(100px);
+    background: #1e2430;
+    color: #fff;
+    border: 1px solid #334155;
+    padding: 12px 20px;
+    border-radius: 30px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    z-index: 9999;
+    opacity: 0;
+    transition: all 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+    pointer-events: none;
+  }
+  .toast.show {
+    transform: translateX(-50%) translateY(0);
+    opacity: 1;
+    pointer-events: auto;
+  }
 </style>
 </head>
 <body>
 
 <div class="container">
-  <!-- Navbar -->
+  <!-- Navbar com Logo do Produto -->
   <header class="navbar">
     <a href="#" class="brand">
-      ⚡ Zap, quem é?
+      <img src="logo.jpg" alt="Logo Zap, quem é?" class="brand-logo-nav">
+      <span>Zap, quem é?</span>
       <span class="brand-badge">Anti-Golpe</span>
     </a>
     <div class="nav-actions">
@@ -569,8 +638,11 @@
     </div>
   </header>
 
-  <!-- Hero -->
+  <!-- Hero com Logo em Destaque -->
   <div class="hero">
+    <div class="hero-logo-box">
+      <img src="logo.jpg" alt="Logo Zap, quem é?" class="hero-logo-img">
+    </div>
     <div class="hero-tag">
       🛡️ Verificador Instantâneo de Mensagens
     </div>
@@ -578,9 +650,9 @@
     <p>Cole o texto ou envie o print de uma mensagem suspeita e descubra se é golpe na hora.</p>
   </div>
 
-  <!-- Card do Formulário (Direto e sem seletor de canal) -->
+  <!-- Card do Formulário -->
   <div class="card">
-    <textarea id="texto" placeholder="Cole aqui o texto da mensagem suspeita (ex: aviso de encomenda, falso parente pedindo dinheiro, banco alertando compra)..."></textarea>
+    <textarea id="texto" placeholder="Cole aqui o texto da mensagem suspeita (ex: aviso de encomenda, parente com número novo pedindo dinheiro, banco alertando compra)..."></textarea>
 
     <div class="upload-box">
       <div class="upload-info">
@@ -659,9 +731,16 @@
       <button class="btn-share" id="btnShareWhatsApp">
         <span>📲</span> Enviar Alerta no WhatsApp
       </button>
-      <div class="feedback-row">
-        <button class="btn-fb" id="btnFbUp">👍 Análise Ajudou</button>
-        <button class="btn-fb" id="btnFbDown">👎 Não Ajudou</button>
+      
+      <!-- Feedback Humanizado -->
+      <div class="feedback-container">
+        <div class="feedback-row" id="feedbackButtonsRow">
+          <button class="btn-fb" id="btnFbUp">👍 Ajudou bastante</button>
+          <button class="btn-fb" id="btnFbDown">👎 Não ajudou</button>
+        </div>
+        <div class="feedback-thankyou" id="feedbackThankyou">
+          ✨ Obrigado pelo carinho! A sua opinião ajuda a proteger cada vez mais pessoas contra golpes.
+        </div>
       </div>
     </div>
   </div>
@@ -697,16 +776,29 @@
   </section>
 
   <p class="footer-disclaimer">
-    Aviso: Esta ferramenta tem caráter informativo e pedagógico. A análise é gerada por Inteligência Artificial e não substitui órgãos policiais, seu banco ou assessoria jurídica. Suas mensagens não são armazenadas publicamente nem vendidas.
+    Aviso: Esta ferramenta tem caráter informativo e de proteção comunitária. A análise é gerada automaticamente e não substitui órgãos policiais ou o seu banco. Suas mensagens são tratadas com total privacidade.
   </p>
 </div>
 
+<!-- Toast Suave (Adeus alert feio do navegador!) -->
+<div id="toast" class="toast"></div>
+
 <script>
+function showToast(mensagem, icone = '✨') {
+  const toast = document.getElementById('toast');
+  toast.innerHTML = `<span style="font-size:1.2rem;">${icone}</span> <span>${mensagem}</span>`;
+  toast.className = 'toast show';
+  clearTimeout(window.toastTimer);
+  window.toastTimer = setTimeout(() => {
+    toast.className = 'toast';
+  }, 4000);
+}
+
 const imagemInput = document.getElementById('imagem');
 const fileNamePreview = document.getElementById('fileNamePreview');
 imagemInput.addEventListener('change', () => {
   if (imagemInput.files && imagemInput.files[0]) {
-    fileNamePreview.textContent = 'Arquivo: ' + imagemInput.files[0].name;
+    fileNamePreview.textContent = 'Print anexado: ' + imagemInput.files[0].name;
     fileNamePreview.style.display = 'block';
   } else {
     fileNamePreview.style.display = 'none';
@@ -721,7 +813,7 @@ btnVerificar.addEventListener('click', async () => {
   const texto = document.getElementById('texto').value.trim();
   const file = imagemInput.files[0];
   if (!texto && !file) {
-    alert('Por favor, cole um texto ou selecione um print de tela para analisar.');
+    showToast('Cole o texto ou escolha um print para verificar.', '✍️');
     return;
   }
 
@@ -754,7 +846,7 @@ btnVerificar.addEventListener('click', async () => {
 
     renderizarResultado(data);
   } catch (err) {
-    alert('Erro ao realizar a verificação: ' + err.message);
+    showToast('Tivemos um problema ao analisar agora. Tente novamente!', '⚠️');
   } finally {
     btnVerificar.disabled = false;
     loading.style.display = 'none';
@@ -815,7 +907,7 @@ function renderizarResultado(data) {
   vereditoBadge.style.border = `1px solid ${borderBadge}`;
   resultado.style.borderColor = borderBadge;
 
-  // CONTADOR UPSTASH REDIS EM DESTAQUE
+  // CONTADOR DE REPETIÇÃO
   const socialEl = document.getElementById('socialCounter');
   const redisIcon = document.getElementById('redisIcon');
   const redisBadgeLabel = document.getElementById('redisBadgeLabel');
@@ -828,7 +920,7 @@ function renderizarResultado(data) {
     redisIcon.textContent = '🔥';
     redisBadgeLabel.textContent = 'ALERTA: GOLPE REPETIDO EM MASSA';
     socialCounterText.innerHTML = `⚠️ Esta mensagem exata já foi pesquisada <strong>${count} vezes</strong> por outras pessoas!`;
-    redisSubText.textContent = 'Golpistas frequentemente disparam o mesmo texto para centenas ou milhares de vítimas.';
+    redisSubText.textContent = 'Golpistas frequentemente disparam a mesma mensagem para centenas ou milhares de vítimas.';
     socialEl.style.display = 'flex';
   } else {
     socialEl.className = 'redis-counter-card single-alert';
@@ -864,6 +956,10 @@ function renderizarResultado(data) {
   // Ação recomendada
   document.getElementById('acaoRecomendada').textContent = data.acao_recomendada || 'Não clique em links nem repasse valores.';
 
+  // Restaura botões de feedback para nova análise
+  document.getElementById('feedbackButtonsRow').style.display = 'flex';
+  document.getElementById('feedbackThankyou').style.display = 'none';
+
   resultado.style.display = 'block';
   resultado.scrollIntoView({ behavior: 'smooth' });
 
@@ -873,7 +969,7 @@ function renderizarResultado(data) {
     window.open(`https://wa.me/?text=${encodeURIComponent(shareText)}`, '_blank');
   };
 
-  // Feedback
+  // Feedback Humanizado
   document.getElementById('btnFbUp').onclick = () => enviarFeedback(true, data.analise_id);
   document.getElementById('btnFbDown').onclick = () => enviarFeedback(false, data.analise_id);
 }
@@ -884,7 +980,16 @@ function enviarFeedback(positivo, analise_id) {
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ positivo, analise_id })
   }).catch(() => {});
-  alert('Obrigado pelo seu feedback! Ele ajuda a calibrar o sistema.');
+
+  // Transição elegante inline sem popup travando tela
+  document.getElementById('feedbackButtonsRow').style.display = 'none';
+  const thx = document.getElementById('feedbackThankyou');
+  thx.innerHTML = positivo
+    ? '✨ <strong>Muito obrigado!</strong> Ficamos felizes em ajudar você a se proteger.'
+    : '🙏 <strong>Obrigado pelo aviso!</strong> Vamos usar isso para melhorar as próximas respostas.';
+  thx.style.display = 'block';
+
+  showToast('Feedback registrado com sucesso!', '❤️');
 }
 </script>
 </body>
