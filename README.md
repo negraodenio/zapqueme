@@ -87,15 +87,18 @@ Cria um ficheiro `.env.local` com `GEMINI_API_KEY=AIzaSy...` antes de correr.
 
 Zero! O modelo `gemini-2.0-flash` no Google AI Studio possui plano gratuito generoso (15 requisições por minuto e até 1.500 requisições por dia grátis), ideal para MVP com visão multimodal.
 
-## Próximos passos sugeridos (depois do dia 1)
+## Próximos passos e Funcionalidades
 
-- [x] Contador "já verificada N vezes" (Upstash Redis) — já implementado
-- [x] Backend de análise de dados / histórico (Supabase) — já implementado
-- [ ] Rate limit por IP (dá pra reusar a mesma database Upstash com um `INCR` + `EXPIRE` por IP)
+- [x] Bot WhatsApp via Twilio Sandbox (`/api/whatsapp`) — já implementado
+- [x] Termômetro visual de risco com barra de emojis (Score 0-100) — já implementado
+- [x] Deteção e alerta de links falsos / typosquatting — já implementado
+- [x] Protocolo de emergência "Fui Vítima" (guia imediato de MED/estorno e BO/queixa) — já implementado
+- [x] Contador social "já verificada N vezes" (Upstash Redis) — já implementado
+- [x] Backend de auditoria e métricas (Supabase) — já implementado
+- [ ] Rate limit por IP (reusando Upstash com `INCR` + `EXPIRE`)
 - [ ] Link de partilha com resultado anonimizado (`/r/abc123`)
-- [ ] Bot Telegram (reusa a mesma função `analyze.js`)
-- [ ] Domínio próprio (ex: `egolpe.pt` ou `.com.br`) — mais fácil de partilhar de boca
-- [ ] Analytics simples (Vercel Analytics é grátis e já vem pronto)
+- [ ] Domínio próprio (ex: `zapqueme.com` ou `zapqueme.pt`)
+- [ ] Migração de Twilio Sandbox para WhatsApp Cloud API oficial (quando validar)
 
 ## Aviso legal a manter sempre visível
 
