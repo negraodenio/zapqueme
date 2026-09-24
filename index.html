@@ -423,7 +423,7 @@
                 <span class="font-bold tracking-tight text-xs uppercase text-white">Alerta Crítico: Provável Golpe</span>
               </div>
               <span class="bg-white/20 backdrop-blur-xs text-[10px] font-semibold px-2 py-0.5 rounded-full text-white uppercase">
-                ${escapeHtml(data.tipo || 'Golpe')}
+                ${escapeHtml((data.tipo && data.tipo.toLowerCase() !== 'outro') ? data.tipo : 'GOLPE')}
               </span>
             </div>
 
@@ -536,7 +536,7 @@
                 <h2 class="font-bold text-xs uppercase tracking-tight">ATENÇÃO: RISCO MODERADO</h2>
               </div>
               <span class="bg-white/20 backdrop-blur-sm text-white text-[10px] font-semibold px-2 py-0.5 rounded-full uppercase tracking-wider">
-                ${escapeHtml(data.tipo || 'Link Suspeito')}
+                ${escapeHtml((data.tipo && data.tipo.toLowerCase() !== 'outro') ? data.tipo : 'LINK SUSPEITO')}
               </span>
             </header>
 
