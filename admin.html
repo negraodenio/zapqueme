@@ -223,7 +223,7 @@
       background: rgba(255, 255, 255, 0.1);
     }
 
-    /* STATS CARDS (Seção 19: 4 CARDS OBRIGATÓRIOS) */
+    /* STATS CARDS */
     .kpi-grid {
       display: grid;
       grid-template-columns: repeat(4, 1fr);
@@ -332,10 +332,16 @@
       border: 1px solid rgba(16, 185, 129, 0.3);
     }
 
-    .badge-suspenso, .badge-expirado {
+    .badge-suspenso {
       background: rgba(239, 68, 68, 0.15);
       color: #ef4444;
       border: 1px solid rgba(239, 68, 68, 0.3);
+    }
+
+    .badge-expirado {
+      background: rgba(245, 158, 11, 0.15);
+      color: #fbbf24;
+      border: 1px solid rgba(245, 158, 11, 0.3);
     }
 
     .badge-plano {
@@ -488,7 +494,7 @@
     }
 
     .btn-xs {
-      padding: 4px 8px;
+      padding: 5px 10px;
       font-size: 0.78rem;
       border-radius: 6px;
       cursor: pointer;
@@ -497,11 +503,15 @@
       background: rgba(255, 255, 255, 0.05);
       color: #fff;
       text-decoration: none;
-      display: inline-block;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      transition: all 0.15s;
     }
 
     .btn-xs:hover {
       background: rgba(255, 255, 255, 0.12);
+      transform: translateY(-1px);
     }
 
     .btn-xs-primary {
@@ -510,10 +520,40 @@
       color: #34d399;
     }
 
+    .btn-xs-primary:hover {
+      background: rgba(16, 185, 129, 0.35);
+    }
+
     .btn-xs-danger {
       background: rgba(239, 68, 68, 0.15);
       border-color: rgba(239, 68, 68, 0.4);
       color: #f87171;
+    }
+
+    .btn-xs-danger:hover {
+      background: rgba(239, 68, 68, 0.25);
+    }
+
+    /* TOAST */
+    .toast-copy {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      background: #10b981;
+      color: #042f2e;
+      padding: 12px 20px;
+      border-radius: 8px;
+      font-weight: 700;
+      font-size: 0.88rem;
+      z-index: 99999;
+      display: none;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+      animation: fadeIn 0.2s;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
     }
   </style>
 </head>
@@ -597,7 +637,7 @@
       </div>
     </div>
 
-    <!-- KPIS: CARD 1, 2, 3, 4 OBRIGATÓRIOS (Seção 19) -->
+    <!-- KPIS: 4 CARDS OBRIGATÓRIOS (Seção 19) -->
     <section class="kpi-grid">
       <!-- CARD 1 -->
       <div class="kpi-card">
@@ -666,11 +706,14 @@
       </div>
     </div>
 
-    <!-- TAB 2: SELOS & EMPRESAS (Seção 7) -->
+    <!-- TAB 2: SELOS & EMPRESAS (Seções 7 e 12) -->
     <div id="tab-selos" class="tab-pane" style="display: none;">
       <div class="table-container">
         <div class="table-header">
-          <h3>Selos ZAP VERIFIED</h3>
+          <div>
+            <h3>Selos ZAP VERIFIED</h3>
+            <p style="color: var(--text-muted); font-size: 0.8rem; margin-top: 2px;">Verificação oficial de canais empresariais</p>
+          </div>
           <button onclick="openNewSeloModal()" class="btn-action" style="padding: 6px 14px; font-size: 0.8rem;">+ Criar Selo</button>
         </div>
         <table>
@@ -1013,9 +1056,124 @@
     </div>
   </div>
 
+  <!-- MODAL 6: SELO RECÉM-CRIADO (Seção 14) -->
+  <div id="seloCreatedModal" class="modal-overlay">
+    <div class="modal-content" style="max-width: 500px; text-align: center;">
+      <div style="font-size: 2.5rem; margin-bottom: 8px;">🛡️</div>
+      <h3 style="font-size: 1.3rem; font-weight: 800; color: #fff; margin-bottom: 4px;">ZAP VERIFIED criado</h3>
+      <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 20px;">O selo de verificação oficial foi emitido com sucesso.</p>
+
+      <div class="detail-section" style="text-align: left;">
+        <div class="detail-row"><span class="detail-label">Código:</span> <span id="createdSeloCodigo" class="detail-value" style="font-family: 'JetBrains Mono', monospace; color: var(--primary);">-</span></div>
+        <div class="detail-row"><span class="detail-label">Estado:</span> <span id="createdSeloEstado" class="detail-value" style="color: #34d399;">● Ativo</span></div>
+        <div class="detail-row"><span class="detail-label">Validade:</span> <span id="createdSeloValidade" class="detail-value">-</span></div>
+        <div class="detail-row"><span class="detail-label">URL:</span> <a id="createdSeloUrl" href="#" target="_blank" style="color: #60a5fa; font-size: 0.82rem; text-decoration: underline;">-</a></div>
+      </div>
+
+      <div style="display: flex; gap: 10px; justify-content: center; margin-top: 20px;">
+        <button class="btn-action" id="btnCreatedAbrirKit" style="padding: 10px 20px;">🛡️ Abrir Kit Badge</button>
+        <button class="btn-secondary" onclick="closeModals()">Fechar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL 7: KIT COMERCIAL ZAP VERIFIED (Seções 4, 5, 6, 7, 8, 9) -->
+  <div id="kitBadgeModal" class="modal-overlay">
+    <div class="modal-content" style="max-width: 680px;">
+      <div class="modal-title">
+        <div style="display: flex; align-items: center; gap: 10px;">
+          <span style="color: var(--primary); font-size: 1.4rem;">🛡️</span>
+          <div>
+            <div style="font-size: 1.15rem; font-weight: 800; color: #fff;">ZAP VERIFIED — Kit Comercial</div>
+            <div style="font-size: 0.75rem; color: var(--text-muted); font-weight: 600;">Verificação oficial de canais empresariais</div>
+          </div>
+        </div>
+        <button class="close-modal" onclick="closeModals()">×</button>
+      </div>
+
+      <!-- Detalhes do Selo (Seção 4) -->
+      <div class="detail-section" style="background: rgba(16, 185, 129, 0.05); border-color: rgba(16, 185, 129, 0.25);">
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px;">
+          <div>
+            <span style="font-size: 0.72rem; font-weight: 800; color: var(--primary); letter-spacing: 0.1em; text-transform: uppercase;">ZAP VERIFIED</span>
+            <h3 id="kitEmpresaNome" style="font-size: 1.3rem; font-weight: 800; color: #fff; margin: 2px 0 6px;">-</h3>
+            <div id="kitEstadoBadge" class="badge badge-ativo">● VERIFICAÇÃO ATIVA</div>
+          </div>
+          <div style="text-align: right;">
+            <div style="font-size: 0.72rem; color: var(--text-muted); font-weight: 700; text-transform: uppercase;">Válido até</div>
+            <div id="kitValidade" style="font-weight: 700; color: #fff; font-size: 0.95rem;">-</div>
+          </div>
+        </div>
+
+        <div class="detail-row">
+          <span class="detail-label">Código:</span>
+          <span id="kitCodigo" class="detail-value" style="font-family: 'JetBrains Mono', monospace; color: var(--primary);">-</span>
+        </div>
+        <div class="detail-row" style="align-items: center;">
+          <span class="detail-label">URL pública:</span>
+          <div style="display: flex; gap: 8px; align-items: center;">
+            <a id="kitUrlLink" href="#" target="_blank" style="color: #60a5fa; font-size: 0.85rem; text-decoration: underline;">-</a>
+            <button class="btn-xs" onclick="copiarKitUrl()">📋 Copiar URL</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Canais Verificados (Seção 4 e 7) -->
+      <div class="detail-section">
+        <h4 style="font-size: 0.78rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; margin-bottom: 10px; letter-spacing: 0.06em;">Canais Verificados</h4>
+        <div id="kitCanaisLista" style="display: flex; flex-direction: column; gap: 8px;">
+          <!-- Preenchido dinamicamente -->
+        </div>
+      </div>
+
+      <!-- Seleção de Formato do Badge (Seção 6) -->
+      <div style="margin-bottom: 12px;">
+        <div style="font-size: 0.78rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; margin-bottom: 8px; letter-spacing: 0.06em;">Badges Disponíveis</div>
+        <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+          <button id="btnFmtHorizontal" class="btn-xs btn-xs-primary" onclick="setKitFormato('horizontal')">Badge Horizontal</button>
+          <button id="btnFmtPrincipal" class="btn-xs" onclick="setKitFormato('principal')">Badge Principal</button>
+          <button id="btnFmtCircular" class="btn-xs" onclick="setKitFormato('circular')">Badge Circular</button>
+        </div>
+      </div>
+
+      <!-- Preview Interativo do Badge Selecionado -->
+      <div style="background: #070a12; border: 1px solid var(--card-border); border-radius: 12px; padding: 24px; text-align: center; margin-bottom: 18px; min-height: 140px; display: flex; align-items: center; justify-content: center; overflow: hidden;">
+        <div id="kitBadgePreview" style="display: inline-block;">
+          <!-- SVG renderizado aqui -->
+        </div>
+      </div>
+
+      <!-- Snippet HTML Embed (Seção 9) -->
+      <div class="form-group">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+          <label class="form-label" style="margin: 0;">Código de Incorporação (HTML Embed)</label>
+          <button class="btn-xs btn-xs-primary" onclick="copiarKitHtml()">📋 Copiar HTML</button>
+        </div>
+        <textarea id="kitHtmlEmbed" class="form-input" rows="3" readonly style="font-family: 'JetBrains Mono', monospace; font-size: 0.78rem; resize: none; background: #070a12; color: #cbd5e1;"></textarea>
+      </div>
+
+      <!-- Ações Finais (Seção 8 e 10) -->
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 20px; border-top: 1px solid var(--card-border); padding-top: 16px;">
+        <div style="font-size: 0.75rem; color: var(--text-muted); max-width: 320px; line-height: 1.3;">
+          🛡️ O badge aponta para a verificação oficial dos canais da empresa.
+        </div>
+        <div style="display: flex; gap: 8px;">
+          <button type="button" class="btn-secondary" onclick="baixarKitSvg()">⬇ Baixar SVG</button>
+          <a id="kitBtnAbrirPublico" href="#" target="_blank" class="btn-action" style="padding: 8px 16px; font-size: 0.85rem; text-decoration: none;">Abrir Verificação ↗</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TOAST FEEDBACK -->
+  <div id="toastCopy" class="toast-copy">Copiado com sucesso!</div>
+
   <script>
     let globalAdminSecret = localStorage.getItem('zap_admin_key') || '';
     let dashboardState = { empresas: [], selos: [], radar: [], ocorrencias: [] };
+    let currentKitSelo = null;
+    let currentKitEmpresa = null;
+    let currentKitFormato = 'horizontal';
 
     window.addEventListener('DOMContentLoaded', () => {
       if (globalAdminSecret) {
@@ -1075,6 +1233,17 @@
       document.querySelectorAll('.modal-overlay').forEach(m => m.style.display = 'none');
     }
 
+    function showToast(msg) {
+      const toast = document.getElementById('toastCopy');
+      if (toast) {
+        toast.textContent = msg || 'Copiado para a área de transferência!';
+        toast.style.display = 'block';
+        setTimeout(() => {
+          toast.style.display = 'none';
+        }, 2500);
+      }
+    }
+
     async function loadDashboardData() {
       try {
         const res = await fetch('/api/admin', {
@@ -1116,7 +1285,9 @@
 
       tbody.innerHTML = empresas.map(emp => {
         const selosEmp = (dashboardState.selos || []).filter(s => s.empresa_id === emp.id);
-        const seloInfo = selosEmp.length ? `<span style="font-family: 'JetBrains Mono', monospace; font-size: 0.8rem;">${selosEmp[0].codigo}</span>` : '<span style="color: var(--text-muted);">Sem selo</span>';
+        const seloInfo = selosEmp.length
+          ? `<span style="font-family: 'JetBrains Mono', monospace; font-size: 0.8rem; color: var(--primary); font-weight: 700;">${selosEmp[0].codigo}</span>`
+          : '<span style="color: var(--text-muted);">Sem selo</span>';
         const radarAtivo = selosEmp.some(s => s.monitorizacao_impersonation) ? '🟢 Ativo' : '⚪ Inativo';
         const dataCriada = emp.criado_em ? new Date(emp.criado_em).toLocaleDateString('pt-PT') : '-';
 
@@ -1133,7 +1304,7 @@
             <td>${seloInfo}</td>
             <td style="color: var(--text-muted); font-size: 0.85rem;">${dataCriada}</td>
             <td>
-              <div style="display: flex; gap: 6px;">
+              <div style="display: flex; gap: 6px; flex-wrap: wrap;">
                 <button class="btn-xs btn-xs-primary" onclick="verEmpresa('${emp.id}')">Ver</button>
                 <button class="btn-xs" onclick="editarEmpresa('${emp.id}')">Editar</button>
                 ${emp.status === 'ativo'
@@ -1147,7 +1318,7 @@
       }).join('');
     }
 
-    // TAB 2: RENDER SELOS (Seção 7)
+    // TAB 2: RENDER SELOS (Seções 7 e 12)
     function renderSelos(selos) {
       const tbody = document.getElementById('selosTableBody');
       if (!selos.length) {
@@ -1160,7 +1331,7 @@
         const agora = new Date();
         const expirado = s.valido_ate ? new Date(s.valido_ate) < agora : false;
         const statusTexto = emp?.status === 'suspenso' ? 'Suspenso' : (emp?.status !== 'ativo' ? 'Inativo' : (expirado ? 'Expirado' : 'Ativo'));
-        const statusBadge = (emp?.status === 'ativo' && !expirado) ? 'badge-ativo' : 'badge-suspenso';
+        const statusBadge = (emp?.status === 'ativo' && !expirado) ? 'badge-ativo' : (emp?.status === 'suspenso' ? 'badge-suspenso' : 'badge-expirado');
         const validade = s.valido_ate ? new Date(s.valido_ate).toLocaleDateString('pt-PT') : 'Indeterminada';
         const radar = s.monitorizacao_impersonation ? '🟢 Ativo' : '⚪ Inativo';
         const urlPublica = `/verify/${s.codigo}`;
@@ -1168,15 +1339,21 @@
         return `
           <tr>
             <td style="font-weight: 700; color: #fff;">${escapeHtml(s.empresa_nome || emp?.nome || 'Empresa')}</td>
-            <td><strong style="font-family: 'JetBrains Mono', monospace; color: var(--primary);">${escapeHtml(s.codigo)}</strong></td>
+            <td><strong style="font-family: 'JetBrains Mono', monospace; color: var(--primary); font-size: 0.95rem;">${escapeHtml(s.codigo)}</strong></td>
             <td><span class="badge ${statusBadge}">${statusTexto}</span></td>
             <td style="font-size: 0.85rem; color: var(--text-muted);">${validade}</td>
             <td><a href="${urlPublica}" target="_blank" class="btn-xs" style="color: var(--primary);">Abrir URL ↗</a></td>
             <td>${radar}</td>
             <td>
-              <div style="display: flex; gap: 6px;">
+              <div style="display: flex; gap: 6px; flex-wrap: wrap;">
+                <button class="btn-xs btn-xs-primary" onclick="abrirKitBadge('${s.id}')">🛡️ Kit Badge</button>
+                <a href="${urlPublica}" target="_blank" class="btn-xs" style="color: #60a5fa;">Abrir URL</a>
                 <button class="btn-xs" onclick="regenerarSelo('${s.id}')">Regenerar</button>
-                <button class="btn-xs btn-xs-danger" onclick="excluirSelo('${s.id}')">Excluir</button>
+                ${emp?.status === 'ativo'
+                  ? `<button class="btn-xs btn-xs-danger" onclick="toggleStatusEmpresa('${emp.id}', 'suspenso')">Suspender</button>`
+                  : `<button class="btn-xs btn-xs-primary" onclick="toggleStatusEmpresa('${emp.id}', 'ativo')">Ativar</button>`
+                }
+                <button class="btn-xs btn-xs-danger" onclick="excluirSelo('${s.id}')" title="Excluir">✕</button>
               </div>
             </td>
           </tr>
@@ -1238,7 +1415,218 @@
       }).join('');
     }
 
+    // =========================================================================
+    // KIT COMERCIAL ZAP VERIFIED (Seções 3, 4, 5, 6, 7, 8, 9)
+    // =========================================================================
+    function abrirKitBadge(seloId) {
+      const selo = (dashboardState.selos || []).find(s => s.id === seloId);
+      if (!selo) return;
+
+      const emp = (dashboardState.empresas || []).find(e => e.id === selo.empresa_id);
+      currentKitSelo = selo;
+      currentKitEmpresa = emp;
+      currentKitFormato = 'horizontal';
+
+      const agora = new Date();
+      const expirado = selo.valido_ate ? new Date(selo.valido_ate) < agora : false;
+      const isSuspenso = emp?.status === 'suspenso';
+      const isAtivo = emp?.status === 'ativo' && !expirado;
+
+      // Header e Metadados
+      document.getElementById('kitEmpresaNome').textContent = emp ? emp.nome : 'Empresa';
+      document.getElementById('kitCodigo').textContent = selo.codigo;
+      document.getElementById('kitValidade').textContent = selo.valido_ate ? new Date(selo.valido_ate).toLocaleDateString('pt-PT') : 'Indeterminada';
+
+      const statusBadge = document.getElementById('kitEstadoBadge');
+      if (isAtivo) {
+        statusBadge.className = 'badge badge-ativo';
+        statusBadge.textContent = '● VERIFICAÇÃO ATIVA';
+      } else if (isSuspenso) {
+        statusBadge.className = 'badge badge-suspenso';
+        statusBadge.textContent = '● VERIFICAÇÃO SUSPENSA';
+      } else {
+        statusBadge.className = 'badge badge-expirado';
+        statusBadge.textContent = '● VERIFICAÇÃO EXPIRADA';
+      }
+
+      const publicUrl = `${window.location.origin}/verify/${selo.codigo}`;
+      const urlLink = document.getElementById('kitUrlLink');
+      urlLink.textContent = publicUrl;
+      urlLink.href = publicUrl;
+
+      document.getElementById('kitBtnAbrirPublico').href = publicUrl;
+
+      // Canais Verificados (Seção 7: apenas verificado se boolean for true)
+      const canaisLista = document.getElementById('kitCanaisLista');
+      let canaisHtml = '';
+
+      if (emp) {
+        // Domínio
+        if (emp.dominio_verificado && emp.dominio_oficial) {
+          canaisHtml += `<div style="display: flex; align-items: center; gap: 8px; font-size: 0.85rem; color: #34d399;"><strong style="font-size: 1rem;">✓</strong> <span>DOMÍNIO OFICIAL VERIFICADO: <strong>${escapeHtml(emp.dominio_oficial)}</strong></span></div>`;
+        } else if (emp.dominio_oficial) {
+          canaisHtml += `<div style="display: flex; align-items: center; gap: 8px; font-size: 0.85rem; color: #94a3b8;"><span>–</span> <span>DOMÍNIO OFICIAL REGISTADO: ${escapeHtml(emp.dominio_oficial)}</span></div>`;
+        }
+
+        // Email
+        if (emp.email_verificado && emp.email_oficial) {
+          canaisHtml += `<div style="display: flex; align-items: center; gap: 8px; font-size: 0.85rem; color: #34d399;"><strong style="font-size: 1rem;">✓</strong> <span>EMAIL OFICIAL VERIFICADO: <strong>${escapeHtml(emp.email_oficial)}</strong></span></div>`;
+        } else if (emp.email_oficial) {
+          canaisHtml += `<div style="display: flex; align-items: center; gap: 8px; font-size: 0.85rem; color: #94a3b8;"><span>–</span> <span>EMAIL OFICIAL REGISTADO: ${escapeHtml(emp.email_oficial)}</span></div>`;
+        }
+
+        // Telefone
+        if (emp.telefone_verificado && emp.telefone_oficial) {
+          canaisHtml += `<div style="display: flex; align-items: center; gap: 8px; font-size: 0.85rem; color: #34d399;"><strong style="font-size: 1rem;">✓</strong> <span>TELEFONE OFICIAL VERIFICADO: <strong>${escapeHtml(emp.telefone_oficial)}</strong></span></div>`;
+        } else if (emp.telefone_oficial) {
+          canaisHtml += `<div style="display: flex; align-items: center; gap: 8px; font-size: 0.85rem; color: #94a3b8;"><span>–</span> <span>TELEFONE OFICIAL REGISTADO: ${escapeHtml(emp.telefone_oficial)}</span></div>`;
+        }
+      }
+
+      if (!canaisHtml) {
+        canaisHtml = `<div style="font-size: 0.85rem; color: var(--text-muted); font-style: italic;">Nenhum canal cadastrado ainda.</div>`;
+      }
+      canaisLista.innerHTML = canaisHtml;
+
+      // Renderiza formato inicial
+      setKitFormato('horizontal');
+      document.getElementById('kitBadgeModal').style.display = 'flex';
+    }
+
+    function setKitFormato(formato) {
+      currentKitFormato = formato;
+
+      // Atualiza botões
+      document.getElementById('btnFmtHorizontal').className = formato === 'horizontal' ? 'btn-xs btn-xs-primary' : 'btn-xs';
+      document.getElementById('btnFmtPrincipal').className = formato === 'principal' ? 'btn-xs btn-xs-primary' : 'btn-xs';
+      document.getElementById('btnFmtCircular').className = formato === 'circular' ? 'btn-xs btn-xs-primary' : 'btn-xs';
+
+      if (!currentKitSelo) return;
+
+      const agora = new Date();
+      const expirado = currentKitSelo.valido_ate ? new Date(currentKitSelo.valido_ate) < agora : false;
+      const status = currentKitEmpresa?.status === 'suspenso' ? 'suspenso' : (expirado ? 'expirado' : (currentKitEmpresa?.status === 'ativo' ? 'ativo' : 'inativo'));
+      const empresaNome = currentKitEmpresa ? currentKitEmpresa.nome : 'Empresa';
+      const codigo = currentKitSelo.codigo;
+
+      // Gera SVG para o preview local
+      let svg = '';
+      if (formato === 'principal') {
+        svg = generatePrincipalBadgeSvg(codigo, empresaNome, status);
+      } else if (formato === 'circular') {
+        svg = generateCircularBadgeSvg(codigo, empresaNome, status);
+      } else {
+        svg = generateHorizontalBadgeSvg(codigo, empresaNome, status);
+      }
+
+      document.getElementById('kitBadgePreview').innerHTML = svg;
+
+      // Atualiza o snippet de código HTML Embed (Seção 9)
+      const verifyUrl = `${window.location.origin}/verify/${codigo}`;
+      const badgeImageUrl = `${window.location.origin}/api/badge?codigo=${codigo}&formato=${formato}`;
+      const embedCode = `<a href="${verifyUrl}" target="_blank" rel="noopener noreferrer">\n  <img src="${badgeImageUrl}" alt="ZAP VERIFIED — Canais oficiais confirmados" />\n</a>`;
+      document.getElementById('kitHtmlEmbed').value = embedCode;
+    }
+
+    function copiarKitUrl() {
+      if (!currentKitSelo) return;
+      const url = `${window.location.origin}/verify/${currentKitSelo.codigo}`;
+      navigator.clipboard.writeText(url).then(() => {
+        showToast('URL pública copiada com sucesso!');
+      });
+    }
+
+    function copiarKitHtml() {
+      const txt = document.getElementById('kitHtmlEmbed').value;
+      if (!txt) return;
+      navigator.clipboard.writeText(txt).then(() => {
+        showToast('Código HTML Embed copiado com sucesso!');
+      });
+    }
+
+    function baixarKitSvg() {
+      const container = document.getElementById('kitBadgePreview');
+      const svg = container ? container.innerHTML : '';
+      if (!svg) return;
+
+      const blob = new Blob([svg], { type: 'image/svg+xml;charset=utf-8' });
+      const dlUrl = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = dlUrl;
+      a.download = `zap-verified-${currentKitSelo?.codigo || 'badge'}-${currentKitFormato}.svg`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(dlUrl);
+      showToast('Arquivo SVG baixado com sucesso!');
+    }
+
+    // Geradores de SVG no cliente (Preview em tempo real sem latência)
+    function generateHorizontalBadgeSvg(codigo, empresaNome, status) {
+      const isAtivo = status === 'ativo';
+      const isSuspenso = status === 'suspenso';
+      const primaryColor = isAtivo ? '#10b981' : (isSuspenso ? '#ef4444' : '#f59e0b');
+      const statusLabel = isAtivo ? 'CANAIS CONFIRMADOS' : (isSuspenso ? 'VERIFICAÇÃO SUSPENSA' : 'VERIFICAÇÃO EXPIRADA');
+
+      return `<svg xmlns="http://www.w3.org/2000/svg" width="310" height="64" viewBox="0 0 310 64" fill="none">
+        <rect width="310" height="64" rx="12" fill="#0f172a" stroke="#ffffff" stroke-opacity="0.12" stroke-width="1" />
+        <g transform="translate(14, 14)">
+          <path d="M18 2L5 7.5V17.5C5 25.5 10.5 32.8 18 35C25.5 32.8 31 25.5 31 17.5V7.5L18 2Z" fill="${primaryColor}" />
+          <path d="M13 18L16.5 21.5L23 14" stroke="#ffffff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" />
+        </g>
+        <text x="58" y="24" font-family="sans-serif" font-size="14" font-weight="800" fill="#ffffff" letter-spacing="0.08em">ZAP VERIFIED</text>
+        <text x="58" y="41" font-family="sans-serif" font-size="10.5" font-weight="600" fill="${primaryColor}">${statusLabel}</text>
+        <text x="58" y="54" font-family="monospace" font-size="8.5" font-weight="500" fill="#64748b">${escapeHtml(codigo)}</text>
+        <rect x="236" y="16" width="60" height="20" rx="10" fill="${primaryColor}" fill-opacity="0.15" stroke="${primaryColor}" stroke-opacity="0.4" stroke-width="1" />
+        <circle cx="246" cy="26" r="3" fill="${primaryColor}" />
+        <text x="254" y="29.5" font-family="sans-serif" font-size="9" font-weight="700" fill="${primaryColor}">${isAtivo ? 'OFICIAL' : (isSuspenso ? 'SUSP' : 'EXP')}</text>
+      </svg>`;
+    }
+
+    function generatePrincipalBadgeSvg(codigo, empresaNome, status) {
+      const isAtivo = status === 'ativo';
+      const isSuspenso = status === 'suspenso';
+      const primaryColor = isAtivo ? '#10b981' : (isSuspenso ? '#ef4444' : '#f59e0b');
+      const statusLabel = isAtivo ? 'VERIFICAÇÃO ATIVA' : (isSuspenso ? 'VERIFICAÇÃO SUSPENSA' : 'VERIFICAÇÃO EXPIRADA');
+
+      return `<svg xmlns="http://www.w3.org/2000/svg" width="220" height="250" viewBox="0 0 220 250" fill="none">
+        <rect width="220" height="250" rx="18" fill="#0f172a" stroke="#ffffff" stroke-opacity="0.12" stroke-width="1.5" />
+        <g transform="translate(85, 24)">
+          <path d="M25 2L5 10.5V26C5 38 13.5 48.8 25 52C36.5 48.8 45 38 45 26V10.5L25 2Z" fill="${primaryColor}" />
+          <path d="M17 26.5L22.5 32L33 20" stroke="#ffffff" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round" />
+        </g>
+        <text x="110" y="104" text-anchor="middle" font-family="sans-serif" font-size="14.5" font-weight="900" fill="#ffffff" letter-spacing="0.1em">ZAP VERIFIED</text>
+        <text x="110" y="122" text-anchor="middle" font-family="sans-serif" font-size="9" font-weight="700" fill="${primaryColor}" letter-spacing="0.08em">CANAIS OFICIAIS CONFIRMADOS</text>
+        <line x1="30" y1="138" x2="190" y2="138" stroke="#ffffff" stroke-opacity="0.1" stroke-width="1" />
+        <text x="110" y="160" text-anchor="middle" font-family="sans-serif" font-size="12" font-weight="700" fill="#f8fafc">${escapeHtml(empresaNome)}</text>
+        <rect x="30" y="178" width="160" height="24" rx="12" fill="${primaryColor}" fill-opacity="0.12" stroke="${primaryColor}" stroke-opacity="0.35" stroke-width="1" />
+        <circle cx="44" cy="190" r="3.5" fill="${primaryColor}" />
+        <text x="54" y="193.5" font-family="sans-serif" font-size="9" font-weight="800" fill="${primaryColor}">${statusLabel}</text>
+        <text x="110" y="226" text-anchor="middle" font-family="monospace" font-size="9" font-weight="600" fill="#64748b">${escapeHtml(codigo)}</text>
+      </svg>`;
+    }
+
+    function generateCircularBadgeSvg(codigo, empresaNome, status) {
+      const isAtivo = status === 'ativo';
+      const isSuspenso = status === 'suspenso';
+      const primaryColor = isAtivo ? '#10b981' : (isSuspenso ? '#ef4444' : '#f59e0b');
+
+      return `<svg xmlns="http://www.w3.org/2000/svg" width="160" height="160" viewBox="0 0 160 160" fill="none">
+        <circle cx="80" cy="80" r="78" fill="#0f172a" stroke="#ffffff" stroke-opacity="0.12" stroke-width="2" />
+        <circle cx="80" cy="80" r="70" fill="none" stroke="${primaryColor}" stroke-opacity="0.3" stroke-width="1.5" stroke-dasharray="4 3" />
+        <g transform="translate(55, 38)">
+          <path d="M25 2L6 10V25C6 36.5 14 46.5 25 50C36 46.5 44 36.5 44 25V10L25 2Z" fill="${primaryColor}" />
+          <path d="M17 25L22 30L33 19" stroke="#ffffff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" />
+        </g>
+        <text x="80" y="112" text-anchor="middle" font-family="sans-serif" font-size="11" font-weight="900" fill="#ffffff" letter-spacing="0.08em">ZAP VERIFIED</text>
+        <text x="80" y="126" text-anchor="middle" font-family="sans-serif" font-size="8" font-weight="700" fill="${primaryColor}" letter-spacing="0.06em">CANAIS OFICIAIS</text>
+        <circle cx="80" cy="138" r="3" fill="${primaryColor}" />
+      </svg>`;
+    }
+
+    // =========================================================================
     // MODAL HANDLERS
+    // =========================================================================
     function openNewEmpresaModal() {
       document.getElementById('formNewEmpresa').reset();
       document.getElementById('modalMonitorizacao').checked = true;
@@ -1271,8 +1659,14 @@
           body: JSON.stringify(payload)
         });
         if (!res.ok) throw new Error(await res.text());
+        const data = await res.json();
         closeModals();
-        loadDashboardData();
+        await loadDashboardData();
+
+        // Seção 14: Se selo foi criado, exibe a confirmação ZAP VERIFIED criado
+        if (data.selo) {
+          mostrarSeloCriado(data.selo, data.empresa);
+        }
       } catch (err) {
         alert('Erro ao criar empresa: ' + err.message);
       }
@@ -1444,11 +1838,36 @@
           })
         });
         if (!res.ok) throw new Error(await res.text());
+        const data = await res.json();
         closeModals();
-        loadDashboardData();
+        await loadDashboardData();
+
+        // Seção 14: Confirmação pós-criação
+        const emp = (dashboardState.empresas || []).find(x => x.id === empresa_id);
+        mostrarSeloCriado(data.selo, emp);
       } catch (err) {
         alert('Erro ao criar selo: ' + err.message);
       }
+    }
+
+    // Exibe diálogo pós-criação com botão [ Abrir Kit Badge ] (Seção 14)
+    function mostrarSeloCriado(selo, empresa) {
+      if (!selo) return;
+      document.getElementById('createdSeloCodigo').textContent = selo.codigo;
+      document.getElementById('createdSeloEstado').textContent = (empresa?.status === 'ativo' || !empresa?.status) ? '● Ativo' : '● Inativo';
+      document.getElementById('createdSeloValidade').textContent = selo.valido_ate ? new Date(selo.valido_ate).toLocaleDateString('pt-PT') : 'Indeterminada';
+      const url = `${window.location.origin}/verify/${selo.codigo}`;
+      const urlEl = document.getElementById('createdSeloUrl');
+      urlEl.textContent = url;
+      urlEl.href = url;
+
+      const btnKit = document.getElementById('btnCreatedAbrirKit');
+      btnKit.onclick = () => {
+        closeModals();
+        abrirKitBadge(selo.id);
+      };
+
+      document.getElementById('seloCreatedModal').style.display = 'flex';
     }
 
     async function regenerarSelo(selo_id) {
@@ -1460,6 +1879,7 @@
           body: JSON.stringify({ action: 'regenerar_selo', selo_id })
         });
         if (!res.ok) throw new Error(await res.text());
+        showToast('Selo regenerado com novo código de alta entropia!');
         loadDashboardData();
       } catch (err) {
         alert('Erro ao regenerar selo: ' + err.message);
@@ -1475,6 +1895,7 @@
           body: JSON.stringify({ action: 'delete_selo', selo_id })
         });
         if (!res.ok) throw new Error(await res.text());
+        showToast('Selo removido com sucesso.');
         loadDashboardData();
       } catch (err) {
         alert('Erro ao remover selo: ' + err.message);

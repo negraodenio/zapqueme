@@ -4,6 +4,8 @@
     { "source": "/admin", "destination": "/admin.html" },
     { "source": "/empresas", "destination": "/empresas.html" },
     { "source": "/verificar", "destination": "/verificar.html" },
-    { "source": "/verify/:codigo", "destination": "/api/verify?codigo=:codigo" }
+    { "source": "/verify/:codigo", "destination": "/api/verify?codigo=:codigo" },
+    { "source": "/badge/:codigo", "destination": "/api/badge?codigo=:codigo" },
+    { "source": "/badge/:codigo/:formato", "destination": "/api/badge?codigo=:codigo&formato=:formato" }
   ]
 }
