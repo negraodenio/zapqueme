@@ -11,13 +11,10 @@
   :root {
     --bg: #0b0d11;
     --card: #15181f;
-    --card-hover: #1c202a;
     --border: #232834;
-    --border-focus: #10b981;
     --text: #f3f4f6;
     --muted: #94a3b8;
     --accent: #0f766e;
-    --accent-hover: #115e59;
     --accent-glow: rgba(15, 118, 110, 0.25);
     --red: #ef4444;
     --red-bg: rgba(239, 68, 68, 0.12);
@@ -57,7 +54,7 @@
     margin-bottom: 28px;
   }
   .brand {
-    font-size: 1.25rem;
+    font-size: 1.3rem;
     font-weight: 800;
     color: #fff;
     display: flex;
@@ -75,10 +72,6 @@
     border-radius: 20px;
     border: 1px solid var(--green-border);
     text-transform: uppercase;
-  }
-  .nav-actions {
-    display: flex;
-    gap: 8px;
   }
   .btn-nav-emergency {
     background: var(--red-bg);
@@ -119,7 +112,7 @@
     font-weight: 600;
   }
   .hero h1 {
-    font-size: 1.85rem;
+    font-size: 1.9rem;
     font-weight: 800;
     letter-spacing: -0.03em;
     line-height: 1.25;
@@ -142,54 +135,17 @@
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
   }
 
-  /* Seletor de Canal */
-  .channel-title {
-    font-size: 0.8rem;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-    color: var(--muted);
-    margin-bottom: 10px;
-    display: block;
-  }
-  .channels-grid {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 8px;
-    margin-bottom: 16px;
-  }
-  .channel-btn {
-    background: #0f1217;
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    padding: 10px 8px;
-    color: var(--muted);
-    font-size: 0.82rem;
-    font-weight: 600;
-    cursor: pointer;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 4px;
-    transition: 0.15s;
-  }
-  .channel-btn.active, .channel-btn:hover {
-    background: #1a202c;
-    color: #fff;
-    border-color: #3b82f6;
-  }
-
   /* Input Área */
   textarea {
     width: 100%;
-    min-height: 120px;
+    min-height: 125px;
     background: #0b0d11;
     color: var(--text);
     border: 1px solid var(--border);
     border-radius: 12px;
     padding: 14px;
     font-family: inherit;
-    font-size: 0.95rem;
+    font-size: 0.98rem;
     line-height: 1.5;
     resize: vertical;
     transition: 0.2s;
@@ -296,7 +252,7 @@
   }
   @keyframes spin { to { transform: rotate(360deg); } }
 
-  /* CARD DE RESULTADOS (ESTILO DETECTOR DE BURLA) */
+  /* CARD DE RESULTADOS */
   .result-card {
     display: none;
     border-width: 2px;
@@ -315,22 +271,18 @@
     padding-bottom: 14px;
     border-bottom: 1px solid var(--border);
   }
-  .channel-pill {
-    background: #11141a;
-    border: 1px solid var(--border);
-    padding: 4px 10px;
-    border-radius: 6px;
-    font-size: 0.78rem;
-    font-weight: 600;
-    color: var(--muted);
+  .result-meta {
+    font-size: 0.8rem;
+    font-weight: 700;
     text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--muted);
   }
   .veredito-badge {
     padding: 6px 14px;
     border-radius: 20px;
     font-size: 0.88rem;
     font-weight: 800;
-    letter-spacing: -0.01em;
   }
 
   /* Score Principal com Termômetro */
@@ -390,19 +342,53 @@
     transition: width 0.8s cubic-bezier(0.16, 1, 0.3, 1);
   }
 
-  /* Contador Social Viral */
-  .social-counter {
-    background: var(--red-bg);
-    border: 1px solid var(--red-border);
-    color: #fca5a5;
-    padding: 10px 14px;
-    border-radius: 10px;
-    font-size: 0.88rem;
-    font-weight: 600;
-    margin-bottom: 18px;
+  /* DESTAQUE DO CONTADOR UPSTASH REDIS */
+  .redis-counter-card {
+    border-radius: 14px;
+    padding: 16px 18px;
+    margin-bottom: 20px;
     display: flex;
-    align-items: center;
-    gap: 8px;
+    gap: 14px;
+    align-items: flex-start;
+  }
+  .redis-counter-card.repeat-alert {
+    background: rgba(239, 68, 68, 0.14);
+    border: 2px solid rgba(239, 68, 68, 0.5);
+    color: #fecaca;
+  }
+  .redis-counter-card.single-alert {
+    background: rgba(16, 185, 129, 0.1);
+    border: 1px solid rgba(16, 185, 129, 0.35);
+    color: #a7f3d0;
+  }
+  .redis-icon {
+    font-size: 1.6rem;
+    line-height: 1;
+  }
+  .redis-badge-label {
+    font-size: 0.75rem;
+    font-weight: 800;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    margin-bottom: 4px;
+  }
+  .repeat-alert .redis-badge-label { color: #f87171; }
+  .single-alert .redis-badge-label { color: #34d399; }
+  
+  .redis-main-message {
+    font-size: 1.02rem;
+    font-weight: 700;
+    line-height: 1.4;
+    margin-bottom: 4px;
+  }
+  .redis-main-message strong {
+    text-decoration: underline;
+    font-weight: 900;
+  }
+  .redis-sub-text {
+    font-size: 0.82rem;
+    color: var(--muted);
+    line-height: 1.4;
   }
 
   /* Alerta de Link / Typosquatting */
@@ -558,7 +544,6 @@
     font-weight: 600;
   }
 
-  /* Footer Disclaimer */
   .footer-disclaimer {
     font-size: 0.78rem;
     color: #64748b;
@@ -578,7 +563,7 @@
       <span class="brand-badge">IA com Visão</span>
     </a>
     <div class="nav-actions">
-      <a href="#emergencia" class="btn-nav-emergency" id="btnNavEmergency">
+      <a href="#emergencia" class="btn-nav-emergency">
         🆘 Fui Vítima
       </a>
     </div>
@@ -590,27 +575,11 @@
       🛡️ Detector Instantâneo de Fraudes & Phishing
     </div>
     <h1>Verifique mensagens, links e prints suspeitos</h1>
-    <p>Descubra na hora se uma mensagem de SMS, WhatsApp ou e-mail é tentativa de golpe e veja exatamente o que fazer.</p>
+    <p>Cole o texto ou envie o print de uma mensagem suspeita e descubra se é golpe na hora.</p>
   </div>
 
-  <!-- Card do Formulário -->
+  <!-- Card do Formulário (Direto e sem seletor de canal) -->
   <div class="card">
-    <label class="channel-title">Onde você recebeu a mensagem?</label>
-    <div class="channels-grid">
-      <button type="button" class="channel-btn active" data-channel="WhatsApp">
-        <span>💬</span> WhatsApp
-      </button>
-      <button type="button" class="channel-btn" data-channel="SMS">
-        <span>📱</span> SMS
-      </button>
-      <button type="button" class="channel-btn" data-channel="E-mail">
-        <span>📧</span> E-mail
-      </button>
-      <button type="button" class="channel-btn" data-channel="Outro / Link">
-        <span>🔗</span> Link
-      </button>
-    </div>
-
     <textarea id="texto" placeholder="Cole aqui o texto da mensagem suspeita (ex: aviso de encomenda, falso parente pedindo dinheiro, banco alertando compra)..."></textarea>
 
     <div class="upload-box">
@@ -628,17 +597,17 @@
     </div>
 
     <button id="btnVerificar" class="btn-verify">
-      <span>Verificar Mensagem com IA</span> 🕵️
+      <span>Verificar com IA & Banco de Dados</span> 🕵️
     </button>
     <div class="loading-box" id="loading">
-      <span class="spinner"></span> Analisando padrões de fraude, links e remetente...
+      <span class="spinner"></span> Consultando padrões de fraude e histórico de repetições...
     </div>
   </div>
 
-  <!-- Card de Resultado (Inspirado no Detector de Burla) -->
+  <!-- Card de Resultado -->
   <div class="card result-card" id="resultado">
     <div class="result-header">
-      <span class="channel-pill" id="resultChannel">WhatsApp</span>
+      <span class="result-meta">DIAGNÓSTICO AUTOMÁTICO</span>
       <span class="veredito-badge" id="vereditoBadge">🚨 PROVÁVEL GOLPE</span>
     </div>
 
@@ -657,10 +626,14 @@
       </div>
     </div>
 
-    <!-- Contador Social -->
-    <div class="social-counter" id="socialCounter" style="display:none;">
-      <span>⚠️</span>
-      <span id="socialCounterText">Esta mensagem já foi verificada por outras pessoas.</span>
+    <!-- CONTADOR SOCIAL UPSTASH REDIS EM DESTAQUE MÁXIMO -->
+    <div class="redis-counter-card" id="socialCounter" style="display:none;">
+      <div class="redis-icon" id="redisIcon">🔥</div>
+      <div>
+        <div class="redis-badge-label" id="redisBadgeLabel">ALERTA DE REPETIÇÃO EM MASSA (UPSTASH REDIS)</div>
+        <div class="redis-main-message" id="socialCounterText"></div>
+        <div class="redis-sub-text" id="redisSubText"></div>
+      </div>
     </div>
 
     <!-- Alerta de Link -->
@@ -704,7 +677,7 @@
     <div class="steps-list">
       <div class="step-item">
         <strong>1️⃣ Ligue para o seu banco agora mesmo:</strong>
-        • <em>No Brasil:</em> Peça a abertura imediata do <em>MED (Mecanismo Especial de Devolução do PIX)</em>. O banco tem até 80 dias para rastrear e bloquear o valor na conta de destino.<br>
+        • <em>No Brasil:</em> Peça a abertura imediata do <em>MED (Mecanismo Especial de Devolução do PIX)</em>. O banco pode rastrear e bloquear o valor na conta de destino.<br>
         • <em>Em Portugal:</em> Contacte a linha de apoio de urgência do seu banco ou SIBS para bloquear cartões e tentar travar transferências imediatas.
       </div>
       <div class="step-item">
@@ -729,16 +702,6 @@
 </div>
 
 <script>
-let currentChannel = 'WhatsApp';
-const channelBtns = document.querySelectorAll('.channel-btn');
-channelBtns.forEach(btn => {
-  btn.addEventListener('click', () => {
-    channelBtns.forEach(b => b.classList.remove('active'));
-    btn.classList.add('active');
-    currentChannel = btn.dataset.channel;
-  });
-});
-
 const imagemInput = document.getElementById('imagem');
 const fileNamePreview = document.getElementById('fileNamePreview');
 imagemInput.addEventListener('change', () => {
@@ -781,7 +744,7 @@ btnVerificar.addEventListener('click', async () => {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        texto: texto ? `[Canal: ${currentChannel}] ${texto}` : `[Canal: ${currentChannel}]`,
+        texto: texto || null,
         imagemBase64,
         imagemTipo: file ? file.type : null
       })
@@ -799,8 +762,6 @@ btnVerificar.addEventListener('click', async () => {
 });
 
 function renderizarResultado(data) {
-  document.getElementById('resultChannel').textContent = currentChannel;
-
   const score = data.risco_score !== undefined
     ? data.risco_score
     : (data.veredito === 'golpe' ? data.confianca : (data.veredito === 'suspeito' ? 55 : Math.max(5, 100 - data.confianca)));
@@ -854,13 +815,28 @@ function renderizarResultado(data) {
   vereditoBadge.style.border = `1px solid ${borderBadge}`;
   resultado.style.borderColor = borderBadge;
 
-  // Contador social
+  // CONTADOR UPSTASH REDIS EM DESTAQUE
   const socialEl = document.getElementById('socialCounter');
-  if (data.vezes_reportada && data.vezes_reportada > 1) {
-    document.getElementById('socialCounterText').textContent = `⚠️ Esta mensagem já foi verificada ${data.vezes_reportada} vezes por outras pessoas.`;
+  const redisIcon = document.getElementById('redisIcon');
+  const redisBadgeLabel = document.getElementById('redisBadgeLabel');
+  const socialCounterText = document.getElementById('socialCounterText');
+  const redisSubText = document.getElementById('redisSubText');
+
+  const count = data.vezes_reportada || 1;
+  if (count > 1) {
+    socialEl.className = 'redis-counter-card repeat-alert';
+    redisIcon.textContent = '🔥';
+    redisBadgeLabel.textContent = 'ALERTA DE REPETIÇÃO EM MASSA (UPSTASH REDIS)';
+    socialCounterText.innerHTML = `⚠️ Esta mensagem exata já foi pesquisada <strong>${count} vezes</strong> por outras pessoas!`;
+    redisSubText.textContent = 'Golpistas frequentemente testam e disparam o mesmo texto em massa para centenas ou milhares de vítimas.';
     socialEl.style.display = 'flex';
   } else {
-    socialEl.style.display = 'none';
+    socialEl.className = 'redis-counter-card single-alert';
+    redisIcon.textContent = '🛡️';
+    redisBadgeLabel.textContent = 'BANCO DE DADOS (UPSTASH REDIS)';
+    socialCounterText.innerHTML = 'Primeira vez que esta mensagem é pesquisada no sistema.';
+    redisSubText.textContent = 'O registro foi salvo no banco para alertar imediatamente futuras vítimas se este texto se repetir.';
+    socialEl.style.display = 'flex';
   }
 
   // Alerta de link
@@ -893,7 +869,7 @@ function renderizarResultado(data) {
 
   // Botão de compartilhamento
   document.getElementById('btnShareWhatsApp').onclick = () => {
-    const shareText = `⚡ *Zap, quem é? — Alerta de Golpe*\n\nResultado: *${labels[data.veredito]}*\n📊 Nível de Risco: *${score}/100 [${nivelText}]*\n\n${data.explicacao_simples}\n\nVerifique a sua mensagem também: https://zapqueme.vercel.app`;
+    const shareText = `⚡ *Zap, quem é? — Alerta de Golpe*\n\nResultado: *${labels[data.veredito]}*\n📊 Nível de Risco: *${score}/100 [${nivelText}]*\n🔄 Verificada no Banco: *${count} vezes*\n\n${data.explicacao_simples}\n\nVerifique a sua mensagem também: https://zapqueme.vercel.app`;
     window.open(`https://wa.me/?text=${encodeURIComponent(shareText)}`, '_blank');
   };
 
