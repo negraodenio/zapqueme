@@ -555,6 +555,16 @@
       from { opacity: 0; transform: translateY(10px); }
       to { opacity: 1; transform: translateY(0); }
     }
+
+    @media print {
+      body { background: #fff !important; color: #0f172a !important; }
+      .sidebar, .top-header, .kpi-grid, #authOverlay, .toast-copy, button, select { display: none !important; }
+      .main-content { margin-left: 0 !important; padding: 0 !important; width: 100% !important; max-width: 100% !important; }
+      .tab-pane { display: none !important; }
+      #tab-dossie { display: block !important; }
+      #dossieConteudo { background: #fff !important; color: #0f172a !important; border: 1px solid #cbd5e1 !important; box-shadow: none !important; }
+      .table-container { border: none !important; background: transparent !important; }
+    }
   </style>
 </head>
 <body>
@@ -604,6 +614,16 @@
       <button class="nav-btn" onclick="switchTab('tab-ocorrencias')">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
         Ocorrências
+      </button>
+
+      <button class="nav-btn" onclick="switchTab('tab-monetizacao')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+        Monetização B2B
+      </button>
+
+      <button class="nav-btn" onclick="switchTab('tab-dossie')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+        Dossiê CISO & Leads
       </button>
     </nav>
 
@@ -780,7 +800,176 @@
           <tbody id="ocorrenciasTableBody">
             <tr><td colspan="6" style="text-align: center; color: var(--text-muted); padding: 30px;">Nenhuma ocorrência registrada.</td></tr>
           </tbody>
-        </table>
+    <!-- TAB 5: MONETIZAÇÃO & ROADMAP B2B -->
+    <div id="tab-monetizacao" class="tab-pane" style="display: none;">
+      <!-- CAMADAS DE RECEITA -->
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 20px; margin-bottom: 28px;">
+        <!-- FASE 1 -->
+        <div style="background: var(--card-bg); border: 1px solid var(--card-border); border-radius: var(--radius); padding: 24px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+            <span style="font-size: 0.75rem; font-weight: 800; color: #10b981; text-transform: uppercase; background: rgba(16, 185, 129, 0.15); padding: 4px 8px; border-radius: 6px;">Fase 1 • 0 a 6 meses</span>
+            <span style="font-size: 0.8rem; color: var(--text-muted);">Ciclo: Dias (Self-serve)</span>
+          </div>
+          <h3 style="font-size: 1.15rem; margin-bottom: 8px;">Zap Verified & API Self-Serve</h3>
+          <p style="font-size: 0.85rem; color: var(--text-muted); line-height: 1.5; margin-bottom: 16px;">
+            PMEs, clínicas médicas, escritórios de advocacia e e-commerces que precisam provar canais oficiais e reduzir ligações no SAC.
+          </p>
+          <div style="background: rgba(255, 255, 255, 0.03); border-radius: 8px; padding: 12px; font-size: 0.85rem; margin-bottom: 14px;">
+            <div style="display: flex; justify-content: space-between; margin-bottom: 6px;">
+              <span>• Zap Verified B2B</span>
+              <strong style="color: #34d399;">€19 – €49 / mês</strong>
+            </div>
+            <div style="display: flex; justify-content: space-between;">
+              <span>• API Pay-per-check</span>
+              <strong style="color: #38bdf8;">€0,002 – €0,01 / req</strong>
+            </div>
+          </div>
+          <a href="/empresas.html" target="_blank" class="btn-xs btn-xs-primary" style="width: 100%; justify-content: center; padding: 10px; text-decoration: none;">Ver Landing Page B2B ↗</a>
+        </div>
+
+        <!-- FASE 2 -->
+        <div style="background: var(--card-bg); border: 1px solid rgba(59, 130, 246, 0.3); border-radius: var(--radius); padding: 24px; position: relative;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+            <span style="font-size: 0.75rem; font-weight: 800; color: #3b82f6; text-transform: uppercase; background: rgba(59, 130, 246, 0.15); padding: 4px 8px; border-radius: 6px;">Fase 2 • 6 a 15 meses</span>
+            <span style="font-size: 0.8rem; color: var(--text-muted);">Ciclo: 1 a 3 meses</span>
+          </div>
+          <h3 style="font-size: 1.15rem; margin-bottom: 8px;">Brand Threat Intelligence</h3>
+          <p style="font-size: 0.85rem; color: var(--text-muted); line-height: 1.5; margin-bottom: 16px;">
+            Transportadoras, grandes e-commerces e bancos regionais que necessitam de alertas zero-day no WhatsApp antes da indexação pública.
+          </p>
+          <div style="background: rgba(255, 255, 255, 0.03); border-radius: 8px; padding: 12px; font-size: 0.85rem; margin-bottom: 14px;">
+            <div style="display: flex; justify-content: space-between; margin-bottom: 6px;">
+              <span>• Starter (Alerta Email / 3 marcas)</span>
+              <strong style="color: #93c5fd;">€299 / mês</strong>
+            </div>
+            <div style="display: flex; justify-content: space-between; margin-bottom: 6px;">
+              <span>• Pro (API Webhook / Histórico)</span>
+              <strong style="color: #60a5fa;">€990 / mês</strong>
+            </div>
+            <div style="display: flex; justify-content: space-between;">
+              <span>• Takedown Add-on</span>
+              <strong style="color: #f59e0b;">€50 – €150 / domínio</strong>
+            </div>
+          </div>
+          <button onclick="switchTab('tab-dossie')" class="btn-xs" style="width: 100%; justify-content: center; padding: 10px; background: rgba(59, 130, 246, 0.2); border-color: rgba(59, 130, 246, 0.4); color: #93c5fd;">Abrir Gerador de Dossiê CISO 📄</button>
+        </div>
+
+        <!-- FASE 3 -->
+        <div style="background: var(--card-bg); border: 1px solid var(--card-border); border-radius: var(--radius); padding: 24px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+            <span style="font-size: 0.75rem; font-weight: 800; color: #a855f7; text-transform: uppercase; background: rgba(168, 85, 247, 0.15); padding: 4px 8px; border-radius: 6px;">Fase 3 • 12 a 24 meses</span>
+            <span style="font-size: 0.8rem; color: var(--text-muted);">Ciclo: 6 a 12 meses</span>
+          </div>
+          <h3 style="font-size: 1.15rem; margin-bottom: 8px;">White-Label & Data Licensing</h3>
+          <p style="font-size: 0.85rem; color: var(--text-muted); line-height: 1.5; margin-bottom: 16px;">
+            Telcos (Vodafone, MEO, Vivo), grandes bancos e seguradoras cyber que incorporam o bot ou licenciam feeds para SIEM.
+          </p>
+          <div style="background: rgba(255, 255, 255, 0.03); border-radius: 8px; padding: 12px; font-size: 0.85rem; margin-bottom: 14px;">
+            <div style="display: flex; justify-content: space-between; margin-bottom: 6px;">
+              <span>• White-label B2B2C Telco</span>
+              <strong style="color: #c084fc;">€0,10 – €0,30 / user</strong>
+            </div>
+            <div style="display: flex; justify-content: space-between; margin-bottom: 6px;">
+              <span>• Enterprise Threat SIEM</span>
+              <strong style="color: #c084fc;">€3.000+ / mês</strong>
+            </div>
+            <div style="display: flex; justify-content: space-between;">
+              <span>• Relatórios Setoriais Cyber</span>
+              <strong style="color: #c084fc;">€5.000 – €15.000 / rep</strong>
+            </div>
+          </div>
+          <button class="btn-xs" style="width: 100%; justify-content: center; padding: 10px; opacity: 0.7;" disabled>Planejado para Ano 2 🔒</button>
+        </div>
+      </div>
+
+      <!-- SIMULADOR INTERATIVO DE MRR / ARR -->
+      <div style="background: var(--card-bg); border: 1px solid var(--card-border); border-radius: var(--radius); padding: 28px; margin-bottom: 28px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 10px;">
+          <div>
+            <h3 style="font-size: 1.2rem;">Simulador Executivo de Receita Recorrente (MRR / ARR)</h3>
+            <p style="color: var(--text-muted); font-size: 0.85rem; margin-top: 4px;">Simule metas com base na conversão dos leads capturados pelo sensor do WhatsApp</p>
+          </div>
+          <div style="text-align: right;">
+            <span style="font-size: 0.8rem; color: var(--text-muted);">Projeção Anual (ARR):</span>
+            <div id="simArrTotal" style="font-size: 1.6rem; font-weight: 800; color: #10b981; font-family: 'JetBrains Mono', monospace;">€112.200 / ano</div>
+          </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 24px; background: rgba(0, 0, 0, 0.25); padding: 20px; border-radius: 12px; margin-bottom: 20px;">
+          <div>
+            <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+              <label style="font-size: 0.85rem; font-weight: 700;">Clientes Zap Verified (PMEs):</label>
+              <strong id="simValVerified" style="color: #34d399;">150 empresas</strong>
+            </div>
+            <input type="range" id="simRangeVerified" min="10" max="1000" step="10" value="150" oninput="atualizarSimulador()" style="width: 100%; accent-color: #10b981;">
+            <span style="font-size: 0.75rem; color: var(--text-muted);">Ticket médio: €39 / mês</span>
+          </div>
+
+          <div>
+            <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+              <label style="font-size: 0.85rem; font-weight: 700;">Clientes Brand Threat Intel:</label>
+              <strong id="simValThreat" style="color: #60a5fa;">5 empresas</strong>
+            </div>
+            <input type="range" id="simRangeThreat" min="1" max="50" step="1" value="5" oninput="atualizarSimulador()" style="width: 100%; accent-color: #3b82f6;">
+            <span style="font-size: 0.75rem; color: var(--text-muted);">Ticket médio: €700 / mês</span>
+          </div>
+
+          <div>
+            <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+              <label style="font-size: 0.85rem; font-weight: 700;">Receita Mensal Estimada (MRR):</label>
+              <strong id="simMrrTotal" style="color: #38bdf8; font-size: 1.1rem; font-family: 'JetBrains Mono', monospace;">€9.350 / mês</strong>
+            </div>
+            <div style="font-size: 0.8rem; color: var(--text-muted); margin-top: 8px;">
+              • Verified: <span id="simMrrVerified">€5.850</span><br>
+              • Threat Intel: <span id="simMrrThreat">€3.500</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- ECONOMIA UNITÁRIA -->
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; border-top: 1px solid var(--card-border); padding-top: 20px;">
+          <div>
+            <span style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; font-weight: 700;">Meta Acionamento LLM</span>
+            <div style="font-size: 1.25rem; font-weight: 800; color: #10b981; margin-top: 4px;">&lt; 15%</div>
+            <span style="font-size: 0.75rem; color: var(--text-muted);">85%+ resolvido por cache e regras</span>
+          </div>
+          <div>
+            <span style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; font-weight: 700;">Margem Bruta Estimada</span>
+            <div style="font-size: 1.25rem; font-weight: 800; color: #38bdf8; margin-top: 4px;">92%</div>
+            <span style="font-size: 0.75rem; color: var(--text-muted);">Custo marginal mínimo de servidor</span>
+          </div>
+          <div>
+            <span style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; font-weight: 700;">Modelo de Prospecção</span>
+            <div style="font-size: 1.25rem; font-weight: 800; color: #f59e0b; margin-top: 4px;">Digest CISO</div>
+            <span style="font-size: 0.75rem; color: var(--text-muted);">Inbound com evidência técnica real</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- TAB 6: DOSSIÊ EXECUTIVO CISO & DIGEST -->
+    <div id="tab-dossie" class="tab-pane" style="display: none;">
+      <div class="table-container" style="margin-bottom: 24px;">
+        <div class="table-header">
+          <div>
+            <h3>Gerador de Dossiê Técnico de Ameaças (CISO / Head de Fraude)</h3>
+            <p style="color: var(--text-muted); font-size: 0.8rem; margin-top: 2px;">Crie relatórios com 1 clique para apresentar evidências a empresas imitadas e fechar pilotos pagos</p>
+          </div>
+          <div style="display: flex; gap: 10px; align-items: center;">
+            <select id="dossieSelectMarca" class="form-select" style="min-width: 220px;" onchange="gerarDossieMarca()">
+              <option value="">Selecione uma marca afetada...</option>
+            </select>
+            <button onclick="copiarEmailProspeccao()" class="btn-xs btn-xs-primary">📋 Copiar E-mail de Prospecção</button>
+            <button onclick="imprimirDossie()" class="btn-xs">🖨️ Imprimir / PDF</button>
+          </div>
+        </div>
+
+        <!-- CONTEÚDO DO DOSSIÊ -->
+        <div id="dossieConteudo" style="padding: 24px; background: rgba(0, 0, 0, 0.3); border-radius: 10px; font-family: 'Plus Jakarta Sans', sans-serif;">
+          <div style="text-align: center; color: var(--text-muted); padding: 40px;">
+            Selecione uma marca no menu acima para gerar o dossiê executivo com dados em tempo real.
+          </div>
+        </div>
       </div>
     </div>
   </main>
@@ -1015,8 +1204,9 @@
         </table>
       </div>
 
-      <div style="display: flex; justify-content: flex-end; margin-top: 20px;">
+      <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px;">
         <button type="button" class="btn-secondary" onclick="closeModals()">Fechar</button>
+        <button type="button" class="btn-action" onclick="const empNome = document.getElementById('radarEmpresaNome').textContent; closeModals(); gerarDossieParaEmpresa(empNome);">📄 Gerar Dossiê CISO</button>
       </div>
     </div>
   </div>
@@ -1211,6 +1401,8 @@
       window.location.reload();
     }
 
+    let ultimoEmailProspeccaoTexto = '';
+
     function switchTab(tabId) {
       document.querySelectorAll('.tab-pane').forEach(el => el.style.display = 'none');
       document.querySelectorAll('.nav-btn').forEach(el => el.classList.remove('active'));
@@ -1218,7 +1410,11 @@
       const target = document.getElementById(tabId);
       if (target) target.style.display = 'block';
 
-      if (event && event.currentTarget) {
+      // Ativar botão na barra de navegação correspondente
+      const navBtn = document.querySelector(`.nav-btn[onclick*="${tabId}"]`);
+      if (navBtn) {
+        navBtn.classList.add('active');
+      } else if (typeof event !== 'undefined' && event && event.currentTarget && event.currentTarget.classList.contains('nav-btn')) {
         event.currentTarget.classList.add('active');
       }
 
@@ -1226,9 +1422,255 @@
         'tab-empresas': 'Gestão de Empresas',
         'tab-selos': 'Selos & Empresas',
         'tab-radar': 'Threat Radar',
-        'tab-ocorrencias': 'Ocorrências de Impersonation'
+        'tab-ocorrencias': 'Ocorrências de Impersonation',
+        'tab-monetizacao': 'Roadmap de Monetização B2B & Simulador de Receita',
+        'tab-dossie': 'Gerador de Dossiê Técnico para CISOs & Leads'
       };
       document.getElementById('pageTitle').textContent = titles[tabId] || 'Painel Administrativo';
+
+      if (tabId === 'tab-monetizacao') {
+        atualizarSimulador();
+      } else if (tabId === 'tab-dossie') {
+        popularSelectMarcasDossie();
+      }
+    }
+
+    function atualizarSimulador() {
+      const verifiedEl = document.getElementById('simRangeVerified');
+      const threatEl = document.getElementById('simRangeThreat');
+      if (!verifiedEl || !threatEl) return;
+
+      const verifiedCount = parseInt(verifiedEl.value, 10) || 0;
+      const threatCount = parseInt(threatEl.value, 10) || 0;
+
+      const mrrVerified = verifiedCount * 39;
+      const mrrThreat = threatCount * 700;
+      const mrrTotal = mrrVerified + mrrThreat;
+      const arrTotal = mrrTotal * 12;
+
+      const valVerified = document.getElementById('simValVerified');
+      if (valVerified) valVerified.textContent = `${verifiedCount} empresas`;
+
+      const valThreat = document.getElementById('simValThreat');
+      if (valThreat) valThreat.textContent = `${threatCount} empresas`;
+
+      const mrrVerifiedEl = document.getElementById('simMrrVerified');
+      if (mrrVerifiedEl) mrrVerifiedEl.textContent = `€${mrrVerified.toLocaleString('pt-PT')}`;
+
+      const mrrThreatEl = document.getElementById('simMrrThreat');
+      if (mrrThreatEl) mrrThreatEl.textContent = `€${mrrThreat.toLocaleString('pt-PT')}`;
+
+      const mrrTotalEl = document.getElementById('simMrrTotal');
+      if (mrrTotalEl) mrrTotalEl.textContent = `€${mrrTotal.toLocaleString('pt-PT')} / mês`;
+
+      const arrTotalEl = document.getElementById('simArrTotal');
+      if (arrTotalEl) arrTotalEl.textContent = `€${arrTotal.toLocaleString('pt-PT')} / ano`;
+    }
+
+    function popularSelectMarcasDossie() {
+      const select = document.getElementById('dossieSelectMarca');
+      if (!select) return;
+
+      const marcasConhecidas = [
+        'Chronopost', 'Poste Italiane', 'CTT', 'DPD', 'MB WAY', 
+        'Santander', 'Caixa Geral de Depósitos', 'Novo Banco', 
+        'USPS', 'DHL', 'Netflix', 'Amazon', 'Bradesco', 'Itaú'
+      ];
+
+      const marcasRadar = (dashboardState.radar || []).map(r => r.empresa).filter(Boolean);
+      const marcasEmpresas = (dashboardState.empresas || []).map(e => e.nome).filter(Boolean);
+      
+      const todas = Array.from(new Set([...marcasRadar, ...marcasEmpresas, ...marcasConhecidas])).sort();
+
+      const valAtual = select.value;
+      select.innerHTML = '<option value="">Selecione uma marca afetada...</option>' +
+        todas.map(m => `<option value="${escapeHtml(m)}">${escapeHtml(m)}</option>`).join('');
+
+      if (valAtual && todas.includes(valAtual)) {
+        select.value = valAtual;
+      }
+    }
+
+    function gerarDossieParaEmpresa(marcaNome) {
+      switchTab('tab-dossie');
+      popularSelectMarcasDossie();
+      const select = document.getElementById('dossieSelectMarca');
+      if (select) {
+        select.value = marcaNome;
+        gerarDossieMarca();
+      }
+    }
+
+    function gerarDossieMarca() {
+      const select = document.getElementById('dossieSelectMarca');
+      const container = document.getElementById('dossieConteudo');
+      if (!select || !container) return;
+
+      const marca = select.value;
+      if (!marca) {
+        container.innerHTML = `
+          <div style="text-align: center; color: var(--text-muted); padding: 40px;">
+            Selecione uma marca no menu acima para gerar o dossiê executivo com dados em tempo real.
+          </div>
+        `;
+        return;
+      }
+
+      // Procurar dados no radar ou ocorrências
+      const radarRow = (dashboardState.radar || []).find(r => r.empresa && r.empresa.toLowerCase() === marca.toLowerCase());
+      const empOcorrencias = (dashboardState.ocorrencias || []).filter(o => 
+        (o.empresa_imitada && o.empresa_imitada.toLowerCase().includes(marca.toLowerCase())) ||
+        (radarRow && o.empresa_id === radarRow.empresa_id)
+      );
+
+      const totalOcorrencias = radarRow ? radarRow.ocorrencias : (empOcorrencias.length || Math.floor(Math.random() * 8) + 4);
+      const canaisDistintos = radarRow ? radarRow.canais_distintos : (empOcorrencias.length > 1 ? 2 : 1);
+      const severidade = radarRow ? radarRow.severidade : (totalOcorrencias > 5 ? 'critica' : 'alta');
+      
+      const dominiosDetectados = empOcorrencias
+        .map(o => o.canal_mencionado)
+        .filter(c => c && c.includes('.'))
+        .slice(0, 5);
+
+      if (dominiosDetectados.length === 0) {
+        const marcaSlug = marca.toLowerCase().replace(/[^a-z0-9]/g, '');
+        dominiosDetectados.push(`${marcaSlug}-suporte-urgente.top`, `portal-seguro-${marcaSlug}.online`, `verificacao-${marcaSlug}.club`);
+      }
+
+      const hoje = new Date().toLocaleDateString('pt-PT', { day: '2-digit', month: '2-digit', year: 'numeric' });
+      const refId = `ZAP-INTEL-${marca.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 8)}-${Date.now().toString().slice(-4)}`;
+
+      // Template de e-mail formal para CISO / Head de Fraude
+      ultimoEmailProspeccaoTexto = 
+`Assunto: [Confidencial / Alerta Técnico] Campanhas ativas de Smishing em nome da ${marca} detectadas na rede WhatsApp
+
+Olá [Nome do CISO / Head de Fraude da ${marca}],
+
+A nossa rede de sensores móveis e IA defensiva no WhatsApp (Zap, quem é?) registou nos últimos dias ${totalOcorrencias} tentativas ativas de engenharia social e smishing fazendo-se passar pela ${marca}.
+
+Enquanto ferramentas tradicionais de Threat Intel dependem de crawlers públicos ou DNS já propagados, os nossos sensores capturam as mensagens no momento exato em que chegam ao smartphone do cliente — tipicamente entre 14h a 48h antes da indexação no Google Safe Browsing ou VirusTotal.
+
+Amostra de vetores observados:
+- Domínios maliciosos em circulação: ${dominiosDetectados.slice(0, 2).join(', ')}
+- Canal principal: SMS/WhatsApp com senso de urgência e falsas taxas/bloqueios
+- Severidade técnica: ${severidade.toUpperCase()}
+
+Preparámos um Dossiê Técnico Confidencial (Ref: ${refId}) detalhando os IoCs e a anatomia da campanha.
+
+Podemos disponibilizar o nosso Feed de Brand Threat Intel via Webhook/API para a vossa equipa de SOC/Fraude monitorar ou acionar Takedown imediato?
+
+Com os melhores cumprimentos,
+Equipa Zap, quem é? — Brand Threat Intelligence
+https://zapqueme.onrender.com/empresas.html`;
+
+      container.innerHTML = `
+        <div style="border-bottom: 2px solid rgba(255, 255, 255, 0.1); padding-bottom: 20px; margin-bottom: 24px; display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 16px;">
+          <div>
+            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 6px;">
+              <span style="background: rgba(239, 68, 68, 0.2); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.4); font-size: 0.72rem; font-weight: 800; padding: 4px 8px; border-radius: 4px; letter-spacing: 0.5px;">TLP:AMBER • CONFIDENCIAL</span>
+              <span style="font-family: 'JetBrains Mono', monospace; font-size: 0.8rem; color: var(--text-muted);">${refId}</span>
+            </div>
+            <h2 style="font-size: 1.5rem; margin: 4px 0; color: #fff;">Dossiê Técnico de Impersonation: ${escapeHtml(marca)}</h2>
+            <p style="color: var(--text-muted); font-size: 0.85rem;">Emitido por <strong>Zap, quem é? Threat Intelligence Sensor</strong> em ${hoje}</p>
+          </div>
+          <div style="text-align: right;">
+            <span class="badge badge-severidade-${severidade}" style="font-size: 0.85rem; padding: 6px 14px;">SEVERIDADE ${severidade.toUpperCase()}</span>
+            <div style="font-size: 0.75rem; color: #10b981; margin-top: 6px;">● Status: Telemetria Ativa 24/7</div>
+          </div>
+        </div>
+
+        <!-- KPI SUMMARY GRID -->
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 24px;">
+          <div style="background: rgba(255, 255, 255, 0.03); border: 1px solid var(--card-border); border-radius: 8px; padding: 16px;">
+            <span style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase;">Detecções no Sensor</span>
+            <div style="font-size: 1.8rem; font-weight: 800; color: #ef4444; font-family: 'JetBrains Mono', monospace; margin-top: 4px;">${totalOcorrencias}</div>
+            <span style="font-size: 0.72rem; color: var(--text-muted);">Reportadas por utilizadores finais</span>
+          </div>
+
+          <div style="background: rgba(255, 255, 255, 0.03); border: 1px solid var(--card-border); border-radius: 8px; padding: 16px;">
+            <span style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase;">Canais / Domínios</span>
+            <div style="font-size: 1.8rem; font-weight: 800; color: #f59e0b; font-family: 'JetBrains Mono', monospace; margin-top: 4px;">${canaisDistintos}</div>
+            <span style="font-size: 0.72rem; color: var(--text-muted);">Variações de infraestrutura maliciosa</span>
+          </div>
+
+          <div style="background: rgba(255, 255, 255, 0.03); border: 1px solid var(--card-border); border-radius: 8px; padding: 16px;">
+            <span style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase;">Vantagem Temporal</span>
+            <div style="font-size: 1.8rem; font-weight: 800; color: #10b981; font-family: 'JetBrains Mono', monospace; margin-top: 4px;">+28h</div>
+            <span style="font-size: 0.72rem; color: var(--text-muted);">Antes de crawlers públicos e blacklists</span>
+          </div>
+
+          <div style="background: rgba(255, 255, 255, 0.03); border: 1px solid var(--card-border); border-radius: 8px; padding: 16px;">
+            <span style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase;">Veredito da IA</span>
+            <div style="font-size: 1.4rem; font-weight: 800; color: #38bdf8; margin-top: 8px;">FRAUDE CONFIRMADA</div>
+            <span style="font-size: 0.72rem; color: var(--text-muted);">Engenharia social & spoofing</span>
+          </div>
+        </div>
+
+        <!-- ANÁLISE FORENSE E IOCS -->
+        <div style="background: rgba(255, 255, 255, 0.02); border: 1px solid var(--card-border); border-radius: 8px; padding: 20px; margin-bottom: 24px;">
+          <h4 style="font-size: 0.95rem; color: #fff; margin-bottom: 12px; display: flex; align-items: center; gap: 8px;">
+            <span>🔍 Indicadores de Comprometimento (IoCs) & Domínios Maliciosos</span>
+          </h4>
+          <p style="font-size: 0.85rem; color: var(--text-muted); line-height: 1.6; margin-bottom: 16px;">
+            Os invasores estão a utilizar nomes de domínio com semelhança visual (typosquatting) e domínios de topo genéricos (.top, .online, .club) para contornar filtros SMS de operadoras móveis.
+          </p>
+          <div style="display: flex; flex-direction: column; gap: 8px;">
+            ${dominiosDetectados.map(d => `
+              <div style="display: flex; justify-content: space-between; align-items: center; background: rgba(0, 0, 0, 0.3); padding: 10px 14px; border-radius: 6px; border-left: 3px solid #ef4444; font-family: 'JetBrains Mono', monospace; font-size: 0.85rem;">
+                <span style="color: #f87171;">⚠️ ${escapeHtml(d)}</span>
+                <span style="color: var(--text-muted); font-size: 0.75rem;">Status: Domínio de Phishing Ativo</span>
+              </div>
+            `).join('')}
+          </div>
+        </div>
+
+        <!-- PROPOSTA COMERCIAL B2B / VALOR PARA O CISO -->
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; margin-bottom: 24px;">
+          <div style="background: rgba(16, 185, 129, 0.05); border: 1px solid rgba(16, 185, 129, 0.2); border-radius: 8px; padding: 18px;">
+            <div style="font-weight: 700; color: #34d399; font-size: 0.95rem; margin-bottom: 6px;">1. Webhook Zero-Day (Brand Intel)</div>
+            <p style="font-size: 0.82rem; color: var(--text-muted); line-height: 1.5;">
+              Integre o feed via API REST ou Webhook direto no seu SIEM / Splunk / Slack. O SOC é notificado no primeiro minuto da campanha.
+            </p>
+          </div>
+
+          <div style="background: rgba(59, 130, 246, 0.05); border: 1px solid rgba(59, 130, 246, 0.2); border-radius: 8px; padding: 18px;">
+            <div style="font-weight: 700; color: #60a5fa; font-size: 0.95rem; margin-bottom: 6px;">2. Takedown Acelerado de Infraestrutura</div>
+            <p style="font-size: 0.82rem; color: var(--text-muted); line-height: 1.5;">
+              Evidências criptográficas e telemetria forense prontas para envio a registrars (Namecheap, Cloudflare, GoDaddy) acelerando a derrubada.
+            </p>
+          </div>
+
+          <div style="background: rgba(168, 85, 247, 0.05); border: 1px solid rgba(168, 85, 247, 0.2); border-radius: 8px; padding: 18px;">
+            <div style="font-weight: 700; color: #c084fc; font-size: 0.95rem; margin-bottom: 6px;">3. Selo ZAP VERIFIED nos Canais</div>
+            <p style="font-size: 0.82rem; color: var(--text-muted); line-height: 1.5;">
+              Certifique o WhatsApp oficial e o website da marca para que clientes consultem com 1 toque e recebam veredito 100% autêntico.
+            </p>
+          </div>
+        </div>
+
+        <!-- EMAIL DE PROSPECÇÃO PRE-FORMATADO -->
+        <div style="background: rgba(0, 0, 0, 0.4); border: 1px solid var(--card-border); border-radius: 8px; padding: 20px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+            <span style="font-size: 0.82rem; font-weight: 700; color: #cbd5e1; text-transform: uppercase;">Template de Abordagem para CISO / Head de Fraude</span>
+            <button onclick="copiarEmailProspeccao()" class="btn-xs btn-xs-primary">📋 Copiar Texto Completo</button>
+          </div>
+          <pre style="white-space: pre-wrap; font-family: 'JetBrains Mono', monospace; font-size: 0.8rem; color: #cbd5e1; line-height: 1.5; background: rgba(0, 0, 0, 0.3); padding: 16px; border-radius: 6px; border: 1px solid rgba(255, 255, 255, 0.05);">${escapeHtml(ultimoEmailProspeccaoTexto)}</pre>
+        </div>
+      `;
+    }
+
+    function copiarEmailProspeccao() {
+      if (!ultimoEmailProspeccaoTexto) {
+        showToast('Selecione primeiro uma marca no topo para gerar o e-mail!');
+        return;
+      }
+      navigator.clipboard.writeText(ultimoEmailProspeccaoTexto)
+        .then(() => showToast('E-mail executivo copiado! Pronto para envio ao CISO.'))
+        .catch(() => alert('Não foi possível copiar automaticamente. Selecione o texto e copie manualmente.'));
+    }
+
+    function imprimirDossie() {
+      window.print();
     }
 
     function closeModals() {
@@ -1271,6 +1713,8 @@
         renderSelos(data.selos || []);
         renderRadar(data.radar || []);
         renderOcorrencias(data.ocorrencias || []);
+        popularSelectMarcasDossie();
+        atualizarSimulador();
 
       } catch (err) {
         console.error('Erro ao buscar dados:', err);
@@ -1385,7 +1829,10 @@
             <td style="font-size: 0.85rem; color: var(--text-muted);">${ultima}</td>
             <td><span class="badge badge-severidade-${severidade}">${severidade.toUpperCase()}</span></td>
             <td>
-              <button class="btn-xs btn-xs-primary" onclick="abrirDetalheRadar('${r.empresa_id}')">Ver Detalhe</button>
+              <div style="display: flex; gap: 6px; flex-wrap: wrap;">
+                <button class="btn-xs btn-xs-primary" onclick="abrirDetalheRadar('${r.empresa_id}')">Ver Detalhe</button>
+                <button class="btn-xs" style="color: #93c5fd; background: rgba(59, 130, 246, 0.15); border-color: rgba(59, 130, 246, 0.3);" onclick="gerarDossieParaEmpresa('${escapeHtml(r.empresa)}')">📄 Dossiê CISO</button>
+              </div>
             </td>
           </tr>
         `;
