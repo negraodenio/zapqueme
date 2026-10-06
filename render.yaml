@@ -10,7 +10,7 @@ services:
       - key: NODE_VERSION
         value: 22
       - key: OPENROUTER_MODEL
-        value: google/gemini-2.0-flash
+        value: google/gemini-3.8-flash
       - key: OPENROUTER_API_KEY
         sync: false
       - key: GEMINI_API_KEY
