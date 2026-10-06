@@ -8,7 +8,7 @@
     "start": "node bot.js",
     "dev": "vercel dev",
     "bot": "node bot.js",
-    "test": "node tests/b2b_radar.test.js && node tests/badge_kit.test.js && node tests/preproduction_fixes.test.js"
+    "test": "node tests/b2b_radar.test.js && node tests/badge_kit.test.js && node tests/preproduction_fixes.test.js && node tests/sms.test.js"
   },
   "dependencies": {
     "@whiskeysockets/baileys": "^7.0.0-rc14",

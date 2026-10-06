@@ -15,7 +15,7 @@ import makeWASocket, {
 import qrcode from 'qrcode-terminal';
 import QRCodeImage from 'qrcode';
 import pino from 'pino';
-import { analyzeContent, formatWhatsAppMessage, getEmergencyVictimGuide } from './lib/scanner.js';
+import { analyzeContent, formatWhatsAppMessage, formatSmsMessage, getEmergencyVictimGuide } from './lib/scanner.js';
 import { restoreSessionFromCloud, syncSessionToCloud, clearSessionFromCloud } from './lib/session_store.js';
 
 const logger = pino({ level: 'silent' });
@@ -117,7 +117,47 @@ const server = http.createServer(async (req, res) => {
     }
   }
 
-  // 5. Arquivos Estáticos & Painel Admin
+  // 5. Gateway e Webhook de SMS (Twilio / Gateway Telco / B2B)
+  if (url.pathname === '/api/sms' || url.pathname === '/sms') {
+    let bodyData = '';
+    req.on('data', chunk => { bodyData += chunk; });
+    req.on('end', async () => {
+      try {
+        let parsedBody = {};
+        if (req.headers['content-type']?.includes('application/json')) {
+          try { parsedBody = JSON.parse(bodyData); } catch {}
+        } else {
+          parsedBody = Object.fromEntries(new URLSearchParams(bodyData));
+        }
+
+        const incomingText = (parsedBody.Body || parsedBody.text || url.searchParams.get('Body') || url.searchParams.get('text') || '').trim();
+        const sender = (parsedBody.From || parsedBody.sender || url.searchParams.get('From') || 'anonimo').trim();
+
+        if (!incomingText) {
+          res.writeHead(200, { 'Content-Type': 'text/xml; charset=utf-8' });
+          return res.end('<?xml version="1.0" encoding="UTF-8"?><Response><Message><Body>[ZAP VERIFICA] Reencaminhe para este numero qualquer SMS suspeito. Analisaremos na hora se e golpe ou autentico.</Body></Message></Response>');
+        }
+
+        const resultado = await analyzeContent({ texto: incomingText, canal: 'sms', remetente: sender });
+        const smsResposta = formatSmsMessage(resultado);
+
+        if (url.searchParams.get('format') === 'json' || req.headers['accept']?.includes('application/json')) {
+          res.writeHead(200, { 'Content-Type': 'application/json' });
+          return res.end(JSON.stringify({ success: true, canal: 'sms', veredito: resultado.veredito, risco_score: resultado.risco_score, sms_resposta: smsResposta, resultado }));
+        }
+
+        res.writeHead(200, { 'Content-Type': 'text/xml; charset=utf-8' });
+        const safeXml = smsResposta.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+        return res.end(`<?xml version="1.0" encoding="UTF-8"?><Response><Message><Body>${safeXml}</Body></Message></Response>`);
+      } catch (err) {
+        res.writeHead(500, { 'Content-Type': 'text/plain' });
+        return res.end('[ZAP ALERTA] Erro ao analisar SMS.');
+      }
+    });
+    return;
+  }
+
+  // 6. Arquivos Estáticos & Painel Admin
   const staticFiles = {
     '/admin': 'admin.html',
     '/admin.html': 'admin.html',
