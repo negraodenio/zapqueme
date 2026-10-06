@@ -15,23 +15,28 @@
     return null;
   })();
 
-  const empresaSlug = currentScript ? (currentScript.getAttribute('data-empresa') || '').trim() : '';
+  const codigoOuEmpresa = currentScript ? (currentScript.getAttribute('data-codigo') || currentScript.getAttribute('data-empresa') || '').trim() : '';
   const position = currentScript ? (currentScript.getAttribute('data-position') || 'bottom-right').trim() : 'bottom-right';
   const customHost = currentScript && currentScript.src ? new URL(currentScript.src).origin : 'https://zapqueme.vercel.app';
 
-  if (!empresaSlug) {
-    console.warn('[Zap, quem é?] data-empresa não configurado no script.');
+  if (!codigoOuEmpresa) {
+    console.warn('[Zap, quem é?] data-codigo ou data-empresa não configurado no script.');
     return;
   }
 
-  // Buscar status da empresa
-  fetch(`${customHost}/api/empresa?slug=${encodeURIComponent(empresaSlug)}`)
+  // Buscar status da empresa/selo
+  const isCodigo = codigoOuEmpresa.startsWith('ZQV-');
+  const queryParam = isCodigo
+    ? `codigo=${encodeURIComponent(codigoOuEmpresa)}`
+    : `dominio=${encodeURIComponent(codigoOuEmpresa)}`;
+
+  fetch(`${customHost}/api/empresa?${queryParam}`)
     .then(res => {
       if (!res.ok) throw new Error('Não verificado');
       return res.json();
     })
     .then(data => {
-      if (!data || data.status !== 'ativo') return;
+      if (!data || !data.selo_valido) return;
       renderWidget(data);
     })
     .catch(err => {
@@ -142,7 +147,8 @@
     const container = document.createElement('div');
     container.className = `zq-badge-container zq-pos-${position}`;
 
-    const verifyUrl = `${customHost}/verificar.html?empresa=${encodeURIComponent(empresa.slug)}`;
+    const targetCodigo = empresa.codigo || (codigoOuEmpresa.startsWith('ZQV-') ? codigoOuEmpresa : '');
+    const verifyUrl = targetCodigo ? `${customHost}/verify/${encodeURIComponent(targetCodigo)}` : `${customHost}/`;
 
     container.innerHTML = `
       <a href="${verifyUrl}" target="_blank" rel="noopener noreferrer" class="zq-badge-link" title="Selo Oficial de Segurança Zap, quem é?">

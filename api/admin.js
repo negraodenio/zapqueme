@@ -4,11 +4,15 @@
 
 import { gerarCodigoSelo } from '../lib/radar.js';
 
-const ADMIN_SECRET = process.env.ADMIN_SECRET_KEY || 'zapadmin2026';
-
 export default async function handler(req, res) {
-  const secret = req.headers['x-admin-key'] || req.query.secret || (req.body && req.body.secret);
-  if (secret !== ADMIN_SECRET) {
+  const adminSecret = process.env.ADMIN_SECRET_KEY;
+  if (!adminSecret) {
+    return res.status(500).json({ error: 'ADMIN_SECRET_KEY não configurado no servidor.' });
+  }
+
+  // Autenticação: aceita apenas header x-admin-key ou campo secret no body (não via query string)
+  const secret = req.headers['x-admin-key'] || (req.body && req.body.secret);
+  if (secret !== adminSecret) {
     return res.status(401).json({ error: 'Acesso não autorizado. Chave administrativa inválida.' });
   }
 
@@ -52,7 +56,7 @@ export default async function handler(req, res) {
 
       // 4. Buscar ocorrências de impersonation para o detalhe (Seção 21)
       const ocorrenciasResp = await fetch(
-        `${url}/rest/v1/analises?impersonation=eq.true&select=id,criado_em,veredito,confianca,tipo,canal_mencionado,marca_mencionada,empresa_id&order=criado_em.desc&limit=100`,
+        `${url}/rest/v1/analises?impersonation=eq.true&select=id,criado_em,veredito,confianca,risco_score,tipo,canal_mencionado,marca_mencionada,alerta_link,vezes_reportada,empresa_id&order=criado_em.desc&limit=100`,
         { headers }
       );
       const ocorrenciasRaw = ocorrenciasResp.ok ? await ocorrenciasResp.json() : [];
@@ -161,7 +165,8 @@ export default async function handler(req, res) {
               codigo: codigoSelo,
               tipo: 'canal_verificado',
               valido_ate: validoAte.toISOString(),
-              monitorizacao_impersonation: monitorizacao_impersonation !== false
+              monitorizacao_impersonation: monitorizacao_impersonation !== false,
+              ativo: true
             })
           });
 
@@ -256,7 +261,7 @@ export default async function handler(req, res) {
       }
     }
 
-    // 2.4 CRIAR SELO (Seção 7)
+    // 2.4 CRIAR SELO (Seção 7 & Regra de Unicidade)
     if (action === 'create_selo') {
       const { empresa_id, valido_ate, monitorizacao_impersonation } = req.body;
       if (!empresa_id) {
@@ -264,6 +269,17 @@ export default async function handler(req, res) {
       }
 
       try {
+        // Desativa selos anteriores ativos desta empresa para garantir 1 selo ativo por empresa
+        await fetch(`${url}/rest/v1/selos?empresa_id=eq.${encodeURIComponent(empresa_id)}&ativo=eq.true`, {
+          method: 'PATCH',
+          headers,
+          body: JSON.stringify({
+            ativo: false,
+            desativado_em: new Date().toISOString(),
+            motivo_desativacao: 'Substituído por novo selo'
+          })
+        });
+
         const codigoSelo = gerarCodigoSelo();
         const insertResp = await fetch(`${url}/rest/v1/selos`, {
           method: 'POST',
@@ -273,7 +289,8 @@ export default async function handler(req, res) {
             codigo: codigoSelo,
             tipo: 'canal_verificado',
             valido_ate: valido_ate || null,
-            monitorizacao_impersonation: monitorizacao_impersonation !== false
+            monitorizacao_impersonation: monitorizacao_impersonation !== false,
+            ativo: true
           })
         });
 
@@ -286,7 +303,7 @@ export default async function handler(req, res) {
       }
     }
 
-    // 2.5 REGENERAR SELO (Seção 7)
+    // 2.5 REGENERAR SELO (Seção 7 — Preservação de Histórico)
     if (action === 'regenerar_selo') {
       const { selo_id } = req.body;
       if (!selo_id) {
@@ -294,15 +311,43 @@ export default async function handler(req, res) {
       }
 
       try {
-        const novoCodigo = gerarCodigoSelo();
-        const updateResp = await fetch(`${url}/rest/v1/selos?id=eq.${encodeURIComponent(selo_id)}`, {
+        // 1. Obter dados do selo atual
+        const seloResp = await fetch(`${url}/rest/v1/selos?id=eq.${encodeURIComponent(selo_id)}&select=*&limit=1`, { headers });
+        if (!seloResp.ok) throw new Error(await seloResp.text());
+        const selos = await seloResp.json();
+        if (!selos || selos.length === 0) {
+          return res.status(404).json({ error: 'Selo não encontrado.' });
+        }
+        const seloAntigo = selos[0];
+
+        // 2. Soft-delete / desativar o selo antigo
+        await fetch(`${url}/rest/v1/selos?id=eq.${encodeURIComponent(selo_id)}`, {
           method: 'PATCH',
-          headers: { ...headers, Prefer: 'return=representation' },
-          body: JSON.stringify({ codigo: novoCodigo })
+          headers,
+          body: JSON.stringify({
+            ativo: false,
+            desativado_em: new Date().toISOString(),
+            motivo_desativacao: 'Regeneração de código de segurança'
+          })
         });
 
-        if (!updateResp.ok) throw new Error(await updateResp.text());
-        const rows = await updateResp.json();
+        // 3. Criar novo registro de selo com novo código
+        const novoCodigo = gerarCodigoSelo();
+        const insertResp = await fetch(`${url}/rest/v1/selos`, {
+          method: 'POST',
+          headers: { ...headers, Prefer: 'return=representation' },
+          body: JSON.stringify({
+            empresa_id: seloAntigo.empresa_id,
+            codigo: novoCodigo,
+            tipo: seloAntigo.tipo || 'canal_verificado',
+            valido_ate: seloAntigo.valido_ate,
+            monitorizacao_impersonation: seloAntigo.monitorizacao_impersonation !== false,
+            ativo: true
+          })
+        });
+
+        if (!insertResp.ok) throw new Error(await insertResp.text());
+        const rows = await insertResp.json();
         return res.status(200).json({ success: true, selo: rows[0] });
       } catch (err) {
         console.error('[Admin] Erro regenerar_selo:', err);
@@ -310,23 +355,28 @@ export default async function handler(req, res) {
       }
     }
 
-    // 2.6 EXCLUIR OU SUSPENDER SELO
-    if (action === 'delete_selo') {
-      const { selo_id } = req.body;
+    // 2.6 DESATIVAR / SUSPENDER SELO (Soft-Delete para preservar histórico)
+    if (action === 'delete_selo' || action === 'suspend_selo') {
+      const { selo_id, motivo } = req.body;
       if (!selo_id) {
         return res.status(400).json({ error: 'selo_id é obrigatório.' });
       }
 
       try {
-        const delResp = await fetch(`${url}/rest/v1/selos?id=eq.${encodeURIComponent(selo_id)}`, {
-          method: 'DELETE',
-          headers
+        const updateResp = await fetch(`${url}/rest/v1/selos?id=eq.${encodeURIComponent(selo_id)}`, {
+          method: 'PATCH',
+          headers: { ...headers, Prefer: 'return=representation' },
+          body: JSON.stringify({
+            ativo: false,
+            desativado_em: new Date().toISOString(),
+            motivo_desativacao: motivo || 'Desativado pelo administrador'
+          })
         });
 
-        if (!delResp.ok) throw new Error(await delResp.text());
+        if (!updateResp.ok) throw new Error(await updateResp.text());
         return res.status(200).json({ success: true });
       } catch (err) {
-        return res.status(500).json({ error: 'Falha ao remover selo.' });
+        return res.status(500).json({ error: 'Falha ao desativar selo.' });
       }
     }
 

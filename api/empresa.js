@@ -1,7 +1,8 @@
-// api/empresa.js — API Pública de Verificação de Selo e Captação de Leads B2B
+// api/empresa.js — API Pública de Consulta de Empresas e Selos ZAP VERIFIED
+// Suporta consultas por ?codigo= (ZQV-...), ?dominio= ou ?slug=
 
 export default async function handler(req, res) {
-  // CORS para permitir que lojas clientes chamem esta API de seus próprios domínios
+  // CORS para permitir widgets em websites e e-commerces clientes
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Content-Type, x-requested-with');
@@ -13,121 +14,123 @@ export default async function handler(req, res) {
   const url = process.env.SUPABASE_URL;
   const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
-  if (!url || !key) {
-    return res.status(500).json({ error: 'Supabase não configurado no servidor.' });
-  }
-
-  const headers = {
-    'Content-Type': 'application/json',
-    apikey: key,
-    Authorization: `Bearer ${key}`
-  };
-
   // 1. CONSULTA PÚBLICA DE SELO DE EMPRESA
   if (req.method === 'GET') {
-    const { slug, dominio } = req.query;
+    const { codigo, slug, dominio } = req.query || {};
 
-    if (!slug && !dominio) {
-      return res.status(400).json({ error: 'Parâmetro slug ou dominio é obrigatório.' });
+    if (!codigo && !slug && !dominio) {
+      return res.status(400).json({ error: 'Parâmetro codigo, dominio ou slug é obrigatório.' });
     }
 
+    if (!url || !key) {
+      return res.status(500).json({ error: 'Supabase não configurado no servidor.' });
+    }
+
+    const headers = {
+      'Content-Type': 'application/json',
+      apikey: key,
+      Authorization: `Bearer ${key}`
+    };
+
     try {
-      let queryParam = '';
-      if (slug) {
-        queryParam = `slug=eq.${encodeURIComponent(slug.trim().toLowerCase())}`;
-      } else {
-        const cleanDominio = dominio.toLowerCase().replace(/^https?:\/\//, '').replace(/\/.*$/, '').trim();
-        queryParam = `dominio=eq.${encodeURIComponent(cleanDominio)}`;
+      // 1.1 Consulta prioritária por código do selo (ZQV-...)
+      if (codigo) {
+        const cleanCodigo = String(codigo).trim();
+        const seloResp = await fetch(
+          `${url}/rest/v1/selos?codigo=eq.${encodeURIComponent(cleanCodigo)}&select=*,empresas(*)&limit=1`,
+          { headers }
+        );
+
+        if (!seloResp.ok) {
+          return res.status(500).json({ error: 'Erro ao consultar registro de selo.' });
+        }
+
+        const selos = await seloResp.json();
+        if (!selos || selos.length === 0) {
+          return res.status(404).json({ error: 'Selo não encontrado no registro oficial ZAP VERIFIED.', selo_valido: false });
+        }
+
+        const selo = selos[0];
+        const emp = selo.empresas || {};
+        const agora = new Date();
+        const expirado = selo.valido_ate ? new Date(selo.valido_ate) < agora : false;
+        const seloValido = selo.ativo !== false && emp.status === 'ativo' && !expirado;
+
+        return res.status(200).json({
+          id: emp.id || null,
+          codigo: selo.codigo,
+          nome: emp.nome || 'Empresa Registada',
+          dominio_oficial: emp.dominio_oficial || null,
+          email_oficial: emp.email_oficial || null,
+          telefone_oficial: emp.telefone_oficial || null,
+          dominio_verificado: !!emp.dominio_verificado,
+          email_verificado: !!emp.email_verificado,
+          telefone_verificado: !!emp.telefone_verificado,
+          status: emp.status || 'inativo',
+          valido_ate: selo.valido_ate || null,
+          selo_valido: seloValido
+        });
       }
 
-      const resp = await fetch(`${url}/rest/v1/empresas_verificadas?${queryParam}&select=*&limit=1`, { headers });
-      
-      if (!resp.ok) {
-        return res.status(404).json({ error: 'Empresa não encontrada ou serviço indisponível.' });
+      // 1.2 Consulta por domínio ou slug da empresa
+      const queryDominio = (dominio || slug || '').toLowerCase().replace(/^https?:\/\//, '').replace(/\/.*$/, '').trim();
+      const empResp = await fetch(
+        `${url}/rest/v1/empresas?dominio_oficial=eq.${encodeURIComponent(queryDominio)}&select=*,selos(*)&limit=1`,
+        { headers }
+      );
+
+      if (!empResp.ok) {
+        return res.status(500).json({ error: 'Erro ao consultar registro da empresa.' });
       }
 
-      const data = await resp.json();
-      if (!data || data.length === 0) {
-        return res.status(404).json({ error: 'Empresa não cadastrada no Zap, quem é? Seguro.' });
+      const empresas = await empResp.json();
+      if (!empresas || empresas.length === 0) {
+        return res.status(404).json({ error: 'Empresa não encontrada no registro oficial ZAP VERIFIED.', selo_valido: false });
       }
 
-      const emp = data[0];
+      const emp = empresas[0];
+      const selos = Array.isArray(emp.selos) ? emp.selos : [];
+      // Preferência pelo selo ativo mais recente
+      const selo = selos.find(s => s.ativo !== false) || selos[0] || null;
 
-      // Incrementar visualização de forma assíncrona (não bloqueante)
-      try {
-        const novoTotal = (emp.visualizacoes_selo || 0) + 1;
-        fetch(`${url}/rest/v1/empresas_verificadas?id=eq.${emp.id}`, {
-          method: 'PATCH',
-          headers,
-          body: JSON.stringify({ visualizacoes_selo: novoTotal })
-        }).catch(() => {});
-      } catch (e) {}
+      const agora = new Date();
+      const expirado = selo?.valido_ate ? new Date(selo.valido_ate) < agora : false;
+      const seloValido = !!selo && selo.ativo !== false && emp.status === 'ativo' && !expirado;
 
-      // Retornar apenas dados públicos e seguros (ocultar token, e-mails internos de cobrança)
       return res.status(200).json({
         id: emp.id,
-        slug: emp.slug,
+        codigo: selo?.codigo || null,
         nome: emp.nome,
-        dominio: emp.dominio,
-        cnpj_nif: emp.cnpj_nif,
-        whatsapp_oficial: emp.whatsapp_oficial,
-        instagram_oficial: emp.instagram_oficial,
+        dominio_oficial: emp.dominio_oficial,
+        email_oficial: emp.email_oficial,
+        telefone_oficial: emp.telefone_oficial,
+        dominio_verificado: !!emp.dominio_verificado,
+        email_verificado: !!emp.email_verificado,
+        telefone_verificado: !!emp.telefone_verificado,
         status: emp.status,
-        plano: emp.plano,
-        valido_ate: emp.valido_ate,
-        criado_em: emp.criado_em,
-        visualizacoes_selo: (emp.visualizacoes_selo || 0) + 1,
-        selo_valido: emp.status === 'ativo'
+        valido_ate: selo?.valido_ate || null,
+        selo_valido: seloValido
       });
+
     } catch (err) {
-      console.error('Erro ao verificar empresa:', err);
+      console.error('[Empresa] Erro ao consultar empresa/selo:', err);
       return res.status(500).json({ error: 'Erro interno ao consultar dados da empresa.' });
     }
   }
 
-  // 2. CAPTAÇÃO DE LEADS B2B CORPORATIVOS (Formulário do site)
+  // 2. CAPTAÇÃO DE CONTATOS / LEADS B2B
   if (req.method === 'POST') {
-    const { action } = req.query;
     const body = req.body || {};
+    const { nome, empresa, email } = body;
 
-    if (action === 'lead' || body.action === 'lead') {
-      const { nome, empresa, email, whatsapp, website, plano_interesse } = body;
-
-      if (!nome || !empresa || !email) {
-        return res.status(400).json({ error: 'Campos nome, empresa e email são obrigatórios.' });
-      }
-
-      try {
-        const leadResp = await fetch(`${url}/rest/v1/leads_empresas`, {
-          method: 'POST',
-          headers: { ...headers, Prefer: 'return=representation' },
-          body: JSON.stringify({
-            nome: nome.trim(),
-            empresa: empresa.trim(),
-            email: email.trim().toLowerCase(),
-            whatsapp: whatsapp ? whatsapp.trim() : null,
-            website: website ? website.trim().toLowerCase() : null,
-            plano_interesse: plano_interesse || 'pro',
-            status: 'novo'
-          })
-        });
-
-        if (!leadResp.ok) {
-          const errText = await leadResp.text();
-          throw new Error('Supabase erro ao inserir lead: ' + errText);
-        }
-
-        return res.status(200).json({
-          success: true,
-          message: 'Solicitação recebida com sucesso! Nossa equipe entrará em contato em breve.'
-        });
-      } catch (err) {
-        console.error('Erro ao registrar lead:', err);
-        return res.status(500).json({ error: 'Falha ao processar solicitação. Tente novamente mais tarde.' });
-      }
+    if (!nome || !empresa || !email) {
+      return res.status(400).json({ error: 'Campos nome, empresa e email são obrigatórios.' });
     }
 
-    return res.status(400).json({ error: 'Ação não suportada.' });
+    return res.status(200).json({
+      success: true,
+      message: 'Solicitação recebida com sucesso! Nossa equipe de segurança entrará em contato.'
+    });
   }
 
   return res.status(405).json({ error: 'Método não permitido.' });

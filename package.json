@@ -1,13 +1,14 @@
 {
-  "name": "e-golpe",
+  "name": "zapqueme",
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "description": "MVP: verificador de golpes via print/texto usando LLM com visão.",
+  "description": "ZAP, QUEM É? — Verificador de golpes e inteligência contra impersonation B2B.",
   "scripts": {
     "start": "node bot.js",
     "dev": "vercel dev",
-    "bot": "node bot.js"
+    "bot": "node bot.js",
+    "test": "node tests/b2b_radar.test.js && node tests/badge_kit.test.js && node tests/preproduction_fixes.test.js"
   },
   "dependencies": {
     "@whiskeysockets/baileys": "^7.0.0-rc14",

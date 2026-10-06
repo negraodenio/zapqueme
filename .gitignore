@@ -18,3 +18,9 @@ Thumbs.db
 *.log
 .vscode/
 .idea/
+
+# Bot runtime artifacts
+qr.html
+qrcode.png
+status.json
+

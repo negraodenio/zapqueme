@@ -77,7 +77,8 @@ export default async function handler(req, res) {
     const resultado = await analyzeContent({
       texto: incomingText || null,
       imagemBase64,
-      imagemTipo
+      imagemTipo,
+      canal: 'whatsapp_twilio'
     });
 
     const respostaFormatada = formatWhatsAppMessage(resultado);

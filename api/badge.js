@@ -191,7 +191,10 @@ export default async function handler(req, res) {
           const agora = new Date();
           const expirado = selo.valido_ate ? new Date(selo.valido_ate) < agora : false;
 
-          if (emp.status === 'suspenso') {
+          if (selo.ativo === false) {
+            status = 'inativo';
+            statusTexto = 'Verificação inativa';
+          } else if (emp.status === 'suspenso') {
             status = 'suspenso';
             statusTexto = 'Verificação suspensa';
           } else if (emp.status !== 'ativo') {

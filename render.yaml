@@ -10,4 +10,20 @@ services:
       - key: NODE_VERSION
         value: 22
       - key: OPENROUTER_MODEL
-        value: google/gemini-2.5-flash
+        value: google/gemini-2.0-flash
+      - key: OPENROUTER_API_KEY
+        sync: false
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: UPSTASH_REDIS_REST_URL
+        sync: false
+      - key: UPSTASH_REDIS_REST_TOKEN
+        sync: false
+      - key: SUPABASE_URL
+        sync: false
+      - key: SUPABASE_SERVICE_ROLE_KEY
+        sync: false
+      - key: ADMIN_SECRET_KEY
+        sync: false
+      - key: WHATSAPP_PHONE
+        sync: false

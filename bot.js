@@ -602,7 +602,8 @@ async function startBot() {
         const resultado = await analyzeContent({
           texto: incomingText || null,
           imagemBase64,
-          imagemTipo
+          imagemTipo,
+          canal: 'whatsapp_baileys'
         });
 
         const resposta = formatWhatsAppMessage(resultado);

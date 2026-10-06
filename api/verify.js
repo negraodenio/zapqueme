@@ -29,7 +29,11 @@ export function calcularStatusPublico({ selo, empresa, agora = new Date() }) {
   let statusClasse = 'status-valido';
   let statusRaw = 'valido';
 
-  if (empresa?.status === 'suspenso') {
+  if (selo?.ativo === false) {
+    statusPublico = '⚠️ Verificação inativa';
+    statusClasse = 'status-inativo';
+    statusRaw = 'inativo';
+  } else if (empresa?.status === 'suspenso') {
     statusPublico = '⚠️ Verificação suspensa';
     statusClasse = 'status-suspenso';
     statusRaw = 'suspenso';
