@@ -117,8 +117,39 @@ const server = http.createServer(async (req, res) => {
     }
   }
 
-  // 5. Página Principal (HTML)
-  if (url.pathname === '/' || url.pathname === '/qr.html') {
+  // 5. Arquivos Estáticos & Painel Admin
+  const staticFiles = {
+    '/admin': 'admin.html',
+    '/admin.html': 'admin.html',
+    '/empresas': 'empresas.html',
+    '/empresas.html': 'empresas.html',
+    '/verificar': 'verificar.html',
+    '/verificar.html': 'verificar.html',
+    '/index.html': 'index.html',
+    '/logo.jpg': 'logo.jpg',
+    '/favicon.png': 'favicon.png',
+    '/widget.js': 'widget.js'
+  };
+
+  if (staticFiles[url.pathname]) {
+    const filePath = path.join(process.cwd(), staticFiles[url.pathname]);
+    if (fs.existsSync(filePath)) {
+      const ext = path.extname(filePath).toLowerCase();
+      const mimeTypes = {
+        '.html': 'text/html; charset=utf-8',
+        '.js': 'application/javascript; charset=utf-8',
+        '.png': 'image/png',
+        '.jpg': 'image/jpeg',
+        '.jpeg': 'image/jpeg',
+        '.json': 'application/json'
+      };
+      res.writeHead(200, { 'Content-Type': mimeTypes[ext] || 'text/plain' });
+      return res.end(fs.readFileSync(filePath));
+    }
+  }
+
+  // 6. Página de Emparelhamento QR (HTML)
+  if (url.pathname === '/' || url.pathname === '/qr.html' || url.pathname === '/qr') {
     const html = getDashboardHtml();
     res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
     return res.end(html);
