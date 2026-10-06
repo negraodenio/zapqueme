@@ -577,21 +577,35 @@ async function startBot() {
         // Presença "digitando..."
         await sock.sendPresenceUpdate('composing', remoteJid);
 
-        // Protocolo de Emergência para vítimas
-        const emergencyTriggers = [
-          'fui vitima', 'fui vítima', 'ja paguei', 'já paguei', 'cai no golpe', 'caí no golpe',
-          'fiz o pix', 'fiz pix', 'já transferi', 'ja transferi', 'me roubaram', 'perdi dinheiro',
-          'socorro', 'emergencia', 'emergência'
-        ];
-        if (emergencyTriggers.some(t => lower.includes(t)) && !imagemBase64) {
-          await sock.sendMessage(remoteJid, { text: getEmergencyVictimGuide() }, { quoted: msg });
+        // Protocolo de Emergência para vítimas (Multilíngue)
+        const isEmergencyPt = ['fui vitima', 'fui vítima', 'ja paguei', 'já paguei', 'cai no golpe', 'caí no golpe', 'fiz o pix', 'fiz pix', 'já transferi', 'ja transferi', 'me roubaram', 'perdi dinheiro', 'socorro', 'emergencia', 'emergência'].some(t => lower.includes(t));
+        const isEmergencyEn = ['victim', 'i got scammed', 'lost money', 'emergency', 'help victim', 'i was scammed', 'scammed'].some(t => lower.includes(t));
+        const isEmergencyFr = ['victime', 'arnaque', 'je me suis fait arnaquer', 'urgence'].some(t => lower.includes(t));
+        const isEmergencyIt = ['vittima', 'truffa', 'sono stato truffato', 'emergenza'].some(t => lower.includes(t));
+
+        if ((isEmergencyPt || isEmergencyEn || isEmergencyFr || isEmergencyIt) && !imagemBase64) {
+          const lang = isEmergencyEn ? 'en' : (isEmergencyFr ? 'fr' : (isEmergencyIt ? 'it' : 'pt'));
+          await sock.sendMessage(remoteJid, { text: getEmergencyVictimGuide(lang) }, { quoted: msg });
           continue;
         }
 
-        // Boas-vindas / Menu inicial
-        const isGreeting = ['oi', 'olá', 'ola', 'ajuda', 'help', 'menu', 'iniciar', 'start', 'bom dia', 'boa tarde', 'boa noite'].includes(lower);
-        if ((!incomingText && !imagemBase64) || (isGreeting && !imagemBase64)) {
-          const welcome = `Olá! 👋 Eu sou o *Zap, quem é?*\n\nMe encaminhe qualquer mensagem suspeita ou envie um print (foto do SMS ou conversa do WhatsApp) que eu analiso na hora se é golpe ou legítimo! 🕵️\n\n_Pode colar o texto ou enviar a imagem direto aqui._\n\n💡 _Se você já foi vítima de um golpe e precisa de ajuda imediata, envie *fui vítima*._`;
+        // Boas-vindas / Menu inicial Multilíngue
+        const isGreetingEn = ['hi', 'hello', 'hey', 'help'].includes(lower);
+        const isGreetingFr = ['bonjour', 'salut', 'aide'].includes(lower);
+        const isGreetingIt = ['ciao', 'buongiorno', 'buonasera', 'aiuto'].includes(lower);
+        const isGreetingPt = ['oi', 'olá', 'ola', 'ajuda', 'menu', 'iniciar', 'start', 'bom dia', 'boa tarde', 'boa noite'].includes(lower);
+
+        if ((!incomingText && !imagemBase64) || (isGreetingPt || isGreetingEn || isGreetingFr || isGreetingIt) && !imagemBase64) {
+          let welcome = '';
+          if (isGreetingEn) {
+            welcome = `Hello! 👋 I'm *Zap, who is it?*\n\nForward me any suspicious text message or send a screenshot (SMS or WhatsApp conversation) and I will analyze immediately whether it's a scam or legitimate! 🕵️\n\n_You can paste text or send an image directly here._\n\n💡 _If you were already scammed and need urgent guidance, reply with *victim*._`;
+          } else if (isGreetingFr) {
+            welcome = `Bonjour ! 👋 Je suis *Zap, qui est-ce ?*\n\nTransférez-moi tout message suspect ou envoyez une capture d'écran (SMS ou WhatsApp) et j'analyse immédiatement s'il s'agit d'une arnaque ou d'un message légitime ! 🕵️\n\n_Vous pouvez coller le texte ou envoyer l'image ici._\n\n💡 _Si vous êtes déjà victime d'une arnaque, répondez *victime*._`;
+          } else if (isGreetingIt) {
+            welcome = `Ciao! 👋 Sono *Zap, chi è?*\n\nInoltrami qualsiasi messaggio sospetto o invia uno screenshot (SMS o WhatsApp) e analizzerò all'istante se si tratta di una truffa o di un messaggio sicuro! 🕵️\n\n_Puoi incollare il testo o inviare l'immagine qui._\n\n💡 _Se sei già caduto in una truffa, rispondi con *vittima*._`;
+          } else {
+            welcome = `Olá! 👋 Eu sou o *Zap, quem é?*\n\nMe encaminhe qualquer mensagem suspeita ou envie um print (foto do SMS ou conversa do WhatsApp) que eu analiso na hora se é golpe ou legítimo! 🕵️\n\n_Pode colar o texto ou enviar a imagem direto aqui._\n\n💡 _Se você já foi vítima de um golpe e precisa de ajuda imediata, envie *fui vítima*._`;
+          }
           await sock.sendMessage(remoteJid, { text: welcome }, { quoted: msg });
           continue;
         }
