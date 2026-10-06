@@ -24,6 +24,7 @@ const PORT = process.env.PORT || 3333;
 
 let currentSock = null;
 let currentStatus = {
+  version: '2.5.0-gemini38',
   connected: false,
   status: 'starting',
   phone: process.env.WHATSAPP_PHONE || '351927618142',
@@ -103,7 +104,20 @@ const server = http.createServer(async (req, res) => {
     }
   }
 
-  // 4. Página Principal (HTML)
+  // 4. Teste de IA sob demanda
+  if (url.pathname === '/test-ai') {
+    try {
+      const q = url.searchParams.get('q') || 'Chronopost: colis en attente https://mon-colis.top';
+      const result = await analyzeContent({ texto: q });
+      res.writeHead(200, { 'Content-Type': 'application/json' });
+      return res.end(JSON.stringify({ success: true, input: q, result, formatted: formatWhatsAppMessage(result) }, null, 2));
+    } catch (err) {
+      res.writeHead(500, { 'Content-Type': 'application/json' });
+      return res.end(JSON.stringify({ success: false, error: err.message }));
+    }
+  }
+
+  // 5. Página Principal (HTML)
   if (url.pathname === '/' || url.pathname === '/qr.html') {
     const html = getDashboardHtml();
     res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
