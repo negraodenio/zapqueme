@@ -4,6 +4,40 @@
 
 import { gerarCodigoSelo } from '../lib/radar.js';
 
+// Campos de verificação comercial (migração 20261015). Se a migração ainda não
+// tiver sido executada, o PostgREST rejeita colunas desconhecidas: nesse caso
+// repetimos o pedido sem estes campos para não bloquear a operação.
+const CAMPOS_VERIFICACAO = ['nif', 'nif_verificado', 'iban', 'iban_verificado', 'verificacao_notas', 'verificado_em'];
+
+function extrairCamposVerificacao(body) {
+  const out = {};
+  if (body.nif !== undefined) out.nif = body.nif ? String(body.nif).replace(/\s+/g, '').toUpperCase() : null;
+  if (body.nif_verificado !== undefined) out.nif_verificado = !!body.nif_verificado;
+  if (body.iban !== undefined) out.iban = body.iban ? String(body.iban).replace(/\s+/g, '').toUpperCase() : null;
+  if (body.iban_verificado !== undefined) out.iban_verificado = !!body.iban_verificado;
+  if (body.verificacao_notas !== undefined) out.verificacao_notas = body.verificacao_notas ? String(body.verificacao_notas).trim() : null;
+  if (out.nif_verificado || out.iban_verificado) out.verificado_em = new Date().toISOString();
+  return out;
+}
+
+async function fetchComFallback(fetchUrl, options, payload) {
+  let resp = await fetch(fetchUrl, { ...options, body: JSON.stringify(payload) });
+  if (!resp.ok) {
+    const errText = await resp.text();
+    const temCamposNovos = CAMPOS_VERIFICACAO.some(c => c in payload);
+    if (temCamposNovos && /column|schema cache/i.test(errText)) {
+      console.warn('[Admin] Migração 20261015 ainda não aplicada; a gravar sem NIF/IBAN.');
+      const semNovos = { ...payload };
+      CAMPOS_VERIFICACAO.forEach(c => delete semNovos[c]);
+      resp = await fetch(fetchUrl, { ...options, body: JSON.stringify(semNovos) });
+      if (resp.ok) resp.migracaoPendente = true;
+      return resp;
+    }
+    return { ok: false, text: async () => errText };
+  }
+  return resp;
+}
+
 export default async function handler(req, res) {
   const adminSecret = process.env.ADMIN_SECRET_KEY;
   if (!adminSecret) {
@@ -31,17 +65,27 @@ export default async function handler(req, res) {
 
   // 1. DADOS DO DASHBOARD (GET)
   if (req.method === 'GET') {
+    let empresas = [];
+    let selos = [];
+    let radar = [];
+    let ocorrencias = [];
+    let leads = [];
+    let marcas = [];
+    let sinais = [];
+    let isDbOnline = true;
+    let dbErrorMessage = null;
+
     try {
       // 1. Buscar empresas
       const empresasResp = await fetch(`${url}/rest/v1/empresas?select=*&order=criado_em.desc`, { headers });
-      const empresas = empresasResp.ok ? await empresasResp.json() : [];
+      empresas = empresasResp.ok ? await empresasResp.json() : [];
 
       // 2. Buscar selos com nome da empresa
       const selosResp = await fetch(`${url}/rest/v1/selos?select=*&order=criado_em.desc`, { headers });
       const selosRaw = selosResp.ok ? await selosResp.json() : [];
 
       const empMap = new Map(empresas.map(e => [e.id, e]));
-      const selos = selosRaw.map(s => {
+      selos = selosRaw.map(s => {
         const emp = empMap.get(s.empresa_id);
         return {
           ...s,
@@ -52,7 +96,7 @@ export default async function handler(req, res) {
 
       // 3. Buscar view Threat Radar (Seção 8 e 14)
       const radarResp = await fetch(`${url}/rest/v1/radar_ameacas?select=*&order=ocorrencias.desc`, { headers });
-      const radar = radarResp.ok ? await radarResp.json() : [];
+      radar = radarResp.ok ? await radarResp.json() : [];
 
       // 4. Buscar ocorrências de impersonation para o detalhe (Seção 21)
       const ocorrenciasResp = await fetch(
@@ -60,34 +104,88 @@ export default async function handler(req, res) {
         { headers }
       );
       const ocorrenciasRaw = ocorrenciasResp.ok ? await ocorrenciasResp.json() : [];
-      const ocorrencias = ocorrenciasRaw.map(o => ({
+      ocorrencias = ocorrenciasRaw.map(o => ({
         ...o,
         empresa_nome: empMap.get(o.empresa_id)?.nome || 'Empresa desconhecida'
       }));
 
-      // 5. Total de ocorrências
-      const totalOcorrencias = radar.reduce((acc, r) => acc + (parseInt(r.ocorrencias, 10) || 0), 0);
+      // 5. Buscar leads comerciais do Supabase
+      try {
+        const leadsResp = await fetch(`${url}/rest/v1/leads?select=*&order=criado_em.desc&limit=50`, { headers });
+        if (leadsResp.ok) leads = await leadsResp.json();
+      } catch {}
 
-      // KPIs Obrigatórios (Seção 19):
-      // CARD 1: Empresas | CARD 2: Selos | CARD 3: Threat Radar | CARD 4: Ocorrências de impersonation
-      const kpis = {
-        totalEmpresas: empresas.length,
-        totalSelos: selos.length,
-        totalThreatRadar: radar.length,
-        totalOcorrencias: totalOcorrencias || ocorrencias.length
-      };
+      // 6. Marcas mencionadas em denúncias (inclui não-clientes) — base do alerta gratuito
+      try {
+        const marcasResp = await fetch(`${url}/rest/v1/marcas_mencionadas?select=*&order=denuncias.desc&limit=200`, { headers });
+        if (marcasResp.ok) marcas = await marcasResp.json();
+      } catch {}
 
-      return res.status(200).json({
-        kpis,
-        empresas,
-        selos,
-        radar,
-        ocorrencias
-      });
+      // 7. Denúncias individuais com marca (evidência para os relatórios, últimos 90 dias)
+      try {
+        const desde = new Date(Date.now() - 90 * 24 * 3600 * 1000).toISOString();
+        const sinaisResp = await fetch(
+          `${url}/rest/v1/analises?marca_mencionada=not.is.null&veredito=in.(golpe,suspeito)&criado_em=gte.${desde}` +
+          `&select=id,criado_em,veredito,confianca,tipo,canal,canal_mencionado,marca_mencionada,alerta_link,vezes_reportada,empresa_id,impersonation` +
+          `&order=criado_em.desc&limit=1000`,
+          { headers }
+        );
+        if (sinaisResp.ok) sinais = await sinaisResp.json();
+      } catch {}
     } catch (err) {
-      console.error('[Admin] Erro ao carregar dados:', err);
-      return res.status(500).json({ error: 'Falha ao buscar dados administrativos.' });
+      isDbOnline = false;
+      dbErrorMessage = err.message || 'Falha ao conectar ao banco de dados Supabase.';
+      console.warn('[Admin] Supabase offline ou pausado:', err.message);
     }
+
+    // Se Supabase não retornou leads ou está offline, busca leads persistidos no Upstash Redis
+    if (!leads.length) {
+      const redisUrl = process.env.UPSTASH_REDIS_REST_URL;
+      const redisToken = process.env.UPSTASH_REDIS_REST_TOKEN;
+      if (redisUrl && redisToken) {
+        try {
+          const redisResp = await fetch(`${redisUrl}/lrange/zapqueme:leads/0/50`, {
+            headers: { Authorization: `Bearer ${redisToken}` }
+          });
+          if (redisResp.ok) {
+            const rData = await redisResp.json();
+            if (Array.isArray(rData.result)) {
+              leads = rData.result.map(item => {
+                try { return typeof item === 'string' ? JSON.parse(item) : item; }
+                catch { return null; }
+              }).filter(Boolean);
+            }
+          }
+        } catch (rErr) {
+          console.warn('[Admin] Erro ao buscar leads no Redis:', rErr.message);
+        }
+      }
+    }
+
+    // 5. Total de ocorrências
+    const totalOcorrencias = radar.reduce((acc, r) => acc + (parseInt(r.ocorrencias, 10) || 0), 0);
+
+    // KPIs Obrigatórios (Seção 19):
+    const kpis = {
+      totalEmpresas: empresas.length,
+      totalSelos: selos.length,
+      totalThreatRadar: radar.length,
+      totalOcorrencias: totalOcorrencias || ocorrencias.length,
+      totalLeads: leads.length
+    };
+
+    return res.status(200).json({
+      kpis,
+      empresas,
+      selos,
+      radar,
+      ocorrencias,
+      leads,
+      marcas,
+      sinais,
+      database_online: isDbOnline,
+      database_warning: isDbOnline ? null : `Supabase inacessível (${dbErrorMessage}). Verifique se o projeto está pausado em supabase.com.`
+    });
   }
 
   // 2. AÇÕES ADMINISTRATIVAS (POST)
@@ -124,10 +222,10 @@ export default async function handler(req, res) {
       }
 
       try {
-        const empInsert = await fetch(`${url}/rest/v1/empresas`, {
+        const empInsert = await fetchComFallback(`${url}/rest/v1/empresas`, {
           method: 'POST',
-          headers: { ...headers, Prefer: 'return=representation' },
-          body: JSON.stringify({
+          headers: { ...headers, Prefer: 'return=representation' }
+        }, {
             nome: nome.trim(),
             dominio_oficial: dominio_oficial ? dominio_oficial.trim().toLowerCase() : null,
             email_oficial: email_oficial ? email_oficial.trim().toLowerCase() : null,
@@ -137,8 +235,8 @@ export default async function handler(req, res) {
             email_verificado: !!email_verificado,
             telefone_verificado: !!telefone_verificado,
             plano: plano || 'business',
-            status: status || 'ativo'
-          })
+            status: status || 'ativo',
+            ...extrairCamposVerificacao(req.body)
         });
 
         if (!empInsert.ok) {
@@ -179,7 +277,8 @@ export default async function handler(req, res) {
         return res.status(200).json({
           success: true,
           empresa: novaEmpresa,
-          selo: novoSelo
+          selo: novoSelo,
+          migracao_pendente: !!empInsert.migracaoPendente
         });
       } catch (err) {
         console.error('[Admin] Erro create_empresa:', err);
@@ -215,10 +314,10 @@ export default async function handler(req, res) {
       }
 
       try {
-        const updateResp = await fetch(`${url}/rest/v1/empresas?id=eq.${encodeURIComponent(id)}`, {
+        const updateResp = await fetchComFallback(`${url}/rest/v1/empresas?id=eq.${encodeURIComponent(id)}`, {
           method: 'PATCH',
-          headers: { ...headers, Prefer: 'return=representation' },
-          body: JSON.stringify({
+          headers: { ...headers, Prefer: 'return=representation' }
+        }, {
             nome: nome ? nome.trim() : undefined,
             dominio_oficial: dominio_oficial !== undefined ? (dominio_oficial ? dominio_oficial.trim().toLowerCase() : null) : undefined,
             email_oficial: email_oficial !== undefined ? (email_oficial ? email_oficial.trim().toLowerCase() : null) : undefined,
@@ -228,12 +327,12 @@ export default async function handler(req, res) {
             email_verificado: !!email_verificado,
             telefone_verificado: !!telefone_verificado,
             plano: plano || undefined,
-            status: status || undefined
-          })
+            status: status || undefined,
+            ...extrairCamposVerificacao(req.body)
         });
 
         if (!updateResp.ok) throw new Error(await updateResp.text());
-        return res.status(200).json({ success: true });
+        return res.status(200).json({ success: true, migracao_pendente: !!updateResp.migracaoPendente });
       } catch (err) {
         console.error('[Admin] Erro update_empresa:', err);
         return res.status(500).json({ error: 'Falha ao atualizar dados da empresa.' });

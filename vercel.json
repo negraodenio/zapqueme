@@ -2,8 +2,11 @@
   "cleanUrls": true,
   "rewrites": [
     { "source": "/admin", "destination": "/admin.html" },
+    { "source": "/plano-negocio", "destination": "/plano-negocio.html" },
     { "source": "/empresas", "destination": "/empresas.html" },
     { "source": "/verificar", "destination": "/verificar.html" },
+    { "source": "/termos", "destination": "/termos.html" },
+    { "source": "/privacidade", "destination": "/privacidade.html" },
     { "source": "/verify/:codigo", "destination": "/api/verify?codigo=:codigo" },
     { "source": "/badge/:codigo", "destination": "/api/badge?codigo=:codigo" },
     { "source": "/badge/:codigo/:formato", "destination": "/api/badge?codigo=:codigo&formato=:formato" }

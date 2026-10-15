@@ -142,7 +142,11 @@ export default async function handler(req, res) {
           telefone_oficial: empresa.telefone_oficial,
           dominio_verificado: !!empresa.dominio_verificado,
           email_verificado: !!empresa.email_verificado,
-          telefone_verificado: !!empresa.telefone_verificado
+          telefone_verificado: !!empresa.telefone_verificado,
+          nif: empresa.nif || null,
+          nif_verificado: !!empresa.nif_verificado,
+          iban: empresa.iban_verificado ? (empresa.iban || null) : null,
+          iban_verificado: !!empresa.iban_verificado
         },
         status_publico: statusPublico,
         status_raw: statusRaw,
@@ -252,6 +256,46 @@ export function renderVerifyHtml({ selo, empresa, statusPublico, statusClasse })
       </div>`;
   } else {
     telHtml = `<div class="channel-empty">– Nenhum telefone registado</div>`;
+  }
+
+  // NIF / NIPC
+  let nifHtml = '';
+  if (empresa.nif) {
+    if (empresa.nif_verificado) {
+      nifHtml = `
+      <div class="channel-badge badge-verified">
+        <span class="icon" style="color: #10b981; font-weight: 800;">✓</span>
+        <div class="channel-detail">
+          <span class="channel-type">NIF / NIPC verificado</span>
+          <span class="channel-val" style="font-family: 'JetBrains Mono', monospace;">${escapeHtml(empresa.nif)}</span>
+        </div>
+      </div>`;
+    } else {
+      nifHtml = `
+      <div class="channel-badge badge-registered">
+        <span class="icon">–</span>
+        <div class="channel-detail">
+          <span class="channel-type">NIF registado, em validação</span>
+          <span class="channel-val" style="font-family: 'JetBrains Mono', monospace;">${escapeHtml(empresa.nif)}</span>
+        </div>
+      </div>`;
+    }
+  }
+
+  // IBAN OFICIAL (Apenas exibido se confirmado e verificado pelo administrador)
+  let ibanHtml = '';
+  if (empresa.iban && empresa.iban_verificado) {
+    ibanHtml = `
+      <div class="channel-box" style="border-left: 3px solid #10b981; background: rgba(16, 185, 129, 0.05);">
+        <div class="channel-label" style="color: #34d399;">IBAN OFICIAL DE PAGAMENTO</div>
+        <div class="channel-badge badge-verified">
+          <span class="icon" style="color: #10b981; font-weight: 800;">🔒</span>
+          <div class="channel-detail">
+            <span class="channel-type">Conta bancária oficial conferida</span>
+            <span class="channel-val" style="font-family: 'JetBrains Mono', monospace; letter-spacing: 0.5px;">${escapeHtml(empresa.iban)}</span>
+          </div>
+        </div>
+      </div>`;
   }
 
   return `<!DOCTYPE html>
@@ -527,6 +571,14 @@ export function renderVerifyHtml({ selo, empresa, statusPublico, statusClasse })
         ${telHtml}
       </div>
 
+      ${nifHtml ? `
+      <div class="channel-box">
+        <div class="channel-label">NIF / NIPC DA ORGANIZAÇÃO</div>
+        ${nifHtml}
+      </div>` : ''}
+
+      ${ibanHtml}
+
       <div class="meta-box">
         <div class="meta-item">CÓDIGO: <strong>${codigoSelo}</strong></div>
         <div class="meta-item">VALIDADE: <strong>${validadeTexto}</strong></div>
@@ -541,6 +593,11 @@ export function renderVerifyHtml({ selo, empresa, statusPublico, statusClasse })
       <div class="actions-grid">
         <a href="/" class="btn btn-primary">Verificar uma mensagem suspeita</a>
         <a href="/?denuncia=true" class="btn btn-secondary">Denunciar possível fraude</a>
+      </div>
+
+      <div style="margin-top: 24px; text-align: center; font-size: 0.75rem; color: var(--text-muted);">
+        <a href="/termos" style="color: var(--text-muted); text-decoration: underline; margin-right: 12px;">Termos do Selo</a>
+        <a href="/privacidade" style="color: var(--text-muted); text-decoration: underline;">Política de Privacidade (RGPD)</a>
       </div>
     </article>
   </div>

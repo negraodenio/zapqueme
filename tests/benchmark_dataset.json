@@ -1,0 +1,122 @@
+[
+  {
+    "id": "PT-01",
+    "categoria": "Phishing CTT",
+    "esperado": "golpe",
+    "texto": "CTT: A sua encomenda PT829103819 aguarda pagamento de taxa aduaneira no valor de 2,15 EUR para entrega imediata: https://ctt-desalfandega.top/pagar"
+  },
+  {
+    "id": "PT-02",
+    "categoria": "Falso Filho / MB WAY",
+    "esperado": "golpe",
+    "texto": "Ola mae perdi o meu telemovel e estou a usar este numero temporario. Preciso pagar uma conta urgente senao cortam o servico, podes mandar 280 euros por mbway para este numero?"
+  },
+  {
+    "id": "PT-03",
+    "categoria": "Saúde Legítima CUF",
+    "esperado": "legitimo",
+    "texto": "Hospital CUF: Lembramos que tem consulta agendada para 22/10 as 15h30 com a Dra. Ana Martins na CUF Descobertas. Para desmarcar ligue 210025200."
+  },
+  {
+    "id": "PT-04",
+    "categoria": "Banca 2FA Santander Legítimo",
+    "esperado": "legitimo",
+    "texto": "Santander: O seu codigo de autorizacao para a operacao no valor de 35,00 EUR e 749213. Valido por 3 minutos. Nunca partilhe este codigo com ninguem."
+  },
+  {
+    "id": "PT-05",
+    "categoria": "Phishing Millennium BCP",
+    "esperado": "golpe",
+    "texto": "Millennium BCP: O seu cartao foi temporariamente bloqueado por motivos de seguranca. Valide os seus dados de imediato em: https://millennium-seguranca-acesso.com"
+  },
+  {
+    "id": "PT-06",
+    "categoria": "Fatura EDP Entidade Neutra",
+    "esperado": "legitimo",
+    "texto": "EDP Comercial: A sua fatura de eletricidade referente a setembro no valor de 42,10 EUR esta disponivel. Pagamento por Entidade 21249 Ref 849201934 ate 25/10."
+  },
+  {
+    "id": "PT-07",
+    "categoria": "Logística DPD Legítimo",
+    "esperado": "legitimo",
+    "texto": "DPD Portugal: A sua encomenda sera entregue hoje entre as 14h e as 16h. Pode acompanhar a carrinha em tempo real atraves de https://dpd.pt/tracking/192830"
+  },
+  {
+    "id": "PT-08",
+    "categoria": "Falso Suporte MEO Smishing",
+    "esperado": "golpe",
+    "texto": "MEO Informa: Fatura em atraso com ordem de suspensao do servico de internet. Evite custos de reativacao e regularize hoje em: https://meo-faturas-atraso.xyz"
+  },
+  {
+    "id": "PT-09",
+    "categoria": "SMS Diário Familiar",
+    "esperado": "legitimo",
+    "texto": "Ola pai, ja sai do trabalho e estou a caminho de casa. Precisas que compre alguma coisa no supermercado?"
+  },
+  {
+    "id": "PT-10",
+    "categoria": "Burla Sinal Imobiliária",
+    "esperado": "golpe",
+    "texto": "Apartamento T2 em Lisboa. Ha muitos interessados para visita amanha. Se quiser garantir a reserva com exclusividade envie sinal de 300 EUR por MB WAY para 912345678."
+  },
+  {
+    "id": "PT-11",
+    "categoria": "Saúde Hospital da Luz Legítimo",
+    "esperado": "legitimo",
+    "texto": "Hospital da Luz: Os resultados dos seus exames ja estao disponiveis na sua area pessoal MY LUZ no site https://hospitaldaluz.pt ou na app oficial."
+  },
+  {
+    "id": "PT-12",
+    "categoria": "Phishing Autoridade Tributária (AT)",
+    "esperado": "golpe",
+    "texto": "Autoridade Tributaria: Tem direito a um reembolso do IRS de 2025 no valor de 384,12 EUR. Para receber na sua conta confirme o seu cartao em: https://at-portaldasfinancas-reembolso.live"
+  },
+  {
+    "id": "PT-13",
+    "categoria": "Institucional Ordem dos Advogados",
+    "esperado": "legitimo",
+    "texto": "Ordem dos Advogados: Convocatoria para a assembleia geral no dia 28 de outubro. Consulte a ordem de trabalhos e documentos em https://portal.oa.pt"
+  },
+  {
+    "id": "PT-14",
+    "categoria": "Smishing Via Verde",
+    "esperado": "golpe",
+    "texto": "Via Verde Alerta: Detectamos portagens pendentes em autoestrada no valor de 14,80 EUR. Evite processo de contraordenacao pagando em: https://viaverde-portagens-pagamento.online"
+  },
+  {
+    "id": "PT-15",
+    "categoria": "Operadora NOS Legítimo",
+    "esperado": "legitimo",
+    "texto": "NOS: Esgotou 80% do seu pacote de dados moveis este mes. Para consultar os consumos detalhados aceda a app My NOS ou ligue 16990."
+  },
+  {
+    "id": "PT-16",
+    "categoria": "Falso Reembolso Segurança Social",
+    "esperado": "golpe",
+    "texto": "Seguranca Social: Foi emitido subsidio extraordinario a seu favor. Reclame o montante de 125 EUR antes que expire: https://seg-social-apoio2026.click"
+  },
+  {
+    "id": "PT-17",
+    "categoria": "Água Municipal Multibanco Legítimo",
+    "esperado": "legitimo",
+    "texto": "SMAS: Informamos que a sua fatura de agua tem o valor de 18,30 EUR. Pagamento Multibanco: Entidade 10241 Ref 982138192 ate dia 30."
+  },
+  {
+    "id": "PT-18",
+    "categoria": "Burla Investimento Crypto WhatsApp",
+    "esperado": "golpe",
+    "texto": "Oportunidade unica de investimento automatizado em Bitcoin. Lucro garantido de 15% ao dia sem risco. Comece ja com 100 EUR e receba hoje: https://lucro-garantido-crypto.shop"
+  },
+  {
+    "id": "PT-19",
+    "categoria": "Saudação Comercial Comum",
+    "esperado": "legitimo",
+    "texto": "Boa tarde Dr. Silva, confirmo a nossa reuniao de amanha as 10h no seu escritorio. Ate amanha e bom trabalho."
+  },
+  {
+    "id": "PT-20",
+    "categoria": "Phishing Galp Energia",
+    "esperado": "golpe",
+    "texto": "Galp: Identificamos um erro no debito direto e a sua instalacao sera suspensa em 24h. Pague imediatamente o montante em falta atraves de: https://galp-regularizacao-faturas.site"
+  }
+]

@@ -24,7 +24,7 @@ const PORT = process.env.PORT || 3333;
 
 let currentSock = null;
 let currentStatus = {
-  version: '2.5.0-gemini38',
+  version: '2.6.0-gemini20',
   connected: false,
   status: 'starting',
   phone: process.env.WHATSAPP_PHONE || '351927618142',
@@ -33,6 +33,34 @@ let currentStatus = {
   qrBase64: null,
   lastError: null
 };
+
+let lastSupabasePing = null;
+let supabaseStatus = 'unknown';
+
+async function checkSupabaseHealth() {
+  const sUrl = process.env.SUPABASE_URL;
+  const sKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  if (!sUrl || !sKey) return { status: 'unconfigured' };
+
+  try {
+    const res = await fetch(`${sUrl}/rest/v1/empresas?select=id&limit=1`, {
+      headers: { apikey: sKey, Authorization: `Bearer ${sKey}` },
+      signal: AbortSignal.timeout(5000)
+    });
+    supabaseStatus = res.ok ? 'online' : `error_${res.status}`;
+    lastSupabasePing = new Date().toISOString();
+    return { status: supabaseStatus, lastPing: lastSupabasePing };
+  } catch (err) {
+    supabaseStatus = 'offline';
+    lastSupabasePing = new Date().toISOString();
+    return { status: 'offline', error: err.message, lastPing: lastSupabasePing };
+  }
+}
+
+// Background Keep-Alive automático para o Supabase nunca pausar por inatividade (a cada 10 min)
+setInterval(() => {
+  checkSupabaseHealth().catch(() => {});
+}, 10 * 60 * 1000);
 
 // --------------------------------------------------------------------------
 // SERVIDOR WEB LOCAL (http://localhost:3333)
@@ -50,10 +78,21 @@ const server = http.createServer(async (req, res) => {
     return res.end();
   }
 
-  // 1. Status JSON
-  if (url.pathname === '/status') {
+  // 1. Status JSON (alimentado também pelos pings externos de 5 em 5 minutos)
+  if (url.pathname === '/status' || url.pathname === '/ping') {
+    // Se o último ping no Supabase tem mais de 30s ou nunca foi feito, renova o toque no banco
+    if (!lastSupabasePing || Date.now() - new Date(lastSupabasePing).getTime() > 30000) {
+      await checkSupabaseHealth();
+    }
+
+    const payload = {
+      ...currentStatus,
+      supabase: supabaseStatus,
+      supabaseLastPing: lastSupabasePing
+    };
+
     res.writeHead(200, { 'Content-Type': 'application/json' });
-    return res.end(JSON.stringify(currentStatus));
+    return res.end(JSON.stringify(payload, null, 2));
   }
 
   // 2. Imagem QR Code

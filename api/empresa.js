@@ -121,14 +121,66 @@ export default async function handler(req, res) {
   // 2. CAPTAÇÃO DE CONTATOS / LEADS B2B
   if (req.method === 'POST') {
     const body = req.body || {};
-    const { nome, empresa, email } = body;
+    const { nome, empresa, email, whatsapp, website, plano_interesse } = body;
 
     if (!nome || !empresa || !email) {
       return res.status(400).json({ error: 'Campos nome, empresa e email são obrigatórios.' });
     }
 
+    const leadId = crypto.randomUUID();
+    const leadData = {
+      id: leadId,
+      criado_em: new Date().toISOString(),
+      nome: String(nome).trim(),
+      empresa: String(empresa).trim(),
+      email: String(email).trim().toLowerCase(),
+      whatsapp: whatsapp ? String(whatsapp).trim() : null,
+      website: website ? String(website).trim() : null,
+      plano_interesse: plano_interesse || 'pro',
+      status: 'novo'
+    };
+
+    // 1. Tentar salvar no Supabase (se configurado e online)
+    if (url && key) {
+      try {
+        await fetch(`${url}/rest/v1/leads`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            apikey: key,
+            Authorization: `Bearer ${key}`
+          },
+          body: JSON.stringify(leadData)
+        });
+      } catch (err) {
+        console.warn('[Empresa] Supabase indisponível para gravar lead, salvando no Redis:', err.message);
+      }
+    }
+
+    // 2. Sempre persistir no Upstash Redis para NUNCA perder um lead comercial
+    const redisUrl = process.env.UPSTASH_REDIS_REST_URL;
+    const redisToken = process.env.UPSTASH_REDIS_REST_TOKEN;
+    if (redisUrl && redisToken) {
+      try {
+        await fetch(`${redisUrl}/pipeline`, {
+          method: 'POST',
+          headers: {
+            Authorization: `Bearer ${redisToken}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify([
+            ['LPUSH', 'zapqueme:leads', JSON.stringify(leadData)],
+            ['HSET', `zapqueme:lead:${leadId}`, 'data', JSON.stringify(leadData)]
+          ])
+        });
+      } catch (redisErr) {
+        console.warn('[Empresa] Falha ao persistir lead no Redis:', redisErr.message);
+      }
+    }
+
     return res.status(200).json({
       success: true,
+      lead_id: leadId,
       message: 'Solicitação recebida com sucesso! Nossa equipe de segurança entrará em contato.'
     });
   }

@@ -625,6 +625,11 @@
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
         Dossiê CISO & Leads
       </button>
+
+      <a href="/plano-negocio" target="_blank" class="nav-btn" style="color: #38bdf8;">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+        Plano de Negócio 2026 ↗
+      </a>
     </nav>
 
     <div class="sidebar-footer">
@@ -656,6 +661,9 @@
         </button>
       </div>
     </div>
+
+    <!-- BANNER DE STATUS DO SUPABASE -->
+    <div id="dbWarningBanner" style="display: none; background: rgba(239, 68, 68, 0.15); border: 1px solid rgba(239, 68, 68, 0.4); color: #fca5a5; padding: 14px 18px; border-radius: 10px; margin-bottom: 24px; font-size: 0.9rem; align-items: center; justify-content: space-between;"></div>
 
     <!-- KPIS: 4 CARDS OBRIGATÓRIOS (Seção 19) -->
     <section class="kpi-grid">
@@ -956,14 +964,19 @@
       <div class="table-container" style="margin-bottom: 24px;">
         <div class="table-header">
           <div>
-            <h3>Gerador de Dossiê Técnico de Ameaças (CISO / Head de Fraude)</h3>
-            <p style="color: var(--text-muted); font-size: 0.8rem; margin-top: 2px;">Crie relatórios com 1 clique para apresentar evidências a empresas imitadas e fechar pilotos pagos</p>
+            <h3>Relatório de Denúncias por Marca</h3>
+            <p style="color: var(--text-muted); font-size: 0.8rem; margin-top: 2px;">Só dados reais registados pelo verificador. Use para o alerta gratuito ou para o resumo mensal de clientes.</p>
           </div>
-          <div style="display: flex; gap: 10px; align-items: center;">
+          <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
             <select id="dossieSelectMarca" class="form-select" style="min-width: 220px;" onchange="gerarDossieMarca()">
-              <option value="">Selecione uma marca afetada...</option>
+              <option value="">Selecione uma marca...</option>
             </select>
-            <button onclick="copiarEmailProspeccao()" class="btn-xs btn-xs-primary">📋 Copiar E-mail de Prospecção</button>
+            <select id="dossiePeriodo" class="form-select" onchange="gerarDossieMarca()">
+              <option value="7">Últimos 7 dias</option>
+              <option value="30" selected>Últimos 30 dias</option>
+              <option value="90">Últimos 90 dias</option>
+            </select>
+            <button onclick="copiarEmailProspeccao()" class="btn-xs btn-xs-primary">📋 Copiar mensagem de alerta</button>
             <button onclick="imprimirDossie()" class="btn-xs">🖨️ Imprimir / PDF</button>
           </div>
         </div>
@@ -974,6 +987,32 @@
             Selecione uma marca no menu acima para gerar o dossiê executivo com dados em tempo real.
           </div>
         </div>
+      </div>
+
+      <!-- TABELA DE LEADS COMERCIAIS CAPTURADOS -->
+      <div class="table-container" style="margin-top: 28px;">
+        <div class="table-header">
+          <div>
+            <h3>Leads Comerciais Recebidos (Interessados no Selo Zap Verified)</h3>
+            <p style="color: var(--text-muted); font-size: 0.8rem; margin-top: 2px;">Contatos preenchidos na landing page /empresas.html prontos para fechar vendas</p>
+          </div>
+        </div>
+        <table>
+          <thead>
+            <tr>
+              <th>Data</th>
+              <th>Nome & Empresa</th>
+              <th>E-mail</th>
+              <th>WhatsApp</th>
+              <th>Website</th>
+              <th>Plano</th>
+              <th>Ações</th>
+            </tr>
+          </thead>
+          <tbody id="leadsTableBody">
+            <tr><td colspan="7" style="text-align: center; color: var(--text-muted); padding: 30px;">Carregando leads...</td></tr>
+          </tbody>
+        </table>
       </div>
     </div>
   </main>
@@ -1030,6 +1069,28 @@
         <div class="form-group">
           <label class="form-label">Apelidos da marca (separados por vírgula)</label>
           <input type="text" id="modalApelidos" class="form-input" placeholder="Ex: XPTO, Banco XPTO Portugal">
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">NIF / NIPC</label>
+            <input type="text" id="modalNif" class="form-input" placeholder="509123456">
+            <label class="checkbox-group">
+              <input type="checkbox" id="modalNifVerificado"> NIF confirmado (Finanças / certidão)
+            </label>
+          </div>
+          <div class="form-group">
+            <label class="form-label">IBAN oficial (opcional)</label>
+            <input type="text" id="modalIban" class="form-input" placeholder="PT50 0000 0000 0000 0000 0000 0">
+            <label class="checkbox-group">
+              <input type="checkbox" id="modalIbanVerificado"> IBAN confirmado (só aparece no selo se marcado)
+            </label>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Notas internas de verificação (não público)</label>
+          <input type="text" id="modalNotasVerificacao" class="form-input" placeholder="Ex: NIF confirmado no portal das Finanças em 15/10; IBAN por declaração bancária">
         </div>
 
         <div class="form-row">
@@ -1115,6 +1176,28 @@
           <input type="text" id="editApelidos" class="form-input">
         </div>
 
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">NIF / NIPC</label>
+            <input type="text" id="editNif" class="form-input">
+            <label class="checkbox-group">
+              <input type="checkbox" id="editNifVerificado"> NIF confirmado
+            </label>
+          </div>
+          <div class="form-group">
+            <label class="form-label">IBAN oficial (opcional)</label>
+            <input type="text" id="editIban" class="form-input">
+            <label class="checkbox-group">
+              <input type="checkbox" id="editIbanVerificado"> IBAN confirmado (só aparece no selo se marcado)
+            </label>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Notas internas de verificação (não público)</label>
+          <input type="text" id="editNotasVerificacao" class="form-input">
+        </div>
+
         <div class="form-group">
           <label class="form-label">Status</label>
           <select id="editStatus" class="form-select">
@@ -1153,6 +1236,9 @@
         <div class="detail-row"><span class="detail-label">Domínio oficial:</span> <span class="detail-value" id="detDominio">-</span></div>
         <div class="detail-row"><span class="detail-label">Email oficial:</span> <span class="detail-value" id="detEmail">-</span></div>
         <div class="detail-row"><span class="detail-label">Telefone oficial:</span> <span class="detail-value" id="detTelefone">-</span></div>
+        <div class="detail-row"><span class="detail-label">NIF:</span> <span class="detail-value" id="detNif">-</span></div>
+        <div class="detail-row"><span class="detail-label">IBAN:</span> <span class="detail-value" id="detIban">-</span></div>
+        <div class="detail-row"><span class="detail-label">Notas de verificação:</span> <span class="detail-value" id="detNotas">-</span></div>
       </div>
 
       <div class="detail-section">
@@ -1471,26 +1557,37 @@
       if (arrTotalEl) arrTotalEl.textContent = `€${arrTotal.toLocaleString('pt-PT')} / ano`;
     }
 
+    function normMarca(s) {
+      return String(s || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim();
+    }
+
+    // Lista apenas marcas com denúncias reais + empresas registadas (sem lista fixa de marcas)
     function popularSelectMarcasDossie() {
       const select = document.getElementById('dossieSelectMarca');
       if (!select) return;
 
-      const marcasConhecidas = [
-        'Chronopost', 'Poste Italiane', 'CTT', 'DPD', 'MB WAY', 
-        'Santander', 'Caixa Geral de Depósitos', 'Novo Banco', 
-        'USPS', 'DHL', 'Netflix', 'Amazon', 'Bradesco', 'Itaú'
-      ];
+      const contagem = new Map();
+      (dashboardState.marcas || []).forEach(m => {
+        if (m.marca) contagem.set(m.marca, parseInt(m.denuncias, 10) || 0);
+      });
+      (dashboardState.empresas || []).forEach(e => {
+        if (!e.nome) return;
+        const jaExiste = Array.from(contagem.keys()).some(k => normMarca(k) === normMarca(e.nome));
+        if (!jaExiste) contagem.set(e.nome, null);
+      });
 
-      const marcasRadar = (dashboardState.radar || []).map(r => r.empresa).filter(Boolean);
-      const marcasEmpresas = (dashboardState.empresas || []).map(e => e.nome).filter(Boolean);
-      
-      const todas = Array.from(new Set([...marcasRadar, ...marcasEmpresas, ...marcasConhecidas])).sort();
+      const todas = Array.from(contagem.entries())
+        .sort((a, b) => (b[1] || 0) - (a[1] || 0) || a[0].localeCompare(b[0]));
 
       const valAtual = select.value;
-      select.innerHTML = '<option value="">Selecione uma marca afetada...</option>' +
-        todas.map(m => `<option value="${escapeHtml(m)}">${escapeHtml(m)}</option>`).join('');
+      if (!todas.length) {
+        select.innerHTML = '<option value="">Ainda não há denúncias com marca identificada</option>';
+        return;
+      }
+      select.innerHTML = '<option value="">Selecione uma marca...</option>' +
+        todas.map(([m, n]) => `<option value="${escapeHtml(m)}">${escapeHtml(m)}${n ? ` (${n} denúncias)` : ' (empresa registada)'}</option>`).join('');
 
-      if (valAtual && todas.includes(valAtual)) {
+      if (valAtual && contagem.has(valAtual)) {
         select.value = valAtual;
       }
     }
@@ -1505,162 +1602,171 @@
       }
     }
 
+    // Relatório baseado EXCLUSIVAMENTE em denúncias registadas. Nada é estimado ou inventado.
     function gerarDossieMarca() {
       const select = document.getElementById('dossieSelectMarca');
       const container = document.getElementById('dossieConteudo');
       if (!select || !container) return;
 
+      ultimoEmailProspeccaoTexto = '';
       const marca = select.value;
       if (!marca) {
-        container.innerHTML = `
-          <div style="text-align: center; color: var(--text-muted); padding: 40px;">
-            Selecione uma marca no menu acima para gerar o dossiê executivo com dados em tempo real.
-          </div>
-        `;
+        container.innerHTML = `<div style="text-align: center; color: var(--text-muted); padding: 40px;">Selecione uma marca para gerar o relatório com os dados registados.</div>`;
         return;
       }
 
-      // Procurar dados no radar ou ocorrências
-      const radarRow = (dashboardState.radar || []).find(r => r.empresa && r.empresa.toLowerCase() === marca.toLowerCase());
-      const empOcorrencias = (dashboardState.ocorrencias || []).filter(o => 
-        (o.empresa_imitada && o.empresa_imitada.toLowerCase().includes(marca.toLowerCase())) ||
-        (radarRow && o.empresa_id === radarRow.empresa_id)
-      );
+      const dias = parseInt((document.getElementById('dossiePeriodo') || {}).value || '30', 10);
+      const fim = new Date();
+      const inicio = new Date(fim.getTime() - dias * 86400000);
+      const fmtData = d => new Date(d).toLocaleDateString('pt-PT', { day: '2-digit', month: '2-digit', year: 'numeric' });
+      const fmtDataHora = d => new Date(d).toLocaleString('pt-PT', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
 
-      const totalOcorrencias = radarRow ? radarRow.ocorrencias : (empOcorrencias.length || Math.floor(Math.random() * 8) + 4);
-      const canaisDistintos = radarRow ? radarRow.canais_distintos : (empOcorrencias.length > 1 ? 2 : 1);
-      const severidade = radarRow ? radarRow.severidade : (totalOcorrencias > 5 ? 'critica' : 'alta');
-      
-      const dominiosDetectados = empOcorrencias
-        .map(o => o.canal_mencionado)
-        .filter(c => c && c.includes('.'))
-        .slice(0, 5);
+      const alvo = normMarca(marca);
+      const empresa = (dashboardState.empresas || []).find(e => normMarca(e.nome) === alvo);
+      const nomesAceites = new Set([alvo, ...((empresa && Array.isArray(empresa.apelidos_marca)) ? empresa.apelidos_marca.map(normMarca) : [])]);
+      const ehCliente = !!(empresa && empresa.status === 'ativo');
 
-      if (dominiosDetectados.length === 0) {
-        const marcaSlug = marca.toLowerCase().replace(/[^a-z0-9]/g, '');
-        dominiosDetectados.push(`${marcaSlug}-suporte-urgente.top`, `portal-seguro-${marcaSlug}.online`, `verificacao-${marcaSlug}.club`);
+      const vistos = new Set();
+      const casos = [...(dashboardState.sinais || []), ...(dashboardState.ocorrencias || [])]
+        .filter(s => s && s.id && !vistos.has(s.id) && vistos.add(s.id))
+        .filter(s => new Date(s.criado_em) >= inicio)
+        .filter(s => nomesAceites.has(normMarca(s.marca_mencionada)) || (empresa && s.empresa_id === empresa.id))
+        .sort((a, b) => new Date(b.criado_em) - new Date(a.criado_em));
+
+      const total = casos.length;
+      const nGolpe = casos.filter(c => c.veredito === 'golpe').length;
+      const nSuspeito = casos.filter(c => c.veredito === 'suspeito').length;
+      const nForaOficial = casos.filter(c => c.impersonation).length;
+
+      const contar = (arr, fn) => {
+        const m = new Map();
+        arr.forEach(x => { const k = fn(x); if (k) m.set(k, (m.get(k) || 0) + 1); });
+        return Array.from(m.entries()).sort((a, b) => b[1] - a[1]);
+      };
+      const tipos = contar(casos, c => c.tipo);
+      const canaisEntrada = contar(casos, c => c.canal);
+      const contactos = contar(casos, c => c.canal_mencionado).slice(0, 15);
+      const contactoForaOficial = new Set(casos.filter(c => c.impersonation && c.canal_mencionado).map(c => c.canal_mencionado));
+
+      const primeira = total ? casos[casos.length - 1].criado_em : null;
+      const ultima = total ? casos[0].criado_em : null;
+      const hoje = fmtData(fim);
+      const refId = `ZQ-REL-${alvo.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 8)}-${fim.toISOString().slice(0, 10).replace(/-/g, '')}`;
+
+      // Sem denúncias e sem relação comercial: não há base para contacto
+      if (!total && !empresa) {
+        container.innerHTML = `
+          <div style="padding: 32px; text-align: center;">
+            <div style="font-size: 1.05rem; font-weight: 700; margin-bottom: 8px;">Sem denúncias para «${escapeHtml(marca)}» nos últimos ${dias} dias.</div>
+            <div style="color: var(--text-muted); font-size: 0.85rem;">Não há evidência para enviar um alerta. Experimente um período maior.</div>
+          </div>`;
+        return;
       }
 
-      const hoje = new Date().toLocaleDateString('pt-PT', { day: '2-digit', month: '2-digit', year: 'numeric' });
-      const refId = `ZAP-INTEL-${marca.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 8)}-${Date.now().toString().slice(-4)}`;
-
-      // Template de e-mail formal para CISO / Head de Fraude
-      ultimoEmailProspeccaoTexto = 
-`Assunto: [Confidencial / Alerta Técnico] Campanhas ativas de Smishing em nome da ${marca} detectadas na rede WhatsApp
-
-Olá [Nome do CISO / Head de Fraude da ${marca}],
-
-A nossa rede de sensores móveis e IA defensiva no WhatsApp (Zap, quem é?) registou nos últimos dias ${totalOcorrencias} tentativas ativas de engenharia social e smishing fazendo-se passar pela ${marca}.
-
-Enquanto ferramentas tradicionais de Threat Intel dependem de crawlers públicos ou DNS já propagados, os nossos sensores capturam as mensagens no momento exato em que chegam ao smartphone do cliente — tipicamente entre 14h a 48h antes da indexação no Google Safe Browsing ou VirusTotal.
-
-Amostra de vetores observados:
-- Domínios maliciosos em circulação: ${dominiosDetectados.slice(0, 2).join(', ')}
-- Canal principal: SMS/WhatsApp com senso de urgência e falsas taxas/bloqueios
-- Severidade técnica: ${severidade.toUpperCase()}
-
-Preparámos um Dossiê Técnico Confidencial (Ref: ${refId}) detalhando os IoCs e a anatomia da campanha.
-
-Podemos disponibilizar o nosso Feed de Brand Threat Intel via Webhook/API para a vossa equipa de SOC/Fraude monitorar ou acionar Takedown imediato?
-
-Com os melhores cumprimentos,
-Equipa Zap, quem é? — Brand Threat Intelligence
-https://zapqueme.onrender.com/empresas.html`;
+      const th = 'text-align:left; padding:8px 10px; border-bottom:1px solid rgba(148,163,184,0.35); font-size:0.75rem; text-transform:uppercase; color:#94a3b8;';
+      const td = 'padding:8px 10px; border-bottom:1px solid rgba(148,163,184,0.15); font-size:0.82rem;';
+      const tabela = (cabecalhos, linhas) => linhas.length ? `
+        <table style="width:100%; border-collapse:collapse; margin-top:8px;">
+          <thead><tr>${cabecalhos.map(h => `<th style="${th}">${h}</th>`).join('')}</tr></thead>
+          <tbody>${linhas.map(l => `<tr>${l.map(c => `<td style="${td}">${c}</td>`).join('')}</tr>`).join('')}</tbody>
+        </table>` : `<div style="color:#94a3b8; font-size:0.82rem; margin-top:6px;">Sem registos.</div>`;
+      const kpi = (rotulo, valor) => `
+        <div style="border:1px solid rgba(148,163,184,0.3); border-radius:8px; padding:14px;">
+          <div style="font-size:0.72rem; color:#94a3b8; text-transform:uppercase;">${rotulo}</div>
+          <div style="font-size:1.6rem; font-weight:800; margin-top:4px;">${valor}</div>
+        </div>`;
+      const seccao = (titulo, corpo) => `<div style="margin-top:22px;"><h4 style="font-size:0.95rem; margin:0 0 4px 0;">${titulo}</h4>${corpo}</div>`;
 
       container.innerHTML = `
-        <div style="border-bottom: 2px solid rgba(255, 255, 255, 0.1); padding-bottom: 20px; margin-bottom: 24px; display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 16px;">
-          <div>
-            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 6px;">
-              <span style="background: rgba(239, 68, 68, 0.2); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.4); font-size: 0.72rem; font-weight: 800; padding: 4px 8px; border-radius: 4px; letter-spacing: 0.5px;">TLP:AMBER • CONFIDENCIAL</span>
-              <span style="font-family: 'JetBrains Mono', monospace; font-size: 0.8rem; color: var(--text-muted);">${refId}</span>
-            </div>
-            <h2 style="font-size: 1.5rem; margin: 4px 0; color: #fff;">Dossiê Técnico de Impersonation: ${escapeHtml(marca)}</h2>
-            <p style="color: var(--text-muted); font-size: 0.85rem;">Emitido por <strong>Zap, quem é? Threat Intelligence Sensor</strong> em ${hoje}</p>
-          </div>
-          <div style="text-align: right;">
-            <span class="badge badge-severidade-${severidade}" style="font-size: 0.85rem; padding: 6px 14px;">SEVERIDADE ${severidade.toUpperCase()}</span>
-            <div style="font-size: 0.75rem; color: #10b981; margin-top: 6px;">● Status: Telemetria Ativa 24/7</div>
-          </div>
+        <div style="border-bottom:1px solid rgba(148,163,184,0.35); padding-bottom:16px; margin-bottom:18px;">
+          <div style="font-size:0.75rem; color:#94a3b8; font-family:'JetBrains Mono', monospace;">${refId}</div>
+          <h2 style="font-size:1.4rem; margin:4px 0;">Relatório de Denúncias — ${escapeHtml(marca)}</h2>
+          <div style="font-size:0.85rem; color:#94a3b8;">Período: ${fmtData(inicio)} a ${hoje} (${dias} dias) · Gerado em ${hoje} · Zap, Quem É?</div>
         </div>
 
-        <!-- KPI SUMMARY GRID -->
-        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 24px;">
-          <div style="background: rgba(255, 255, 255, 0.03); border: 1px solid var(--card-border); border-radius: 8px; padding: 16px;">
-            <span style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase;">Detecções no Sensor</span>
-            <div style="font-size: 1.8rem; font-weight: 800; color: #ef4444; font-family: 'JetBrains Mono', monospace; margin-top: 4px;">${totalOcorrencias}</div>
-            <span style="font-size: 0.72rem; color: var(--text-muted);">Reportadas por utilizadores finais</span>
-          </div>
-
-          <div style="background: rgba(255, 255, 255, 0.03); border: 1px solid var(--card-border); border-radius: 8px; padding: 16px;">
-            <span style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase;">Canais / Domínios</span>
-            <div style="font-size: 1.8rem; font-weight: 800; color: #f59e0b; font-family: 'JetBrains Mono', monospace; margin-top: 4px;">${canaisDistintos}</div>
-            <span style="font-size: 0.72rem; color: var(--text-muted);">Variações de infraestrutura maliciosa</span>
-          </div>
-
-          <div style="background: rgba(255, 255, 255, 0.03); border: 1px solid var(--card-border); border-radius: 8px; padding: 16px;">
-            <span style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase;">Vantagem Temporal</span>
-            <div style="font-size: 1.8rem; font-weight: 800; color: #10b981; font-family: 'JetBrains Mono', monospace; margin-top: 4px;">+28h</div>
-            <span style="font-size: 0.72rem; color: var(--text-muted);">Antes de crawlers públicos e blacklists</span>
-          </div>
-
-          <div style="background: rgba(255, 255, 255, 0.03); border: 1px solid var(--card-border); border-radius: 8px; padding: 16px;">
-            <span style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase;">Veredito da IA</span>
-            <div style="font-size: 1.4rem; font-weight: 800; color: #38bdf8; margin-top: 8px;">FRAUDE CONFIRMADA</div>
-            <span style="font-size: 0.72rem; color: var(--text-muted);">Engenharia social & spoofing</span>
-          </div>
+        <div style="border:1px solid rgba(245,158,11,0.45); border-radius:8px; padding:12px 14px; font-size:0.8rem; line-height:1.55;">
+          <strong>Como ler este relatório:</strong> resume mensagens enviadas por utilizadores ao verificador gratuito Zap, Quem É? que mencionam esta marca e foram classificadas automaticamente como <em>golpe</em> ou <em>suspeito</em>.
+          São denúncias, não fraudes confirmadas. Não inclui dados pessoais de quem denunciou. Os contactos listados foram citados nas mensagens e não foram verificados de forma independente.
         </div>
 
-        <!-- ANÁLISE FORENSE E IOCS -->
-        <div style="background: rgba(255, 255, 255, 0.02); border: 1px solid var(--card-border); border-radius: 8px; padding: 20px; margin-bottom: 24px;">
-          <h4 style="font-size: 0.95rem; color: #fff; margin-bottom: 12px; display: flex; align-items: center; gap: 8px;">
-            <span>🔍 Indicadores de Comprometimento (IoCs) & Domínios Maliciosos</span>
-          </h4>
-          <p style="font-size: 0.85rem; color: var(--text-muted); line-height: 1.6; margin-bottom: 16px;">
-            Os invasores estão a utilizar nomes de domínio com semelhança visual (typosquatting) e domínios de topo genéricos (.top, .online, .club) para contornar filtros SMS de operadoras móveis.
-          </p>
-          <div style="display: flex; flex-direction: column; gap: 8px;">
-            ${dominiosDetectados.map(d => `
-              <div style="display: flex; justify-content: space-between; align-items: center; background: rgba(0, 0, 0, 0.3); padding: 10px 14px; border-radius: 6px; border-left: 3px solid #ef4444; font-family: 'JetBrains Mono', monospace; font-size: 0.85rem;">
-                <span style="color: #f87171;">⚠️ ${escapeHtml(d)}</span>
-                <span style="color: var(--text-muted); font-size: 0.75rem;">Status: Domínio de Phishing Ativo</span>
-              </div>
-            `).join('')}
-          </div>
+        <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(160px, 1fr)); gap:12px; margin-top:18px;">
+          ${kpi('Denúncias no período', total)}
+          ${kpi('Classificadas como golpe', nGolpe)}
+          ${kpi('Classificadas como suspeitas', nSuspeito)}
+          ${kpi('Contactos distintos citados', contar(casos, c => c.canal_mencionado).length)}
+          ${empresa ? kpi('Contactos fora dos canais oficiais', nForaOficial) : ''}
         </div>
 
-        <!-- PROPOSTA COMERCIAL B2B / VALOR PARA O CISO -->
-        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; margin-bottom: 24px;">
-          <div style="background: rgba(16, 185, 129, 0.05); border: 1px solid rgba(16, 185, 129, 0.2); border-radius: 8px; padding: 18px;">
-            <div style="font-weight: 700; color: #34d399; font-size: 0.95rem; margin-bottom: 6px;">1. Webhook Zero-Day (Brand Intel)</div>
-            <p style="font-size: 0.82rem; color: var(--text-muted); line-height: 1.5;">
-              Integre o feed via API REST ou Webhook direto no seu SIEM / Splunk / Slack. O SOC é notificado no primeiro minuto da campanha.
-            </p>
-          </div>
+        ${total ? `<div style="font-size:0.8rem; color:#94a3b8; margin-top:10px;">Primeira denúncia: ${fmtDataHora(primeira)} · Última: ${fmtDataHora(ultima)}</div>` : `<div style="margin-top:14px; font-size:0.9rem;">Nenhuma denúncia registada com o nome desta empresa neste período.</div>`}
 
-          <div style="background: rgba(59, 130, 246, 0.05); border: 1px solid rgba(59, 130, 246, 0.2); border-radius: 8px; padding: 18px;">
-            <div style="font-weight: 700; color: #60a5fa; font-size: 0.95rem; margin-bottom: 6px;">2. Takedown Acelerado de Infraestrutura</div>
-            <p style="font-size: 0.82rem; color: var(--text-muted); line-height: 1.5;">
-              Evidências criptográficas e telemetria forense prontas para envio a registrars (Namecheap, Cloudflare, GoDaddy) acelerando a derrubada.
-            </p>
-          </div>
+        ${total ? seccao('Tipos de burla identificados', tabela(['Tipo', 'Denúncias'], tipos.map(([t, n]) => [escapeHtml(t), n]))) : ''}
+        ${total ? seccao('Contactos citados nas mensagens', tabela(
+          empresa ? ['Contacto', 'Denúncias', 'Situação'] : ['Contacto', 'Denúncias'],
+          contactos.map(([c, n]) => empresa
+            ? [`<span style="font-family:'JetBrains Mono', monospace;">${escapeHtml(c)}</span>`, n, contactoForaOficial.has(c) ? 'Diferente dos canais oficiais registados' : '—']
+            : [`<span style="font-family:'JetBrains Mono', monospace;">${escapeHtml(c)}</span>`, n])
+        )) : ''}
+        ${total ? seccao('Últimas ocorrências', tabela(
+          ['Data', 'Classificação', 'Confiança', 'Tipo', 'Entrada'],
+          casos.slice(0, 15).map(c => [fmtDataHora(c.criado_em), escapeHtml(c.veredito || ''), (c.confianca != null ? c.confianca + '%' : '—'), escapeHtml(c.tipo || '—'), escapeHtml(c.canal || '—')])
+        )) : ''}
+        ${total ? seccao('Canal de entrada das denúncias', tabela(['Canal', 'Denúncias'], canaisEntrada.map(([c, n]) => [escapeHtml(c), n]))) : ''}
 
-          <div style="background: rgba(168, 85, 247, 0.05); border: 1px solid rgba(168, 85, 247, 0.2); border-radius: 8px; padding: 18px;">
-            <div style="font-weight: 700; color: #c084fc; font-size: 0.95rem; margin-bottom: 6px;">3. Selo ZAP VERIFIED nos Canais</div>
-            <p style="font-size: 0.82rem; color: var(--text-muted); line-height: 1.5;">
-              Certifique o WhatsApp oficial e o website da marca para que clientes consultem com 1 toque e recebam veredito 100% autêntico.
-            </p>
-          </div>
-        </div>
-
-        <!-- EMAIL DE PROSPECÇÃO PRE-FORMATADO -->
-        <div style="background: rgba(0, 0, 0, 0.4); border: 1px solid var(--card-border); border-radius: 8px; padding: 20px;">
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-            <span style="font-size: 0.82rem; font-weight: 700; color: #cbd5e1; text-transform: uppercase;">Template de Abordagem para CISO / Head de Fraude</span>
-            <button onclick="copiarEmailProspeccao()" class="btn-xs btn-xs-primary">📋 Copiar Texto Completo</button>
-          </div>
-          <pre style="white-space: pre-wrap; font-family: 'JetBrains Mono', monospace; font-size: 0.8rem; color: #cbd5e1; line-height: 1.5; background: rgba(0, 0, 0, 0.3); padding: 16px; border-radius: 6px; border: 1px solid rgba(255, 255, 255, 0.05);">${escapeHtml(ultimoEmailProspeccaoTexto)}</pre>
-        </div>
+        ${seccao('Ações sugeridas', `
+          <ul style="font-size:0.82rem; line-height:1.6; margin:6px 0 0 18px; padding:0;">
+            <li>Lembrar aos clientes, nos canais oficiais, quais são os vossos contactos e meios de pagamento legítimos.</li>
+            <li>Indicar que nunca pedem pagamentos a partir de números ou contas diferentes.</li>
+            <li>Se houver contactos ou sites falsos, reportá-los às autoridades competentes e, no caso de sites, ao registo/alojamento do domínio.</li>
+          </ul>`)}
       `;
+
+      // Mensagem para copiar: alerta gratuito (não-cliente) ou resumo de período (cliente)
+      const origem = window.location.origin;
+      const tiposTxt = tipos.length ? ` (principalmente: ${tipos.slice(0, 3).map(([t]) => t).join(', ')})` : '';
+      if (ehCliente) {
+        ultimoEmailProspeccaoTexto =
+`Assunto: Resumo Zap Verified — ${marca} — ${fmtData(inicio)} a ${hoje}
+
+Olá,
+
+Segue o resumo do período de ${fmtData(inicio)} a ${hoje}:
+${total
+  ? `- Denúncias que mencionam a ${marca}: ${total} (golpe: ${nGolpe}; suspeito: ${nSuspeito})
+- Denúncias com contactos diferentes dos vossos canais oficiais: ${nForaOficial}`
+  : `- Nenhuma denúncia registada com o nome da ${marca} neste período.`}
+
+Envio em anexo o relatório completo em PDF. Recordo que são denúncias de utilizadores classificadas automaticamente, não fraudes confirmadas.
+
+Qualquer dúvida, estou disponível.
+
+Com os melhores cumprimentos,
+[O SEU NOME]
+Zap, Quem É? — ${origem}`;
+      } else {
+        ultimoEmailProspeccaoTexto =
+`Assunto: Aviso: mensagens suspeitas a usar o nome da ${marca}
+
+Olá,
+
+Sou [O SEU NOME], do Zap, Quem É? (${origem}), uma ferramenta gratuita onde as pessoas verificam mensagens suspeitas.
+
+Entre ${fmtData(primeira)} e ${fmtData(ultima)} recebemos ${total} ${total === 1 ? 'denúncia' : 'denúncias'} de mensagens que mencionavam a ${marca} e foram classificadas como golpe ou suspeitas${tiposTxt}.
+
+Não vendo nada com este aviso. Preparei um resumo com os exemplos, sem dados pessoais de quem denunciou, para poderem avisar os vossos clientes e, se entenderem, reportar às autoridades. Posso enviar?
+
+Com os melhores cumprimentos,
+[O SEU NOME]
+Zap, Quem É?`;
+      }
+
+      container.innerHTML += `
+        <div style="margin-top:24px; border:1px solid rgba(148,163,184,0.3); border-radius:8px; padding:16px;" class="no-print">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+            <span style="font-size:0.8rem; font-weight:700; text-transform:uppercase; color:#94a3b8;">${ehCliente ? 'Mensagem de resumo para o cliente' : 'Mensagem de alerta gratuito'}</span>
+            <button onclick="copiarEmailProspeccao()" class="btn-xs btn-xs-primary">📋 Copiar</button>
+          </div>
+          <pre style="white-space:pre-wrap; font-family:'JetBrains Mono', monospace; font-size:0.78rem; line-height:1.5; margin:0;">${escapeHtml(ultimoEmailProspeccaoTexto)}</pre>
+        </div>`;
     }
 
     function copiarEmailProspeccao() {
@@ -1713,15 +1819,91 @@ https://zapqueme.onrender.com/empresas.html`;
         document.getElementById('kpiThreatRadar').textContent = kpis.totalThreatRadar || 0;
         document.getElementById('kpiOcorrencias').textContent = kpis.totalOcorrencias || 0;
 
+        // Banner de banco de dados
+        const banner = document.getElementById('dbWarningBanner');
+        if (banner) {
+          if (data.database_warning) {
+            banner.style.display = 'flex';
+            banner.innerHTML = `
+              <div><strong>⚠️ Alerta de Infraestrutura:</strong> ${escapeHtml(data.database_warning)}</div>
+              <a href="https://supabase.com/dashboard" target="_blank" class="btn-xs" style="background: rgba(255,255,255,0.2); color: #fff; text-decoration: none; padding: 6px 12px; border-radius: 6px; flex-shrink: 0; margin-left: 12px;">Abrir Supabase ↗</a>
+            `;
+          } else {
+            banner.style.display = 'none';
+          }
+        }
+
         renderEmpresas(data.empresas || []);
         renderSelos(data.selos || []);
         renderRadar(data.radar || []);
         renderOcorrencias(data.ocorrencias || []);
+        renderLeads(data.leads || []);
         popularSelectMarcasDossie();
         atualizarSimulador();
 
       } catch (err) {
         console.error('Erro ao buscar dados:', err);
+      }
+    }
+
+    // TAB 6.2: RENDER LEADS COMERCIAIS
+    function renderLeads(leads) {
+      const tbody = document.getElementById('leadsTableBody');
+      if (!tbody) return;
+      if (!leads || !leads.length) {
+        tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; color: var(--text-muted); padding: 30px;">Nenhum lead comercial registrado ainda. Divulgue /empresas.html para captar interessados.</td></tr>';
+        return;
+      }
+
+      tbody.innerHTML = leads.map(lead => {
+        const dataStr = lead.criado_em ? new Date(lead.criado_em).toLocaleString('pt-PT') : '-';
+        const rawWa = (lead.whatsapp || '').replace(/\D/g, '');
+        const waLink = rawWa ? `https://wa.me/${rawWa}?text=${encodeURIComponent('Olá ' + lead.nome + '! Recebemos a sua solicitação do Selo ZAP VERIFIED para a ' + lead.empresa + '. Podemos ativar a sua proteção hoje mesmo?')}` : null;
+        const encodedLead = encodeURIComponent(JSON.stringify(lead));
+
+        return `
+          <tr>
+            <td style="font-size: 0.8rem; color: var(--text-muted);">${dataStr}</td>
+            <td>
+              <strong style="color: #fff;">${escapeHtml(lead.nome)}</strong><br>
+              <span style="font-size: 0.85rem; color: var(--primary); font-weight: 700;">${escapeHtml(lead.empresa)}</span>
+            </td>
+            <td><a href="mailto:${escapeHtml(lead.email)}" style="color: #38bdf8; text-decoration: none; font-size: 0.85rem;">${escapeHtml(lead.email)}</a></td>
+            <td>
+              ${rawWa ? `<a href="${waLink}" target="_blank" style="color: #25d366; text-decoration: none; font-weight: 600; font-size: 0.85rem;">📱 ${escapeHtml(lead.whatsapp)}</a>` : '<span style="color: var(--text-muted);">-</span>'}
+            </td>
+            <td>
+              ${lead.website ? `<a href="https://${escapeHtml(lead.website.replace(/^https?:\/\//, ''))}" target="_blank" style="color: #94a3b8; font-size: 0.85rem;">${escapeHtml(lead.website)}</a>` : '-'}
+            </td>
+            <td>
+              <span style="background: rgba(16, 185, 129, 0.15); color: #10b981; padding: 2px 8px; border-radius: 6px; font-weight: 700; font-size: 0.75rem; text-transform: uppercase;">${escapeHtml(lead.plano_interesse || 'pro')}</span>
+            </td>
+            <td>
+              <div style="display: flex; gap: 6px;">
+                ${rawWa ? `<a href="${waLink}" target="_blank" class="btn-xs btn-xs-primary" style="text-decoration: none;">Chamar no Whats</a>` : ''}
+                <button onclick="converterLeadEmEmpresa('${encodedLead}')" class="btn-xs" style="background: rgba(59, 130, 246, 0.2); border-color: rgba(59, 130, 246, 0.4); color: #93c5fd;">+ Criar Empresa</button>
+              </div>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    function converterLeadEmEmpresa(encodedLead) {
+      try {
+        const lead = JSON.parse(decodeURIComponent(encodedLead));
+        openNewEmpresaModal();
+        if (lead.empresa || lead.nome) document.getElementById('modalNome').value = lead.empresa || lead.nome;
+        if (lead.email) document.getElementById('modalEmail').value = lead.email;
+        if (lead.whatsapp) document.getElementById('modalTelefone').value = lead.whatsapp;
+        if (lead.website) {
+          document.getElementById('modalDominio').value = lead.website.replace(/^https?:\/\//, '').replace(/\/.*$/, '').trim();
+        }
+        if (lead.plano_interesse) {
+          document.getElementById('modalPlano').value = lead.plano_interesse;
+        }
+      } catch (err) {
+        console.error('Erro ao converter lead:', err);
       }
     }
 
@@ -2175,7 +2357,12 @@ https://zapqueme.onrender.com/empresas.html`;
         plano: document.getElementById('modalPlano').value,
         status: document.getElementById('modalStatus').value,
         monitorizacao_impersonation: document.getElementById('modalMonitorizacao').checked,
-        criar_selo: document.getElementById('modalCriarSelo').checked
+        criar_selo: document.getElementById('modalCriarSelo').checked,
+        nif: document.getElementById('modalNif').value.trim(),
+        nif_verificado: document.getElementById('modalNifVerificado').checked,
+        iban: document.getElementById('modalIban').value.trim(),
+        iban_verificado: document.getElementById('modalIbanVerificado').checked,
+        verificacao_notas: document.getElementById('modalNotasVerificacao').value.trim()
       };
 
       try {
@@ -2188,6 +2375,9 @@ https://zapqueme.onrender.com/empresas.html`;
         const data = await res.json();
         closeModals();
         await loadDashboardData();
+        if (data.migracao_pendente) {
+          alert('Empresa gravada, mas SEM NIF/IBAN: execute a migração supabase/migrations/20261015_verificacao_marcas.sql no Supabase.');
+        }
 
         // Seção 14: Se selo foi criado, exibe a confirmação ZAP VERIFIED criado
         if (data.selo) {
@@ -2213,6 +2403,11 @@ https://zapqueme.onrender.com/empresas.html`;
       document.getElementById('editTelefoneVerificado').checked = !!emp.telefone_verificado;
       document.getElementById('editPlano').value = emp.plano || 'business';
       document.getElementById('editStatus').value = emp.status || 'ativo';
+      document.getElementById('editNif').value = emp.nif || '';
+      document.getElementById('editNifVerificado').checked = !!emp.nif_verificado;
+      document.getElementById('editIban').value = emp.iban || '';
+      document.getElementById('editIbanVerificado').checked = !!emp.iban_verificado;
+      document.getElementById('editNotasVerificacao').value = emp.verificacao_notas || '';
 
       document.getElementById('editEmpresaModal').style.display = 'flex';
     }
@@ -2232,7 +2427,12 @@ https://zapqueme.onrender.com/empresas.html`;
         email_verificado: document.getElementById('editEmailVerificado').checked,
         telefone_verificado: document.getElementById('editTelefoneVerificado').checked,
         plano: document.getElementById('editPlano').value,
-        status: document.getElementById('editStatus').value
+        status: document.getElementById('editStatus').value,
+        nif: document.getElementById('editNif').value.trim(),
+        nif_verificado: document.getElementById('editNifVerificado').checked,
+        iban: document.getElementById('editIban').value.trim(),
+        iban_verificado: document.getElementById('editIbanVerificado').checked,
+        verificacao_notas: document.getElementById('editNotasVerificacao').value.trim()
       };
 
       try {
@@ -2242,6 +2442,10 @@ https://zapqueme.onrender.com/empresas.html`;
           body: JSON.stringify(payload)
         });
         if (!res.ok) throw new Error(await res.text());
+        const upd = await res.json().catch(() => ({}));
+        if (upd.migracao_pendente) {
+          alert('Alterações gravadas, mas SEM NIF/IBAN: execute a migração supabase/migrations/20261015_verificacao_marcas.sql no Supabase.');
+        }
         closeModals();
         loadDashboardData();
       } catch (err) {
@@ -2287,8 +2491,13 @@ https://zapqueme.onrender.com/empresas.html`;
       document.getElementById('detTelefone').textContent = emp.telefone_oficial
         ? `${emp.telefone_oficial} [${emp.telefone_verificado ? 'verificado' : 'registado'}]`
         : '–';
-
-      if (selo) {
+      document.getElementById('detNif').textContent = emp.nif
+        ? `${emp.nif} [${emp.nif_verificado ? 'confirmado' : 'não confirmado'}]`
+        : '– (sem NIF: não emitir selo)';
+      document.getElementById('detIban').textContent = emp.iban
+        ? `${emp.iban} [${emp.iban_verificado ? 'confirmado, visível no selo' : 'não confirmado, oculto no selo'}]`
+        : '–';
+      document.getElementById('detNotas').textContent = emp.verificacao_notas || '–';
         document.getElementById('detSeloCodigo').textContent = selo.codigo;
         document.getElementById('detSeloEstado').textContent = emp.status === 'ativo' ? 'Ativo' : 'Inativo';
         document.getElementById('detSeloValidade').textContent = selo.valido_ate ? new Date(selo.valido_ate).toLocaleDateString('pt-PT') : 'Indeterminada';
