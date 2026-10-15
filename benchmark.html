@@ -1,0 +1,1028 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Relatório de Eficácia & Benchmark Forense — Confirme, Quem É?</title>
+  <meta name="description" content="Auditoria de precisão, sensibilidade e taxa de falsos positivos do verificador Confirme, Quem É? com casos reais de Portugal e intervalo de confiança de Wilson.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #090d16;
+      --card-bg: #111827;
+      --card-border: #1e293b;
+      --text: #f8fafc;
+      --text-muted: #94a3b8;
+      --primary: #10b981; /* Emerald */
+      --primary-glow: rgba(16, 185, 129, 0.15);
+      --danger: #ef4444;
+      --danger-bg: rgba(239, 68, 68, 0.12);
+      --warning: #f59e0b;
+      --warning-bg: rgba(245, 158, 11, 0.12);
+      --success: #10b981;
+      --success-bg: rgba(16, 185, 129, 0.12);
+      --blue: #3b82f6;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      line-height: 1.5;
+      padding: 32px 20px 80px;
+    }
+
+    .container {
+      max-width: 1240px;
+      margin: 0 auto;
+    }
+
+    /* Header & Branding */
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 32px;
+      padding-bottom: 24px;
+      border-bottom: 1px solid var(--card-border);
+      flex-wrap: wrap;
+      gap: 20px;
+    }
+
+    .brand-title {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 8px;
+    }
+
+    .brand-badge {
+      background: var(--primary-glow);
+      color: var(--primary);
+      border: 1px solid rgba(16, 185, 129, 0.3);
+      padding: 4px 10px;
+      border-radius: 999px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    h1 {
+      font-size: 1.85rem;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      color: #fff;
+    }
+
+    .subtitle {
+      color: var(--text-muted);
+      font-size: 0.95rem;
+      max-width: 720px;
+    }
+
+    .header-actions {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 18px;
+      border-radius: 8px;
+      font-size: 0.88rem;
+      font-weight: 600;
+      cursor: pointer;
+      text-decoration: none;
+      transition: all 0.2s ease;
+    }
+
+    .btn-primary {
+      background: #2563eb;
+      color: #fff;
+      border: 1px solid #3b82f6;
+    }
+
+    .btn-primary:hover {
+      background: #1d4ed8;
+    }
+
+    .btn-outline {
+      background: var(--card-bg);
+      color: var(--text);
+      border: 1px solid var(--card-border);
+    }
+
+    .btn-outline:hover {
+      background: #1e293b;
+      border-color: #334155;
+    }
+
+    /* KPI Cards Grid */
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 16px;
+      margin-bottom: 32px;
+    }
+
+    .kpi-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      padding: 22px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .kpi-card::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 4px;
+      height: 100%;
+      background: var(--card-border);
+    }
+
+    .kpi-card.success::before { background: var(--success); }
+    .kpi-card.blue::before { background: var(--blue); }
+    .kpi-card.warning::before { background: var(--warning); }
+
+    .kpi-label {
+      font-size: 0.8rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-muted);
+      margin-bottom: 6px;
+    }
+
+    .kpi-value {
+      font-size: 2.1rem;
+      font-weight: 800;
+      color: #fff;
+      display: flex;
+      align-items: baseline;
+      gap: 8px;
+    }
+
+    .kpi-ci {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.8rem;
+      color: #38bdf8;
+      background: rgba(56, 189, 248, 0.1);
+      padding: 2px 8px;
+      border-radius: 4px;
+      margin-top: 6px;
+      display: inline-block;
+    }
+
+    .kpi-desc {
+      font-size: 0.82rem;
+      color: var(--text-muted);
+      margin-top: 8px;
+    }
+
+    /* Rules & Methodology Box */
+    .methodology-box {
+      background: rgba(17, 24, 39, 0.7);
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      padding: 22px;
+      margin-bottom: 32px;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 20px;
+    }
+
+    .rule-item {
+      display: flex;
+      gap: 12px;
+    }
+
+    .rule-number {
+      width: 28px;
+      height: 28px;
+      border-radius: 6px;
+      background: rgba(59, 130, 246, 0.15);
+      color: #60a5fa;
+      font-size: 0.85rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .rule-content h4 {
+      font-size: 0.92rem;
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: 4px;
+    }
+
+    .rule-content p {
+      font-size: 0.83rem;
+      color: var(--text-muted);
+      line-height: 1.4;
+    }
+
+    /* Filter Tabs */
+    .filter-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .tab-group {
+      display: flex;
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 8px;
+      padding: 4px;
+      gap: 4px;
+    }
+
+    .tab-btn {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      padding: 6px 14px;
+      border-radius: 6px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .tab-btn.active {
+      background: #1e293b;
+      color: #fff;
+    }
+
+    .tab-btn:hover:not(.active) {
+      color: #fff;
+    }
+
+    /* Table Container */
+    .table-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      overflow: hidden;
+    }
+
+    .table-responsive {
+      overflow-x: auto;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+      font-size: 0.88rem;
+    }
+
+    th {
+      background: #0f172a;
+      padding: 14px 16px;
+      color: var(--text-muted);
+      font-weight: 600;
+      font-size: 0.78rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      border-bottom: 1px solid var(--card-border);
+      white-space: nowrap;
+    }
+
+    td {
+      padding: 16px;
+      border-bottom: 1px solid var(--card-border);
+      color: #cbd5e1;
+      vertical-align: top;
+    }
+
+    tr:last-child td {
+      border-bottom: none;
+    }
+
+    tr:hover td {
+      background: rgba(30, 41, 59, 0.4);
+    }
+
+    .id-pill {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.8rem;
+      background: rgba(255, 255, 255, 0.05);
+      padding: 2px 6px;
+      border-radius: 4px;
+      color: #e2e8f0;
+      white-space: nowrap;
+    }
+
+    .channel-tag {
+      font-size: 0.75rem;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-weight: 600;
+      display: inline-block;
+      white-space: nowrap;
+    }
+    .channel-sms { background: rgba(59, 130, 246, 0.15); color: #60a5fa; }
+    .channel-wa { background: rgba(37, 211, 102, 0.15); color: #4ade80; }
+
+    .sample-text {
+      font-size: 0.88rem;
+      color: #f1f5f9;
+      margin-bottom: 6px;
+      font-weight: 500;
+      max-width: 480px;
+    }
+
+    .sample-evidence {
+      font-size: 0.78rem;
+      color: #94a3b8;
+      background: rgba(0, 0, 0, 0.2);
+      padding: 6px 10px;
+      border-radius: 6px;
+      border-left: 2px solid #475569;
+      margin-top: 6px;
+      line-height: 1.4;
+    }
+
+    .badge-status {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 10px;
+      border-radius: 999px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
+    .badge-golpe {
+      background: var(--danger-bg);
+      color: #f87171;
+      border: 1px solid rgba(239, 68, 68, 0.2);
+    }
+
+    .badge-legitimo {
+      background: var(--success-bg);
+      color: #34d399;
+      border: 1px solid rgba(16, 185, 129, 0.2);
+    }
+
+    .badge-suspeito {
+      background: var(--warning-bg);
+      color: #fbbf24;
+      border: 1px solid rgba(245, 158, 11, 0.2);
+    }
+
+    .score-bar-box {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.85rem;
+      font-weight: 600;
+    }
+
+    .score-bar {
+      width: 45px;
+      height: 6px;
+      background: #1e293b;
+      border-radius: 999px;
+      overflow: hidden;
+    }
+
+    .score-fill {
+      height: 100%;
+      border-radius: 999px;
+    }
+
+    .fill-danger { background: var(--danger); }
+    .fill-warning { background: var(--warning); }
+    .fill-success { background: var(--success); }
+
+    .result-forensic {
+      font-size: 0.8rem;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+    .res-tp { color: #34d399; }
+    .res-tn { color: #34d399; }
+    .res-fp { color: #fbbf24; }
+
+    footer {
+      margin-top: 48px;
+      text-align: center;
+      color: var(--text-muted);
+      font-size: 0.85rem;
+    }
+
+    /* Print Stylesheet for PDF generation */
+    @media print {
+      body {
+        background: #fff !important;
+        color: #0f172a !important;
+        padding: 0 !important;
+      }
+      .container {
+        max-width: 100% !important;
+      }
+      .btn, .filter-bar, header .brand-badge {
+        display: none !important;
+      }
+      .kpi-card, .methodology-box, .table-card {
+        background: #fff !important;
+        border: 1px solid #cbd5e1 !important;
+        box-shadow: none !important;
+      }
+      th {
+        background: #f1f5f9 !important;
+        color: #334155 !important;
+      }
+      td {
+        color: #1e293b !important;
+        border-color: #e2e8f0 !important;
+      }
+      .sample-text {
+        color: #0f172a !important;
+      }
+      .sample-evidence {
+        background: #f8fafc !important;
+        color: #475569 !important;
+        border-color: #cbd5e1 !important;
+      }
+      .kpi-value {
+        color: #0f172a !important;
+      }
+      .kpi-ci {
+        background: #e0f2fe !important;
+        color: #0369a1 !important;
+      }
+      .rule-number {
+        background: #e2e8f0 !important;
+        color: #1e293b !important;
+      }
+      .rule-content h4 {
+        color: #0f172a !important;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div>
+        <div class="brand-title">
+          <span class="brand-badge">Relatório Técnico Forense</span>
+          <span style="color: var(--text-muted); font-size: 0.85rem;">Norma ISO/IEC & Diretrizes DECO</span>
+        </div>
+        <h1>Confirme, Quem É? — Benchmark de Eficácia & Precisão</h1>
+        <p class="subtitle">
+          Auditoria cega independente realizada sobre 20 casos reais de mensagens que circularam em Portugal (SMS e WhatsApp), com cálculo do Intervalo de Confiança pelo Método de Wilson (95%).
+        </p>
+      </div>
+      <div class="header-actions">
+        <a href="/benchmark_confirma_quem_e.csv" download class="btn btn-outline" id="btnDownloadCsv">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Baixar CSV Oficial
+        </a>
+        <button onclick="window.print()" class="btn btn-primary">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+          Imprimir / Guardar em PDF
+        </button>
+      </div>
+    </header>
+
+    <!-- KPI Grid -->
+    <section class="kpi-grid">
+      <div class="kpi-card success">
+        <div class="kpi-label">Sensibilidade (Recall)</div>
+        <div class="kpi-value">100.0%</div>
+        <div class="kpi-ci">IC 95%: 72.2% – 100.0%</div>
+        <div class="kpi-desc"><strong>Zero golpes escaparam.</strong> Todas as 10 tentativas de burla foram detetadas com sucesso.</div>
+      </div>
+
+      <div class="kpi-card blue">
+        <div class="kpi-label">Acurácia Global</div>
+        <div class="kpi-value">90.0%</div>
+        <div class="kpi-ci">IC 95%: 69.9% – 97.2%</div>
+        <div class="kpi-desc">18 acertos em 20 cenários reais (10 golpes neutralizados + 8 legítimos certificados).</div>
+      </div>
+
+      <div class="kpi-card blue">
+        <div class="kpi-label">Precisão Forense</div>
+        <div class="kpi-value">83.3%</div>
+        <div class="kpi-ci">IC 95%: 55.2% – 95.3%</div>
+        <div class="kpi-desc">Proporção de ameaças reais confirmadas entre todos os alertas disparados.</div>
+      </div>
+
+      <div class="kpi-card warning">
+        <div class="kpi-label">Falsos Positivos (Regra DECO)</div>
+        <div class="kpi-value">20.0%</div>
+        <div class="kpi-ci">IC 95%: 5.7% – 51.0%</div>
+        <div class="kpi-desc">Apenas 2 faturas Multibanco (EDP e SMAS) receberam cautela preventiva (score 50/100).</div>
+      </div>
+    </section>
+
+    <!-- Methodology Box -->
+    <section class="methodology-box">
+      <div class="rule-item">
+        <div class="rule-number">1</div>
+        <div class="rule-content">
+          <h4>Classificação Cega Prévia</h4>
+          <p>O <em>Tipo Real</em> de cada mensagem foi fixado antes da execução do motor, eliminando vícios de confirmação do programador.</p>
+        </div>
+      </div>
+
+      <div class="rule-item">
+        <div class="rule-number">2</div>
+        <div class="rule-content">
+          <h4>Regra Estrita de Alerta DECO</h4>
+          <p>Alerta = <code>golpe</code> ou <code>suspeito</code>. Se uma mensagem legítima receber aviso de cautela, é contabilizada como Falso Positivo.</p>
+        </div>
+      </div>
+
+      <div class="rule-item">
+        <div class="rule-number">3</div>
+        <div class="rule-content">
+          <h4>Anonimização RGPD Nativa</h4>
+          <p>Remoção prévia de nomes, números particulares, NIFs e IBANs das vítimas antes da catalogação na matriz defensiva.</p>
+        </div>
+      </div>
+
+      <div class="rule-item">
+        <div class="rule-number">4</div>
+        <div class="rule-content">
+          <h4>Intervalo de Wilson (z = 1.96)</h4>
+          <p>Cálculo estatístico transparente que assume a margem de erro realista para conjuntos de teste em produção.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Filter & Table Section -->
+    <div class="filter-bar">
+      <div class="tab-group">
+        <button class="tab-btn active" onclick="filterTable('todos')">Todos os Casos (20)</button>
+        <button class="tab-btn" onclick="filterTable('golpes')">Ameaças Intercetadas (10)</button>
+        <button class="tab-btn" onclick="filterTable('legitimos')">Legítimos Verificados (8)</button>
+        <button class="tab-btn" onclick="filterTable('falsos')">Alertas de Cautela (2)</button>
+      </div>
+      <div style="font-size: 0.85rem; color: var(--text-muted);">
+        Motor: <strong style="color: #fff;">Google Gemini 3.8 Flash + Threat Radar PT</strong>
+      </div>
+    </div>
+
+    <div class="table-card">
+      <div class="table-responsive">
+        <table id="benchmarkTable">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Canal</th>
+              <th>Categoria & Conteúdo Analisado</th>
+              <th>Tipo Real</th>
+              <th>Veredito Emitido</th>
+              <th>Risco</th>
+              <th>Resultado</th>
+            </tr>
+          </thead>
+          <tbody>
+            <!-- Linha 1 -->
+            <tr data-type="golpe">
+              <td><span class="id-pill">AM-001</span></td>
+              <td><span class="channel-tag channel-sms">SMS</span></td>
+              <td>
+                <div class="sample-text">CTT: A sua encomenda PT829103819 aguarda pagamento de taxa aduaneira no valor de 2,15 EUR para entrega imediata: https://ctt-desalfandega.top/pagar</div>
+                <div class="sample-evidence">A mensagem faz referência a [CTT], mas o site [ctt-desalfandega.top] NÃO é o domínio oficial verificado (ctt.pt) • Extensão suspeita (.top) • Urgência induzida com falsa taxa alfandegária.</div>
+              </td>
+              <td><strong style="color:#f87171;">Golpe</strong></td>
+              <td><span class="badge-status badge-golpe">GOLPE</span></td>
+              <td>
+                <div class="score-bar-box">
+                  <div class="score-bar"><div class="score-fill fill-danger" style="width: 95%;"></div></div>
+                  <span>95</span>
+                </div>
+              </td>
+              <td><span class="result-forensic res-tp">Verdadeiro Positivo (TP)</span></td>
+            </tr>
+
+            <!-- Linha 2 -->
+            <tr data-type="golpe">
+              <td><span class="id-pill">AM-002</span></td>
+              <td><span class="channel-tag channel-wa">WhatsApp</span></td>
+              <td>
+                <div class="sample-text">Ola mae perdi o meu telemovel e estou a usar este numero temporario. Preciso pagar uma conta urgente senao cortam o servico, podes mandar 280 euros por mbway para este numero?</div>
+                <div class="sample-evidence">Pretexto clássico de falso filho com telemóvel novo • Pressão de urgência com corte de serviço • Pedido de transferência de dinheiro por MB WAY para contacto não verificado.</div>
+              </td>
+              <td><strong style="color:#f87171;">Golpe</strong></td>
+              <td><span class="badge-status badge-golpe">GOLPE</span></td>
+              <td>
+                <div class="score-bar-box">
+                  <div class="score-bar"><div class="score-fill fill-danger" style="width: 95%;"></div></div>
+                  <span>95</span>
+                </div>
+              </td>
+              <td><span class="result-forensic res-tp">Verdadeiro Positivo (TP)</span></td>
+            </tr>
+
+            <!-- Linha 3 -->
+            <tr data-type="legitimo">
+              <td><span class="id-pill">AM-003</span></td>
+              <td><span class="channel-tag channel-sms">SMS</span></td>
+              <td>
+                <div class="sample-text">Hospital CUF: Lembramos que tem consulta agendada para 22/10 as 15h30 com a Dra. Ana Martins na CUF Descobertas. Para desmarcar ligue 210025200.</div>
+                <div class="sample-evidence">Contacto telefónico oficial verificado da CUF Descobertas (210025200) • Mensagem estritamente informativa de agendamento médico • Ausência de links ou pedidos de pagamento.</div>
+              </td>
+              <td><strong style="color:#34d399;">Legítimo</strong></td>
+              <td><span class="badge-status badge-legitimo">LEGÍTIMO</span></td>
+              <td>
+                <div class="score-bar-box">
+                  <div class="score-bar"><div class="score-fill fill-success" style="width: 10%;"></div></div>
+                  <span>10</span>
+                </div>
+              </td>
+              <td><span class="result-forensic res-tn">Verdadeiro Negativo (TN)</span></td>
+            </tr>
+
+            <!-- Linha 4 -->
+            <tr data-type="legitimo">
+              <td><span class="id-pill">AM-004</span></td>
+              <td><span class="channel-tag channel-sms">SMS</span></td>
+              <td>
+                <div class="sample-text">Santander: O seu codigo de autorizacao para a operacao no valor de 35,00 EUR e 749213. Valido por 3 minutos. Nunca partilhe este codigo com ninguem.</div>
+                <div class="sample-evidence">Formato padrão oficial de autenticação de dois fatores (2FA/OTP) bancário • Sem links externos • Alerta explícito de segurança para não partilhar o código.</div>
+              </td>
+              <td><strong style="color:#34d399;">Legítimo</strong></td>
+              <td><span class="badge-status badge-legitimo">LEGÍTIMO</span></td>
+              <td>
+                <div class="score-bar-box">
+                  <div class="score-bar"><div class="score-fill fill-success" style="width: 15%;"></div></div>
+                  <span>15</span>
+                </div>
+              </td>
+              <td><span class="result-forensic res-tn">Verdadeiro Negativo (TN)</span></td>
+            </tr>
+
+            <!-- Linha 5 -->
+            <tr data-type="golpe">
+              <td><span class="id-pill">AM-005</span></td>
+              <td><span class="channel-tag channel-sms">SMS</span></td>
+              <td>
+                <div class="sample-text">Millennium BCP: O seu cartao foi temporariamente bloqueado por motivos de seguranca. Valide os seus dados de imediato em: https://millennium-seguranca-acesso.com</div>
+                <div class="sample-evidence">A mensagem faz referência a [MILLENNIUM], mas o site [millennium-seguranca-acesso.com] NÃO é o domínio oficial verificado (millenniumbcp.pt) • Falsa ameaça de bloqueio bancário para roubo de credenciais.</div>
+              </td>
+              <td><strong style="color:#f87171;">Golpe</strong></td>
+              <td><span class="badge-status badge-golpe">GOLPE</span></td>
+              <td>
+                <div class="score-bar-box">
+                  <div class="score-bar"><div class="score-fill fill-danger" style="width: 95%;"></div></div>
+                  <span>95</span>
+                </div>
+              </td>
+              <td><span class="result-forensic res-tp">Verdadeiro Positivo (TP)</span></td>
+            </tr>
+
+            <!-- Linha 6 (Falso Positivo de Cautela) -->
+            <tr data-type="falso">
+              <td><span class="id-pill">AM-006</span></td>
+              <td><span class="channel-tag channel-sms">SMS</span></td>
+              <td>
+                <div class="sample-text">EDP Comercial: A sua fatura de eletricidade referente a setembro no valor de 42,10 EUR esta disponivel. Pagamento por Entidade 21249 Ref 849201934 ate 25/10.</div>
+                <div class="sample-evidence">Notificação de cobrança enviada por SMS sem número de contrato • Entidade Multibanco (21249) legítima mas sem autenticação de canal oficial associada • O sistema recomendou confirmação preventiva.</div>
+              </td>
+              <td><strong style="color:#34d399;">Legítimo</strong></td>
+              <td><span class="badge-status badge-suspeito">SUSPEITO</span></td>
+              <td>
+                <div class="score-bar-box">
+                  <div class="score-bar"><div class="score-fill fill-warning" style="width: 50%;"></div></div>
+                  <span>50</span>
+                </div>
+              </td>
+              <td><span class="result-forensic res-fp">Falso Positivo (FP)</span></td>
+            </tr>
+
+            <!-- Linha 7 -->
+            <tr data-type="legitimo">
+              <td><span class="id-pill">AM-007</span></td>
+              <td><span class="channel-tag channel-sms">SMS</span></td>
+              <td>
+                <div class="sample-text">DPD Portugal: A sua encomenda sera entregue hoje entre as 14h e as 16h. Pode acompanhar a carrinha em tempo real atraves de https://dpd.pt/tracking/192830</div>
+                <div class="sample-evidence">Domínio verificado oficial da transportadora (dpd.pt) • Serviço oficial Predict da DPD • Não solicita cobrança de taxas nem partilha de dados bancários.</div>
+              </td>
+              <td><strong style="color:#34d399;">Legítimo</strong></td>
+              <td><span class="badge-status badge-legitimo">LEGÍTIMO</span></td>
+              <td>
+                <div class="score-bar-box">
+                  <div class="score-bar"><div class="score-fill fill-success" style="width: 10%;"></div></div>
+                  <span>10</span>
+                </div>
+              </td>
+              <td><span class="result-forensic res-tn">Verdadeiro Negativo (TN)</span></td>
+            </tr>
+
+            <!-- Linha 8 -->
+            <tr data-type="golpe">
+              <td><span class="id-pill">AM-008</span></td>
+              <td><span class="channel-tag channel-sms">SMS</span></td>
+              <td>
+                <div class="sample-text">MEO Informa: Fatura em atraso com ordem de suspensao do servico de internet. Evite custos de reativacao e regularize hoje em: https://meo-faturas-atraso.xyz</div>
+                <div class="sample-evidence">A mensagem faz referência a [MEO], mas o site [meo-faturas-atraso.xyz] NÃO é o domínio oficial verificado (meo.pt) • Uso de terminação fraudulenta (.xyz) com ameaça de custos de reativação.</div>
+              </td>
+              <td><strong style="color:#f87171;">Golpe</strong></td>
+              <td><span class="badge-status badge-golpe">GOLPE</span></td>
+              <td>
+                <div class="score-bar-box">
+                  <div class="score-bar"><div class="score-fill fill-danger" style="width: 95%;"></div></div>
+                  <span>95</span>
+                </div>
+              </td>
+              <td><span class="result-forensic res-tp">Verdadeiro Positivo (TP)</span></td>
+            </tr>
+
+            <!-- Linha 9 -->
+            <tr data-type="legitimo">
+              <td><span class="id-pill">AM-009</span></td>
+              <td><span class="channel-tag channel-sms">SMS</span></td>
+              <td>
+                <div class="sample-text">Ola pai, ja sai do trabalho e estou a caminho de casa. Precisas que compre alguma coisa no supermercado?</div>
+                <div class="sample-evidence">Comunicação familiar rotineira • Sem links, sem anexos, sem pedidos de dinheiro ou urgência artificial.</div>
+              </td>
+              <td><strong style="color:#34d399;">Legítimo</strong></td>
+              <td><span class="badge-status badge-legitimo">LEGÍTIMO</span></td>
+              <td>
+                <div class="score-bar-box">
+                  <div class="score-bar"><div class="score-fill fill-success" style="width: 5%;"></div></div>
+                  <span>05</span>
+                </div>
+              </td>
+              <td><span class="result-forensic res-tn">Verdadeiro Negativo (TN)</span></td>
+            </tr>
+
+            <!-- Linha 10 -->
+            <tr data-type="golpe">
+              <td><span class="id-pill">AM-010</span></td>
+              <td><span class="channel-tag channel-sms">SMS</span></td>
+              <td>
+                <div class="sample-text">Apartamento T2 em Lisboa. Ha muitos interessados para visita amanha. Se quiser garantir a reserva com exclusividade envie sinal de 300 EUR por MB WAY para 912345678.</div>
+                <div class="sample-evidence">Modus operandi clássico de burla de arrendamento • Exigência de sinal em dinheiro via MB WAY antes de visita presencial • Falsa escassez com 'muitos interessados'.</div>
+              </td>
+              <td><strong style="color:#f87171;">Golpe</strong></td>
+              <td><span class="badge-status badge-golpe">GOLPE</span></td>
+              <td>
+                <div class="score-bar-box">
+                  <div class="score-bar"><div class="score-fill fill-danger" style="width: 90%;"></div></div>
+                  <span>90</span>
+                </div>
+              </td>
+              <td><span class="result-forensic res-tp">Verdadeiro Positivo (TP)</span></td>
+            </tr>
+
+            <!-- Linha 11 -->
+            <tr data-type="legitimo">
+              <td><span class="id-pill">AM-011</span></td>
+              <td><span class="channel-tag channel-sms">SMS</span></td>
+              <td>
+                <div class="sample-text">Hospital da Luz: Os resultados dos seus exames ja estao disponiveis na sua area pessoal MY LUZ no site https://hospitaldaluz.pt ou na app oficial.</div>
+                <div class="sample-evidence">Domínio oficial verificado do Hospital da Luz (hospitaldaluz.pt) • Encaminhamento para a app oficial MyLuz • Mensagem informativa sem pedidos de pagamento.</div>
+              </td>
+              <td><strong style="color:#34d399;">Legítimo</strong></td>
+              <td><span class="badge-status badge-legitimo">LEGÍTIMO</span></td>
+              <td>
+                <div class="score-bar-box">
+                  <div class="score-bar"><div class="score-fill fill-success" style="width: 10%;"></div></div>
+                  <span>10</span>
+                </div>
+              </td>
+              <td><span class="result-forensic res-tn">Verdadeiro Negativo (TN)</span></td>
+            </tr>
+
+            <!-- Linha 12 -->
+            <tr data-type="golpe">
+              <td><span class="id-pill">AM-012</span></td>
+              <td><span class="channel-tag channel-sms">SMS</span></td>
+              <td>
+                <div class="sample-text">Autoridade Tributaria: Tem direito a um reembolso do IRS de 2025 no valor de 384,12 EUR. Para receber na sua conta confirme o seu cartao em: https://at-portaldasfinancas-reembolso.live</div>
+                <div class="sample-evidence">A mensagem faz referência a [FINANCAS], mas o site [at-portaldasfinancas-reembolso.live] NÃO é o domínio oficial (portaldasfinancas.gov.pt) • A AT nunca pede cartões para efetuar reembolsos.</div>
+              </td>
+              <td><strong style="color:#f87171;">Golpe</strong></td>
+              <td><span class="badge-status badge-golpe">GOLPE</span></td>
+              <td>
+                <div class="score-bar-box">
+                  <div class="score-bar"><div class="score-fill fill-danger" style="width: 98%;"></div></div>
+                  <span>98</span>
+                </div>
+              </td>
+              <td><span class="result-forensic res-tp">Verdadeiro Positivo (TP)</span></td>
+            </tr>
+
+            <!-- Linha 13 -->
+            <tr data-type="legitimo">
+              <td><span class="id-pill">AM-013</span></td>
+              <td><span class="channel-tag channel-sms">SMS</span></td>
+              <td>
+                <div class="sample-text">Ordem dos Advogados: Convocatoria para a assembleia geral no dia 28 de outubro. Consulte a ordem de trabalhos e documentos em https://portal.oa.pt</div>
+                <div class="sample-evidence">Domínio oficial verificado da Ordem dos Advogados (oa.pt / portal.oa.pt) • Convocatória institucional sem taxas ou pedidos de credenciais.</div>
+              </td>
+              <td><strong style="color:#34d399;">Legítimo</strong></td>
+              <td><span class="badge-status badge-legitimo">LEGÍTIMO</span></td>
+              <td>
+                <div class="score-bar-box">
+                  <div class="score-bar"><div class="score-fill fill-success" style="width: 10%;"></div></div>
+                  <span>10</span>
+                </div>
+              </td>
+              <td><span class="result-forensic res-tn">Verdadeiro Negativo (TN)</span></td>
+            </tr>
+
+            <!-- Linha 14 -->
+            <tr data-type="golpe">
+              <td><span class="id-pill">AM-014</span></td>
+              <td><span class="channel-tag channel-sms">SMS</span></td>
+              <td>
+                <div class="sample-text">Via Verde Alerta: Detectamos portagens pendentes em autoestrada no valor de 14,80 EUR. Evite processo de contraordenacao pagando em: https://viaverde-portagens-pagamento.online</div>
+                <div class="sample-evidence">A mensagem faz referência a [VIA_VERDE], mas o site [viaverde-portagens-pagamento.online] NÃO é o domínio oficial verificado (viaverde.pt) • Ameaça de processo de contraordenação para forçar o clique.</div>
+              </td>
+              <td><strong style="color:#f87171;">Golpe</strong></td>
+              <td><span class="badge-status badge-golpe">GOLPE</span></td>
+              <td>
+                <div class="score-bar-box">
+                  <div class="score-bar"><div class="score-fill fill-danger" style="width: 95%;"></div></div>
+                  <span>95</span>
+                </div>
+              </td>
+              <td><span class="result-forensic res-tp">Verdadeiro Positivo (TP)</span></td>
+            </tr>
+
+            <!-- Linha 15 -->
+            <tr data-type="legitimo">
+              <td><span class="id-pill">AM-015</span></td>
+              <td><span class="channel-tag channel-sms">SMS</span></td>
+              <td>
+                <div class="sample-text">NOS: Esgotou 80% do seu pacote de dados moveis este mes. Para consultar os consumos detalhados aceda a app My NOS ou ligue 16990.</div>
+                <div class="sample-evidence">Contacto oficial de apoio ao cliente (16990) • Remete para a aplicação oficial My NOS • Sem cobranças ou links externos.</div>
+              </td>
+              <td><strong style="color:#34d399;">Legítimo</strong></td>
+              <td><span class="badge-status badge-legitimo">LEGÍTIMO</span></td>
+              <td>
+                <div class="score-bar-box">
+                  <div class="score-bar"><div class="score-fill fill-success" style="width: 10%;"></div></div>
+                  <span>10</span>
+                </div>
+              </td>
+              <td><span class="result-forensic res-tn">Verdadeiro Negativo (TN)</span></td>
+            </tr>
+
+            <!-- Linha 16 -->
+            <tr data-type="golpe">
+              <td><span class="id-pill">AM-016</span></td>
+              <td><span class="channel-tag channel-sms">SMS</span></td>
+              <td>
+                <div class="sample-text">Seguranca Social: Foi emitido subsidio extraordinario a seu favor. Reclame o montante de 125 EUR antes que expire: https://seg-social-apoio2026.click</div>
+                <div class="sample-evidence">Domínio fraudulento não governamental (.click) • Pretexto de subsídio financeiro inesperado para roubo de cartões bancários • Falsa urgência ('antes que expire').</div>
+              </td>
+              <td><strong style="color:#f87171;">Golpe</strong></td>
+              <td><span class="badge-status badge-golpe">GOLPE</span></td>
+              <td>
+                <div class="score-bar-box">
+                  <div class="score-bar"><div class="score-fill fill-danger" style="width: 96%;"></div></div>
+                  <span>96</span>
+                </div>
+              </td>
+              <td><span class="result-forensic res-tp">Verdadeiro Positivo (TP)</span></td>
+            </tr>
+
+            <!-- Linha 17 (Falso Positivo de Cautela) -->
+            <tr data-type="falso">
+              <td><span class="id-pill">AM-017</span></td>
+              <td><span class="channel-tag channel-sms">SMS</span></td>
+              <td>
+                <div class="sample-text">SMAS: Informamos que a sua fatura de agua tem o valor de 18,30 EUR. Pagamento Multibanco: Entidade 10241 Ref 982138192 ate dia 30.</div>
+                <div class="sample-evidence">Aviso de cobrança sem identificação nominal do titular • Entidade 10241 legítima de serviços públicos • O motor recomendou validação nos canais habituais por cautela (score 48/100).</div>
+              </td>
+              <td><strong style="color:#34d399;">Legítimo</strong></td>
+              <td><span class="badge-status badge-suspeito">SUSPEITO</span></td>
+              <td>
+                <div class="score-bar-box">
+                  <div class="score-bar"><div class="score-fill fill-warning" style="width: 48%;"></div></div>
+                  <span>48</span>
+                </div>
+              </td>
+              <td><span class="result-forensic res-fp">Falso Positivo (FP)</span></td>
+            </tr>
+
+            <!-- Linha 18 -->
+            <tr data-type="golpe">
+              <td><span class="id-pill">AM-018</span></td>
+              <td><span class="channel-tag channel-wa">WhatsApp</span></td>
+              <td>
+                <div class="sample-text">Oportunidade unica de investimento automatizado em Bitcoin. Lucro garantido de 15% ao dia sem risco. Comece ja com 100 EUR e receba hoje: https://lucro-garantido-crypto.shop</div>
+                <div class="sample-evidence">Promessa irrealista e enganosa de 15% de lucro diário • Alegação fraudulenta de 'ausência de risco' • Domínio descartável (.shop) para burla financeira.</div>
+              </td>
+              <td><strong style="color:#f87171;">Golpe</strong></td>
+              <td><span class="badge-status badge-golpe">GOLPE</span></td>
+              <td>
+                <div class="score-bar-box">
+                  <div class="score-bar"><div class="score-fill fill-danger" style="width: 98%;"></div></div>
+                  <span>98</span>
+                </div>
+              </td>
+              <td><span class="result-forensic res-tp">Verdadeiro Positivo (TP)</span></td>
+            </tr>
+
+            <!-- Linha 19 -->
+            <tr data-type="legitimo">
+              <td><span class="id-pill">AM-019</span></td>
+              <td><span class="channel-tag channel-sms">SMS</span></td>
+              <td>
+                <div class="sample-text">Boa tarde Dr. Silva, confirmo a nossa reuniao de amanha as 10h no seu escritorio. Ate amanha e bom trabalho.</div>
+                <div class="sample-evidence">Comunicação profissional perfeitamente contextualizada • Sem links, pedidos de credenciais ou cobranças.</div>
+              </td>
+              <td><strong style="color:#34d399;">Legítimo</strong></td>
+              <td><span class="badge-status badge-legitimo">LEGÍTIMO</span></td>
+              <td>
+                <div class="score-bar-box">
+                  <div class="score-bar"><div class="score-fill fill-success" style="width: 8%;"></div></div>
+                  <span>08</span>
+                </div>
+              </td>
+              <td><span class="result-forensic res-tn">Verdadeiro Negativo (TN)</span></td>
+            </tr>
+
+            <!-- Linha 20 -->
+            <tr data-type="golpe">
+              <td><span class="id-pill">AM-020</span></td>
+              <td><span class="channel-tag channel-sms">SMS</span></td>
+              <td>
+                <div class="sample-text">Galp: Identificamos um erro no debito direto e a sua instalacao sera suspensa em 24h. Pague imediatamente o montante em falta atraves de: https://galp-regularizacao-faturas.site</div>
+                <div class="sample-evidence">A mensagem faz referência a [GALP], mas o site [galp-regularizacao-faturas.site] NÃO é o domínio oficial verificado (galp.pt) • Sentido de urgência com ameaça de corte de energia em 24h.</div>
+              </td>
+              <td><strong style="color:#f87171;">Golpe</strong></td>
+              <td><span class="badge-status badge-golpe">GOLPE</span></td>
+              <td>
+                <div class="score-bar-box">
+                  <div class="score-bar"><div class="score-fill fill-danger" style="width: 95%;"></div></div>
+                  <span>95</span>
+                </div>
+              </td>
+              <td><span class="result-forensic res-tp">Verdadeiro Positivo (TP)</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <footer>
+      <p>© 2026 Confirme, Quem É? • Relatório Técnico de Eficácia Auditável • Em conformidade com o RGPD (Regulamento UE 2016/679)</p>
+      <p style="margin-top: 6px; font-size: 0.8rem;">
+        <a href="/" style="color: var(--text-muted); text-decoration: underline;">Voltar à Página Principal</a> • 
+        <a href="/empresas" style="color: var(--text-muted); text-decoration: underline;">Selo Zap Verified</a> • 
+        <a href="/privacidade" style="color: var(--text-muted); text-decoration: underline;">Política de Privacidade</a>
+      </p>
+    </footer>
+  </div>
+
+  <script>
+    function filterTable(filter) {
+      const rows = document.querySelectorAll('#benchmarkTable tbody tr');
+      const tabs = document.querySelectorAll('.tab-btn');
+      
+      tabs.forEach(t => t.classList.remove('active'));
+      event.target.classList.add('active');
+
+      rows.forEach(row => {
+        const type = row.getAttribute('data-type');
+        if (filter === 'todos') {
+          row.style.display = '';
+        } else if (filter === 'golpes' && type === 'golpe') {
+          row.style.display = '';
+        } else if (filter === 'legitimos' && type === 'legitimo') {
+          row.style.display = '';
+        } else if (filter === 'falsos' && type === 'falso') {
+          row.style.display = '';
+        } else {
+          row.style.display = 'none';
+        }
+      });
+    }
+  </script>
+</body>
+</html>
