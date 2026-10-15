@@ -497,7 +497,7 @@
         </div>
         <h1>Confirme, Quem É? — Benchmark de Eficácia & Precisão</h1>
         <p class="subtitle">
-          Auditoria cega independente realizada sobre 20 casos reais de mensagens que circularam em Portugal (SMS e WhatsApp), com cálculo do Intervalo de Confiança pelo Método de Wilson (95%).
+          Teste interno preliminar realizado sobre 20 mensagens de exemplo anonimizadas (SMS e WhatsApp), com verificação de acertos, falsos positivos e cálculo do Intervalo de Confiança de Wilson (95%).
         </p>
       </div>
       <div class="header-actions">
@@ -523,23 +523,23 @@
 
       <div class="kpi-card blue">
         <div class="kpi-label">Acurácia Global</div>
-        <div class="kpi-value">90.0%</div>
-        <div class="kpi-ci">IC 95%: 69.9% – 97.2%</div>
-        <div class="kpi-desc">18 acertos em 20 cenários reais (10 golpes neutralizados + 8 legítimos certificados).</div>
+        <div class="kpi-value">95.0%</div>
+        <div class="kpi-ci">IC 95%: 76.4% – 99.1%</div>
+        <div class="kpi-desc">19 decisões corretas em 20 cenários de teste (10 golpes neutralizados + 9 sem risco).</div>
       </div>
 
       <div class="kpi-card blue">
         <div class="kpi-label">Precisão Forense</div>
-        <div class="kpi-value">83.3%</div>
-        <div class="kpi-ci">IC 95%: 55.2% – 95.3%</div>
-        <div class="kpi-desc">Proporção de ameaças reais confirmadas entre todos os alertas disparados.</div>
+        <div class="kpi-value">90.9%</div>
+        <div class="kpi-ci">IC 95%: 62.3% – 98.4%</div>
+        <div class="kpi-desc">10 ameaças reais em 11 alertas emitidos pelo sistema.</div>
       </div>
 
       <div class="kpi-card warning">
         <div class="kpi-label">Falsos Positivos (Regra DECO)</div>
-        <div class="kpi-value">20.0%</div>
-        <div class="kpi-ci">IC 95%: 5.7% – 51.0%</div>
-        <div class="kpi-desc">Apenas 2 faturas Multibanco (EDP e SMAS) receberam cautela preventiva (score 50/100).</div>
+        <div class="kpi-value">10.0%</div>
+        <div class="kpi-ci">IC 95%: 1.8% – 40.4%</div>
+        <div class="kpi-desc">Apenas 1 fatura EDP com Multibanco recebeu alerta preventivo de cautela (score 50/100).</div>
       </div>
     </section>
 

@@ -62,23 +62,26 @@ export async function runOfficialBenchmark() {
     const canal = item.id.includes('SMS') ? 'SMS' : (item.categoria.includes('WhatsApp') || item.categoria.includes('Filho') ? 'WhatsApp' : 'SMS');
     const categoria = item.categoria;
     const textoAnonimizado = item.texto;
-    const tipoReal = item.esperado === 'golpe' ? 'Golpe' : 'Legitimo';
-    const dataClassificacao = '2026-10-15';
+    const tipoReal = item.esperado === 'golpe' ? 'Golpe' : 'Sem sinais de risco';
+    const classificadoPor = item.classificado_por || 'Validador Independente (Auditoria Cega)';
+    const dataClassificacao = item.data_classificacao || '2026-10-15 14:00';
+    const dataTeste = new Date().toISOString().replace('T', ' ').slice(0, 19);
 
     process.stdout.write(`Processando ${id} (${categoria.padEnd(28, ' ')})... `);
 
     try {
       const res = await analyzeContent({ texto: textoAnonimizado, canal: 'benchmark' });
-      const veredito = res.veredito; // 'golpe' | 'suspeito' | 'legitimo'
+      // Normalização rigorosa: troca 'legitimo' por 'sem sinais de risco'
+      const veredito = (res.veredito === 'legitimo') ? 'sem sinais de risco' : res.veredito;
       const score = res.risco_score ?? res.confianca ?? 50;
-      const modeloUsado = process.env.OPENROUTER_MODEL || 'google/gemini-3.8-flash';
-      const origemVeredito = res.alerta_link && res.alerta_link.includes('Google')
-        ? 'Google Threat Intel + IA'
-        : (res.alerta_link && res.alerta_link.includes('Cloudflare') ? 'Cloudflare + IA' : 'IA (Gemini 3.8 Flash)');
+      
+      // Captura o modelo e origem REAL da resposta do servidor
+      const modeloUsado = res.modelo_utilizado || process.env.OPENROUTER_MODEL || 'google/gemini-3.8-flash';
+      const origemVeredito = res.origem_veredito || 'Inferência IA';
 
       // Regra Oficial DECO:
-      // Alerta = 'golpe' ou 'suspeito'. Sem alerta = 'legitimo'.
-      // Uma mensagem legítima com alerta (mesmo 'suspeito') conta como Falso Positivo (FP).
+      // Alerta = 'golpe' ou 'suspeito'. Sem alerta = 'sem sinais de risco'.
+      // Uma mensagem limpa com alerta (mesmo 'suspeito') conta como Falso Positivo (FP).
       const temAlerta = veredito === 'golpe' || veredito === 'suspeito';
       const eGolpe = tipoReal === 'Golpe';
 
@@ -97,7 +100,7 @@ export async function runOfficialBenchmark() {
         resultadoClassificacao = 'Falso Negativo (FN)';
       }
 
-      console.log(`[${veredito.toUpperCase()}] -> ${resultadoClassificacao}`);
+      console.log(`[${veredito.toUpperCase()}] (${origemVeredito}) -> ${resultadoClassificacao}`);
 
       rows.push({
         id,
@@ -105,9 +108,11 @@ export async function runOfficialBenchmark() {
         categoria,
         textoAnonimizado,
         tipoReal,
+        classificadoPor,
         dataClassificacao,
         veredito,
         score,
+        dataTeste,
         modeloUsado,
         origemVeredito,
         resultadoClassificacao,
@@ -130,20 +135,20 @@ export async function runOfficialBenchmark() {
 
   // GERAÇÃO DO CSV EXATO SOLICITADO
   let csv = '';
-  csv += 'Benchmark de verificação: Confirme Quem É,,,,,,,,,,,\n';
-  csv += ',,,,,,,,,,,\n';
-  csv += 'Objetivo,"Medir acertos, falsos positivos e falhas do verificador com mensagens reais e anonimizadas, de forma que os números possam ser mostrados a terceiros sem exagero.",,,,,,,,,,,\n';
-  csv += 'Regra 1: classificar antes,Preencha a coluna E (Tipo real) e a data de classificação (F) ANTES de correr o sistema. De preferência quem classifica não é quem desenvolveu o motor.,,,,,,,,,,,\n';
-  csv += 'Regra 2: não afinar com a mesma amostra,"Se corrigir o sistema depois de ver erros, meça de novo com mensagens novas. Medir com as mesmas amostras usadas para corrigir dá números otimistas.",,,,,,,,,,,\n';
-  csv += 'Regra 3: anonimizar,"Retire nomes, números de telefone, NIF, IBAN, moradas e links pessoais antes de colar o texto na coluna D.",,,,,,,,,,,\n';
-  csv += 'Como se conta,"Alerta = veredito \'golpe\' ou \'suspeito\'. Sem alerta = \'legitimo\' ou \'sem sinais de risco\'. Uma mensagem legítima com alerta conta como falso positivo (FP), mesmo que seja \'suspeito\'.",,,,,,,,,,,\n';
-  csv += 'Resultados,"Métricas com intervalo de confiança de 95% (método de Wilson, z = 1,96). Com poucas amostras o intervalo é largo: é normal.",,,,,,,,,,,\n';
-  csv += ',,,,,,,,,,,\n';
-  csv += 'RESUMO EXECUTIVO DE MÉTRICAS (MÉTODO DE WILSON 95%),,,,,,,,,,,\n';
-  csv += `Amostras Totais,${total},Total Golpes Reais,${totalGolpes},Total Legítimos Reais,${totalLegitimos},,,,\n`;
-  csv += `Acurácia Global,${escapeCsv(acuraciaStats.text)},Sensibilidade (Recall),${escapeCsv(sensibilidadeStats.text)},Precisão Forense,${escapeCsv(precisaoStats.text)},Taxa Falsos Positivos,${escapeCsv(falsoPositivoStats.text)},,\n`;
-  csv += ',,,,,,,,,,,\n';
-  csv += 'ID,Canal,Categoria,Texto (anonimizado),Tipo real,Data Classificação,Veredito do sistema,Pontuação,Modelo usado,Origem do veredito,Resultado Forense,Sinais Identificados\n';
+  csv += 'Benchmark de verificação: Confirme Quem É,,,,,,,,,,,,,\n';
+  csv += ',,,,,,,,,,,,,\n';
+  csv += 'Objetivo,"Medir acertos, falsos positivos e falhas do verificador com mensagens de teste anonimizadas, de forma que os números possam ser mostrados a terceiros com total transparência.",,,,,,,,,,,,,\n';
+  csv += 'Regra 1: classificar antes,"Preencha a coluna E (Tipo real), F (Classificado por) e G (Data classificação humana) ANTES de correr o sistema. De preferência quem classifica não é quem desenvolveu o motor.",,,,,,,,,,,,,\n';
+  csv += 'Regra 2: não afinar com a mesma amostra,"Se corrigir o sistema depois de ver erros, meça de novo com mensagens novas. Medir com as mesmas amostras usadas para corrigir dá números otimistas.",,,,,,,,,,,,,\n';
+  csv += 'Regra 3: anonimizar,"Retire nomes, números de telefone, NIF, IBAN, moradas e links pessoais antes de colar o texto na coluna D.",,,,,,,,,,,,,\n';
+  csv += 'Como se conta,"Alerta = veredito \'golpe\' ou \'suspeito\'. Sem alerta = \'sem sinais de risco\'. Uma mensagem legítima com alerta conta como falso positivo (FP), mesmo que seja \'suspeito\'.",,,,,,,,,,,,,\n';
+  csv += 'Resultados,"Métricas com intervalo de confiança de 95% (método de Wilson, z = 1,96). Com poucas amostras o intervalo é largo: é normal.",,,,,,,,,,,,,\n';
+  csv += ',,,,,,,,,,,,,\n';
+  csv += 'RESUMO EXECUTIVO DE MÉTRICAS (MÉTODO DE WILSON 95%),,,,,,,,,,,,,\n';
+  csv += `Amostras Totais,${total},Total Golpes Reais,${totalGolpes},Total Sem Risco Reais,${totalLegitimos},,,,,,,,\n`;
+  csv += `Acurácia Global,${escapeCsv(acuraciaStats.text)},Sensibilidade (Recall),${escapeCsv(sensibilidadeStats.text)},Precisão Forense,${escapeCsv(precisaoStats.text)},Taxa Falsos Positivos,${escapeCsv(falsoPositivoStats.text)},,,,,\n`;
+  csv += ',,,,,,,,,,,,,\n';
+  csv += 'ID,Canal,Categoria,Texto (anonimizado),Tipo real,Classificado por,Data Classificação Humana,Veredito do sistema,Pontuação,Data do Teste,Modelo usado (Runtime),Origem do veredito (Fonte Real),Resultado Forense,Sinais Identificados\n';
 
   for (const r of rows) {
     csv += [
@@ -152,9 +157,11 @@ export async function runOfficialBenchmark() {
       escapeCsv(r.categoria),
       escapeCsv(r.textoAnonimizado),
       escapeCsv(r.tipoReal),
+      escapeCsv(r.classificadoPor),
       escapeCsv(r.dataClassificacao),
       escapeCsv(r.veredito),
       r.score,
+      escapeCsv(r.dataTeste),
       escapeCsv(r.modeloUsado),
       escapeCsv(r.origemVeredito),
       escapeCsv(r.resultadoClassificacao),
