@@ -62,9 +62,9 @@ export async function runOfficialBenchmark() {
     const canal = item.id.includes('SMS') ? 'SMS' : (item.categoria.includes('WhatsApp') || item.categoria.includes('Filho') ? 'WhatsApp' : 'SMS');
     const categoria = item.categoria;
     const textoAnonimizado = item.texto;
-    const tipoReal = item.esperado === 'golpe' ? 'Golpe' : 'Sem sinais de risco';
-    const classificadoPor = item.classificado_por || 'Validador Independente (Auditoria Cega)';
-    const dataClassificacao = item.data_classificacao || '2026-10-15 14:00';
+    const tipoReal = item.esperado === 'golpe' ? 'Golpe' : 'Legítimo';
+    const classificadoPor = item.classificado_por || '';
+    const dataClassificacao = item.data_classificacao || '';
     const dataTeste = new Date().toISOString().replace('T', ' ').slice(0, 19);
 
     process.stdout.write(`Processando ${id} (${categoria.padEnd(28, ' ')})... `);
@@ -135,20 +135,20 @@ export async function runOfficialBenchmark() {
 
   // GERAÇÃO DO CSV EXATO SOLICITADO
   let csv = '';
-  csv += 'Benchmark de verificação: Confirme Quem É,,,,,,,,,,,,,\n';
+  csv += 'Benchmark de verificação: Confirme Quem É (Calibração Interna Pré-lançamento),,,,,,,,,,,,,\n';
   csv += ',,,,,,,,,,,,,\n';
-  csv += 'Objetivo,"Medir acertos, falsos positivos e falhas do verificador com mensagens de teste anonimizadas, de forma que os números possam ser mostrados a terceiros com total transparência.",,,,,,,,,,,,,\n';
-  csv += 'Regra 1: classificar antes,"Preencha a coluna E (Tipo real), F (Classificado por) e G (Data classificação humana) ANTES de correr o sistema. De preferência quem classifica não é quem desenvolveu o motor.",,,,,,,,,,,,,\n';
+  csv += 'Objetivo,"Medir a sensibilidade, acertos e falsos positivos do verificador com mensagens de teste anonimizadas em ambiente pré-produção.",,,,,,,,,,,,,\n';
+  csv += 'Regra 1: classificar antes,"Preencha a coluna E (Tipo real: Golpe ou Legítimo), F (Classificado por) e G (Data classificação humana) ANTES de correr o sistema. Deixe F e G em branco até uma pessoa real ler e classificar.",,,,,,,,,,,,,\n';
   csv += 'Regra 2: não afinar com a mesma amostra,"Se corrigir o sistema depois de ver erros, meça de novo com mensagens novas. Medir com as mesmas amostras usadas para corrigir dá números otimistas.",,,,,,,,,,,,,\n';
   csv += 'Regra 3: anonimizar,"Retire nomes, números de telefone, NIF, IBAN, moradas e links pessoais antes de colar o texto na coluna D.",,,,,,,,,,,,,\n';
   csv += 'Como se conta,"Alerta = veredito \'golpe\' ou \'suspeito\'. Sem alerta = \'sem sinais de risco\'. Uma mensagem legítima com alerta conta como falso positivo (FP), mesmo que seja \'suspeito\'.",,,,,,,,,,,,,\n';
-  csv += 'Resultados,"Métricas com intervalo de confiança de 95% (método de Wilson, z = 1,96). Com poucas amostras o intervalo é largo: é normal.",,,,,,,,,,,,,\n';
+  csv += 'Resultados,"Métricas com intervalo de confiança de 95% (método de Wilson, z = 1,96). Nota: precisão em ambiente real dependerá da prevalência natural de mensagens legítimas.",,,,,,,,,,,,,\n';
   csv += ',,,,,,,,,,,,,\n';
   csv += 'RESUMO EXECUTIVO DE MÉTRICAS (MÉTODO DE WILSON 95%),,,,,,,,,,,,,\n';
-  csv += `Amostras Totais,${total},Total Golpes Reais,${totalGolpes},Total Sem Risco Reais,${totalLegitimos},,,,,,,,\n`;
+  csv += `Amostras Totais,${total},Total Golpes Reais,${totalGolpes},Total Legítimos Reais,${totalLegitimos},,,,,,,,\n`;
   csv += `Acurácia Global,${escapeCsv(acuraciaStats.text)},Sensibilidade (Recall),${escapeCsv(sensibilidadeStats.text)},Precisão Forense,${escapeCsv(precisaoStats.text)},Taxa Falsos Positivos,${escapeCsv(falsoPositivoStats.text)},,,,,\n`;
   csv += ',,,,,,,,,,,,,\n';
-  csv += 'ID,Canal,Categoria,Texto (anonimizado),Tipo real,Classificado por,Data Classificação Humana,Veredito do sistema,Pontuação,Data do Teste,Modelo usado (Runtime),Origem do veredito (Fonte Real),Resultado Forense,Sinais Identificados\n';
+  csv += 'ID,Canal,Categoria,Texto (anonimizado),Tipo real (Golpe ou Legítimo),Classificado por,Data Classificação Humana,Veredito do sistema,Pontuação,Data do Teste,Modelo usado (Runtime),Origem do veredito (Fonte Real),Resultado Forense,Sinais Identificados\n';
 
   for (const r of rows) {
     csv += [
