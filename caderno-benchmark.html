@@ -1,0 +1,965 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Caderno de Validação & Benchmark — Confirme, Quem É?</title>
+  <meta name="description" content="Ambiente interativo de validação cega e preparação de amostras para o benchmark forense do Confirme, Quem É?">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #090d16;
+      --card-bg: rgba(17, 24, 39, 0.85);
+      --card-border: rgba(255, 255, 255, 0.08);
+      --text: #f1f5f9;
+      --text-muted: #94a3b8;
+      --danger: #ef4444;
+      --danger-bg: rgba(239, 68, 68, 0.12);
+      --success: #10b981;
+      --success-bg: rgba(16, 185, 129, 0.12);
+      --warning: #f59e0b;
+      --warning-bg: rgba(245, 158, 11, 0.12);
+      --blue: #3b82f6;
+      --blue-bg: rgba(59, 130, 246, 0.12);
+      --purple: #8b5cf6;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background-color: var(--bg);
+      background-image: 
+        radial-gradient(at 0% 0%, rgba(59, 130, 246, 0.08) 0px, transparent 50%),
+        radial-gradient(at 100% 100%, rgba(139, 92, 246, 0.06) 0px, transparent 50%);
+      color: var(--text);
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      line-height: 1.5;
+      padding: 32px 24px;
+      min-height: 100vh;
+    }
+
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+
+    /* Header */
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 24px;
+      flex-wrap: wrap;
+      gap: 20px;
+      padding-bottom: 24px;
+      border-bottom: 1px solid var(--card-border);
+    }
+
+    .brand-title {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 8px;
+    }
+
+    .badge-tag {
+      background: rgba(59, 130, 246, 0.15);
+      color: #60a5fa;
+      border: 1px solid rgba(59, 130, 246, 0.3);
+      padding: 4px 10px;
+      border-radius: 999px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    h1 {
+      font-size: 1.8rem;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      color: #fff;
+    }
+
+    .subtitle {
+      color: var(--text-muted);
+      font-size: 0.92rem;
+      max-width: 800px;
+      margin-top: 4px;
+    }
+
+    .header-actions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 16px;
+      border-radius: 8px;
+      font-size: 0.88rem;
+      font-weight: 600;
+      cursor: pointer;
+      text-decoration: none;
+      transition: all 0.2s ease;
+      border: 1px solid transparent;
+    }
+
+    .btn-primary {
+      background: #2563eb;
+      color: #fff;
+      border-color: #3b82f6;
+    }
+    .btn-primary:hover { background: #1d4ed8; }
+
+    .btn-success {
+      background: #059669;
+      color: #fff;
+      border-color: #10b981;
+    }
+    .btn-success:hover { background: #047857; }
+
+    .btn-outline {
+      background: var(--card-bg);
+      color: var(--text);
+      border-color: var(--card-border);
+    }
+    .btn-outline:hover {
+      background: #1e293b;
+      border-color: #334155;
+    }
+
+    /* KPI Stats Bar */
+    .stats-bar {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 14px;
+      margin-bottom: 24px;
+    }
+
+    .stat-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 10px;
+      padding: 16px 20px;
+      position: relative;
+    }
+
+    .stat-label {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      font-weight: 600;
+      letter-spacing: 0.05em;
+    }
+
+    .stat-val {
+      font-size: 1.6rem;
+      font-weight: 800;
+      color: #fff;
+      margin-top: 4px;
+    }
+
+    .stat-sub {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      margin-top: 4px;
+    }
+
+    /* Controls & Filter Bar */
+    .control-bar {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      padding: 16px 20px;
+      margin-bottom: 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+
+    .filter-tabs {
+      display: flex;
+      gap: 6px;
+      background: rgba(15, 23, 42, 0.6);
+      padding: 4px;
+      border-radius: 8px;
+      border: 1px solid var(--card-border);
+    }
+
+    .tab-btn {
+      padding: 7px 14px;
+      border-radius: 6px;
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      background: transparent;
+      border: none;
+      cursor: pointer;
+      transition: all 0.15s ease;
+    }
+
+    .tab-btn.active {
+      background: #1e293b;
+      color: #fff;
+    }
+
+    .batch-actions {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+
+    /* Table Container */
+    .table-container {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      overflow: hidden;
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
+    }
+
+    .table-responsive {
+      overflow-x: auto;
+      max-height: 75vh;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+      font-size: 0.88rem;
+    }
+
+    th {
+      background: #0f172a;
+      padding: 14px 16px;
+      color: var(--text-muted);
+      font-weight: 600;
+      font-size: 0.78rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      border-bottom: 1px solid var(--card-border);
+      white-space: nowrap;
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+
+    td {
+      padding: 14px 16px;
+      border-bottom: 1px solid var(--card-border);
+      color: #cbd5e1;
+      vertical-align: top;
+    }
+
+    tr:last-child td { border-bottom: none; }
+
+    tr:hover td {
+      background: rgba(30, 41, 59, 0.45);
+    }
+
+    .id-pill {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.8rem;
+      background: rgba(255, 255, 255, 0.05);
+      padding: 2px 8px;
+      border-radius: 4px;
+      color: #e2e8f0;
+      white-space: nowrap;
+    }
+
+    .channel-select {
+      background: #1e293b;
+      color: #e2e8f0;
+      border: 1px solid var(--card-border);
+      padding: 6px 10px;
+      border-radius: 6px;
+      font-size: 0.82rem;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .cat-input {
+      background: rgba(15, 23, 42, 0.7);
+      color: #e2e8f0;
+      border: 1px solid var(--card-border);
+      padding: 6px 10px;
+      border-radius: 6px;
+      font-size: 0.83rem;
+      width: 170px;
+    }
+    .cat-input:focus {
+      outline: none;
+      border-color: #3b82f6;
+    }
+
+    .text-area {
+      width: 100%;
+      min-width: 320px;
+      min-height: 64px;
+      background: rgba(15, 23, 42, 0.7);
+      color: #f1f5f9;
+      border: 1px solid var(--card-border);
+      border-radius: 6px;
+      padding: 8px 10px;
+      font-family: 'Inter', sans-serif;
+      font-size: 0.85rem;
+      resize: vertical;
+      line-height: 1.4;
+    }
+    .text-area:focus {
+      outline: none;
+      border-color: #3b82f6;
+      background: rgba(15, 23, 42, 0.95);
+    }
+
+    /* Ground Truth Toggle Group */
+    .toggle-group {
+      display: inline-flex;
+      border-radius: 6px;
+      overflow: hidden;
+      border: 1px solid var(--card-border);
+      background: #0f172a;
+    }
+
+    .toggle-btn {
+      padding: 6px 12px;
+      font-size: 0.8rem;
+      font-weight: 700;
+      border: none;
+      cursor: pointer;
+      background: transparent;
+      color: var(--text-muted);
+      transition: all 0.15s ease;
+    }
+
+    .toggle-btn.active-golpe {
+      background: var(--danger);
+      color: #fff;
+    }
+
+    .toggle-btn.active-legitimo {
+      background: var(--success);
+      color: #fff;
+    }
+
+    .meta-input {
+      background: rgba(15, 23, 42, 0.7);
+      color: #e2e8f0;
+      border: 1px solid var(--card-border);
+      padding: 6px 10px;
+      border-radius: 6px;
+      font-size: 0.82rem;
+      width: 150px;
+    }
+    .meta-input:focus {
+      outline: none;
+      border-color: #3b82f6;
+    }
+
+    .btn-action-sm {
+      background: transparent;
+      border: 1px solid var(--card-border);
+      color: var(--text-muted);
+      padding: 4px 8px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 0.78rem;
+    }
+    .btn-action-sm:hover {
+      color: #fff;
+      border-color: #64748b;
+    }
+
+    /* Modal for Validator Signing */
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.75);
+      backdrop-filter: blur(4px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 100;
+    }
+    .modal-backdrop.open { display: flex; }
+
+    .modal-box {
+      background: #111827;
+      border: 1px solid var(--card-border);
+      border-radius: 14px;
+      padding: 28px;
+      width: 100%;
+      max-width: 480px;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+    }
+
+    .modal-box h3 {
+      font-size: 1.2rem;
+      color: #fff;
+      margin-bottom: 8px;
+    }
+    .modal-box p {
+      color: var(--text-muted);
+      font-size: 0.88rem;
+      margin-bottom: 20px;
+    }
+
+    .form-group {
+      margin-bottom: 16px;
+    }
+    .form-group label {
+      display: block;
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: #e2e8f0;
+      margin-bottom: 6px;
+    }
+    .form-group input {
+      width: 100%;
+      background: #0f172a;
+      border: 1px solid var(--card-border);
+      padding: 10px 12px;
+      border-radius: 8px;
+      color: #fff;
+      font-size: 0.9rem;
+    }
+    .form-group input:focus {
+      outline: none;
+      border-color: #3b82f6;
+    }
+
+    .modal-actions {
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+      margin-top: 24px;
+    }
+
+    /* Toast Notification */
+    .toast {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      background: #1e293b;
+      border: 1px solid #3b82f6;
+      color: #fff;
+      padding: 12px 20px;
+      border-radius: 8px;
+      font-size: 0.88rem;
+      font-weight: 600;
+      box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4);
+      display: none;
+      z-index: 200;
+      animation: slideIn 0.2s ease;
+    }
+    @keyframes slideIn {
+      from { transform: translateY(10px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+
+    <!-- Header -->
+    <header>
+      <div>
+        <div class="brand-title">
+          <span class="badge-tag">Validação Cega & Calibração</span>
+          <span style="color: var(--text-muted); font-size: 0.85rem;">Confirme, Quem É?</span>
+        </div>
+        <h1>Caderno de Trabalho de Amostras (50 Linhas)</h1>
+        <p class="subtitle">
+          Edição interativa das mensagens de teste. As primeiras 25 são burlas documentadas pela PSP/CERT.PT. As seguintes 25 são legítimas reais para validação cega antes de submeter ao motor.
+        </p>
+      </div>
+
+      <div class="header-actions">
+        <button id="btnPreencherLegitimas" class="btn btn-outline" title="Insere 25 mensagens legítimas autênticas de Portugal para acelerar">
+          ✨ Preencher 25 Legítimas Típicas
+        </button>
+        <button id="btnAssinarModal" class="btn btn-primary" title="Aplica o nome da pessoa real e carimbo de data em lote">
+          ✍️ Assinar Validação Humana
+        </button>
+        <button id="btnCopiarExcel" class="btn btn-success" title="Copia toda a tabela formatada para colar no Excel">
+          📋 Copiar p/ Excel (TSV)
+        </button>
+        <button id="btnBaixarCsv" class="btn btn-outline" title="Transfere o CSV oficial atualizado">
+          💾 Baixar CSV Oficial
+        </button>
+      </div>
+    </header>
+
+    <!-- Stats Bar -->
+    <section class="stats-bar">
+      <div class="stat-card">
+        <div class="stat-label">Total de Amostras</div>
+        <div class="stat-val" id="statTotal">50</div>
+        <div class="stat-sub">Slots de calibração ativa</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Textos Preenchidos</div>
+        <div class="stat-val" style="color: #60a5fa;" id="statTextos">25 / 50</div>
+        <div class="stat-sub" id="statTextosSub">50% completo</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Classificadas (Ground Truth)</div>
+        <div class="stat-val" style="color: #34d399;" id="statClassificadas">0 / 50</div>
+        <div class="stat-sub" id="statClassificadasSub">Aguardando validação humana</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-label">Assinadas com Validador</div>
+        <div class="stat-val" style="color: #fbbf24;" id="statAssinadas">0 / 50</div>
+        <div class="stat-sub">Nome e data/hora do classificador</div>
+      </div>
+    </section>
+
+    <!-- Controls & Filter Bar -->
+    <div class="control-bar">
+      <div class="filter-tabs">
+        <button class="tab-btn active" data-filter="all">Todas as 50</button>
+        <button class="tab-btn" data-filter="scam">Burlas (AM-001..AM-025)</button>
+        <button class="tab-btn" data-filter="clean">Legítimas (AM-026..AM-050)</button>
+        <button class="tab-btn" data-filter="unclassified">Pendentes de Classificação</button>
+      </div>
+
+      <div class="batch-actions">
+        <button class="btn btn-outline" id="btnLimparClassificacao" style="font-size: 0.8rem; padding: 6px 12px;">
+          🧹 Limpar Classificações
+        </button>
+        <button class="btn btn-outline" id="btnResetGeral" style="font-size: 0.8rem; padding: 6px 12px; color: #f87171;">
+          ⚠️ Repor Originais
+        </button>
+      </div>
+    </div>
+
+    <!-- Table Container -->
+    <div class="table-container">
+      <div class="table-responsive">
+        <table id="amostrasTable">
+          <thead>
+            <tr>
+              <th style="width: 70px;">ID</th>
+              <th style="width: 110px;">Canal</th>
+              <th style="width: 180px;">Categoria</th>
+              <th>Texto da Mensagem (Anonimizado)</th>
+              <th style="width: 170px;">Tipo Real (Ground Truth)</th>
+              <th style="width: 160px;">Classificado por</th>
+              <th style="width: 160px;">Data Classificação</th>
+              <th style="width: 70px;">Ações</th>
+            </tr>
+          </thead>
+          <tbody id="amostrasBody">
+            <!-- Gerado via JavaScript -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Modal Assinatura do Validador -->
+  <div class="modal-backdrop" id="modalAssinatura">
+    <div class="modal-box">
+      <h3>Assinar Validação Humana</h3>
+      <p>Introduza o nome da pessoa independente que avaliou as mensagens e a data/hora exata em que fez a leitura.</p>
+
+      <div class="form-group">
+        <label for="inputNomeValidador">Nome Real da Pessoa (Classificador)</label>
+        <input type="text" id="inputNomeValidador" placeholder="Ex: Mariana Silva" value="">
+      </div>
+
+      <div class="form-group">
+        <label for="inputDataValidador">Data e Hora da Classificação</label>
+        <input type="text" id="inputDataValidador" value="">
+      </div>
+
+      <div class="modal-actions">
+        <button class="btn btn-outline" id="btnFecharModal">Cancelar</button>
+        <button class="btn btn-primary" id="btnSalvarAssinatura">Aplicar a Todas as Classificadas</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification -->
+  <div class="toast" id="toastBox">Mensagem</div>
+
+  <script>
+    // 25 Burlas Reais Documentadas (AM-001 a AM-025)
+    const BURLAS_INICIAIS = [
+      { id: 'AM-001', canal: 'SMS', cat: 'Smishing Via Verde', texto: 'Via Verde: Tem valores de portagens pendentes no montante de 12,45 EUR. Regularize hoje para evitar coima e custas processuais: https://viaverde-regularizacao.com' },
+      { id: 'AM-002', canal: 'WhatsApp', cat: 'Falso Filho WhatsApp', texto: 'Ola mae perdi o telemovel e estou temporariamente neste numero. Podes mandar uma mensagem aqui por favor?' },
+      { id: 'AM-003', canal: 'WhatsApp', cat: 'Falso Filho MB WAY', texto: 'Ola pai o meu ecra partiu e este e o meu numero provisorio. Preciso com urgencia de pagar uma fatura hoje senao fico sem acesso a faculdade, podes fazer mbway de 340€ para este numero?' },
+      { id: 'AM-004', canal: 'SMS', cat: 'Phishing CTT Alfândega', texto: 'CTT: A entrega da sua encomenda PT098231998 foi suspensa por falta de pagamento de taxas alfandegarias (1,99 EUR). Confirme aqui: https://ctt-alfandega-taxas.com' },
+      { id: 'AM-005', canal: 'SMS', cat: 'Phishing CTT Morada', texto: 'CTT Expresso: A sua encomenda nao pode ser entregue devido a numero de porta incorreto. Atualize os seus dados de entrega nas proximas 12h: https://ctt-entrega-morada.info' },
+      { id: 'AM-006', canal: 'SMS', cat: 'Phishing AT Reembolso', texto: 'Autoridade Tributaria: Foi identificada uma divergencia a seu favor no IRS de 2024. Tem a receber 412,30 EUR. Submeta o seu cartao para transferencia: https://at-portaldasfinancas-reembolsos.org' },
+      { id: 'AM-007', canal: 'SMS', cat: 'Phishing AT Execução Fiscal', texto: 'Financas: Processo de execucao fiscal instaurado por divida pendente de 89,20 EUR. Evite penhora de contas bancarias regularizando em: https://portalfinancas-pagamentos.net' },
+      { id: 'AM-008', canal: 'SMS', cat: 'Phishing Segurança Social', texto: 'Seguranca Social: O seu subsidio de apoio extraordinario foi aprovado. Confirme os seus dados bancarios para receber o montante de 150 EUR: https://seg-social-cidadao.link' },
+      { id: 'AM-009', canal: 'SMS', cat: 'Phishing CaixaDirecta', texto: 'CaixaDirecta: O seu contrato de acesso digital encontra-se temporariamente suspenso devido a atividade incomum. Reative em: https://caixadirecta-seguranca.com' },
+      { id: 'AM-010', canal: 'SMS', cat: 'Phishing Santander', texto: 'Santander: O seu cartao bancario foi limitado por motivos de seguranca preventiva. Para repor a utilizacao aceda a: https://santander-validacao-acesso.net' },
+      { id: 'AM-011', canal: 'SMS', cat: 'Phishing Millennium BCP', texto: 'Millennium: Foi detetado o acesso a sua conta atraves de um novo dispositivo nao reconhecido. Se nao foi voce, cancele de imediato em: https://millennium-bloqueio.com' },
+      { id: 'AM-012', canal: 'SMS', cat: 'Phishing Novo Banco', texto: 'Novo Banco: A sua chave de seguranca digital expira hoje. Evite a cobranca de taxa de emissao renovando em: https://novobanco-renovacao.org' },
+      { id: 'AM-013', canal: 'SMS', cat: 'Phishing Netflix', texto: 'Netflix: A sua subscricao foi suspensa porque o ultimo pagamento mensal foi rejeitado pelo seu banco. Atualize o metodo de pagamento em: https://netflix-conta-reativacao.info' },
+      { id: 'AM-014', canal: 'SMS', cat: 'Smishing EDP Ameaça Corte', texto: 'EDP Comercial: Corte de fornecimento de energia agendado para amanha por falta de pagamento. Evite a taxa de religacao pagando em: https://edp-regularizar-faturas.me' },
+      { id: 'AM-015', canal: 'SMS', cat: 'Smishing Galp Energia', texto: 'Galp: Identificamos um atraso na sua fatura de gas e eletricidade. Efetue o pagamento imediato atraves de: https://galp-pagamentos-urgentes.site' },
+      { id: 'AM-016', canal: 'SMS', cat: 'Smishing Vodafone Pontos', texto: 'Vodafone Alerta: Os seus 1.450 pontos do Clube Viva vao expirar amanha. Troque hoje por um smartphone ou desconto na fatura em: https://vodafone-clube-pontos.online' },
+      { id: 'AM-017', canal: 'SMS', cat: 'Smishing MEO Suspensão', texto: 'MEO: Ultimo aviso de pagamento antes da suspensao do servico de telecomunicacoes. Regularize a fatura em atraso em: https://meo-faturas-atraso.club' },
+      { id: 'AM-018', canal: 'SMS', cat: 'Smishing NOS Penalização', texto: 'NOS: Constatamos o nao pagamento da fatura no valor de 32,80 EUR. Para impedir a cobranca de penalizacao e corte do servico aceda a: https://nos-faturas-regularizar.top' },
+      { id: 'AM-019', canal: 'SMS', cat: 'Phishing Chave Móvel Digital', texto: 'Autenticacao.gov: Ativou a aplicacao Chave Movel Digital num novo telemovel Android. Se nao foi voce cancele a ativacao em: https://cmd-gov-bloqueio.com' },
+      { id: 'AM-020', canal: 'SMS', cat: 'Phishing MB WAY Adesão', texto: 'MB WAY: A sua conta foi suspensa temporariamente por politicas de seguranca. Valide os seus dados de adesao para reativar os servicos: https://mbway-suporte-adesao.com' },
+      { id: 'AM-021', canal: 'WhatsApp', cat: 'Burla Imobiliária Sinal', texto: 'Ola, relativamente ao apartamento T1 em Lisboa, tenho varias visitas marcadas para amanha. Se quiser fechar o contrato de arrendamento e garantir a reserva com exclusividade tem de transferir sinal de 350 EUR por MB WAY para [Telemóvel].' },
+      { id: 'AM-022', canal: 'WhatsApp', cat: 'Burla Vendedor OLX MB WAY', texto: 'Ola, tenho interesse no artigo que publicou no OLX. Ja efetuei o pagamento por MB WAY, agora so precisa de ir ao multibanco mais proximo, selecionar outras operacoes e introduzir o meu contacto para receber o dinheiro.' },
+      { id: 'AM-023', canal: 'WhatsApp', cat: 'Burla Emprego Remoto', texto: 'Ola! Somos da equipa de recrutamento internacional da Amazon. Oferecemos trabalho em part-time a partir de casa. Ganhe entre 100€ a 300€ por dia apenas a avaliar produtos. Fale connosco pelo link: https://recrutamento-vagas-online.vip' },
+      { id: 'AM-024', canal: 'WhatsApp', cat: 'Burla Indemnização Judicial', texto: 'Estimado cliente, informamos que foi aprovada uma indemnizacao judicial a seu favor no valor de 3.200 EUR relativa a processos de comissoes bancarias. Para desbloqueio da verba efetue o pagamento das custas de 120 EUR por MB WAY.' },
+      { id: 'AM-025', canal: 'SMS', cat: 'Phishing DHL Encomenda', texto: 'DHL Express: Nao conseguimos entregar o seu envio porque a taxa de reencaminhamento de 2,40 EUR nao foi liquidada. Proceda a liquidacao em: https://dhl-express-portugal.top' }
+    ];
+
+    // 25 Mensagens Legítimas de Exemplo Real (AM-026 a AM-050)
+    const LEGITIMAS_SUGERIDAS = [
+      { cat: 'Saúde CUF Consulta', texto: 'Hospital CUF: Lembramos que tem consulta agendada para 22/10 as 15h30 com a Dra. Ana Martins na CUF Descobertas. Para desmarcar ligue 210025200.' },
+      { cat: 'Banca Santander 2FA OTP', texto: 'Santander: O seu codigo de autorizacao para a operacao no valor de 35,00 EUR e 749213. Valido por 3 minutos. Nunca partilhe este codigo com ninguem.' },
+      { cat: 'Logística DPD Predict', texto: 'DPD Portugal: A sua encomenda sera entregue hoje entre as 14h e as 16h. Pode acompanhar a carrinha em tempo real atraves de https://dpd.pt/tracking/192830' },
+      { cat: 'Saúde Hospital da Luz', texto: 'Hospital da Luz: Os resultados dos seus exames ja estao disponiveis na sua area pessoal MY LUZ no site https://hospitaldaluz.pt ou na app oficial.' },
+      { cat: 'Institucional Ordem Advogados', texto: 'Ordem dos Advogados: Convocatoria para a assembleia geral no dia 28 de outubro. Consulte a ordem de trabalhos e documentos em https://portal.oa.pt' },
+      { cat: 'Telecomunicações NOS Plafond', texto: 'NOS: Esgotou 80% do seu pacote de dados moveis este mes. Para consultar os consumos detalhados aceda a app My NOS ou ligue 16990.' },
+      { cat: 'Água Municipal SMAS Entidade', texto: 'SMAS: Informamos que a sua fatura de agua tem o valor de 18,30 EUR. Pagamento Multibanco: Entidade 10241 Ref 982138192 ate dia 30.' },
+      { cat: 'Energia EDP Fatura', texto: 'EDP Comercial: A sua fatura referente ao mes anterior no valor de 51,20 EUR foi emitida com sucesso. Consulte os detalhes em https://edp.pt' },
+      { cat: 'Banca CGD Cartão 2FA', texto: 'Caixa Geral de Depositos: Codigo de seguranca 819203 para confirmar compra online de 22,50 EUR no comerciante Continente Online.' },
+      { cat: 'Banca Millennium MB WAY', texto: 'MB WAY: Confirmou o envio de 15,00 EUR para [Nome]. Saldo atualizado na sua aplicacao bancaria habitual.' },
+      { cat: 'Logística CTT Expresso Real', texto: 'CTT Expresso: A sua encomenda com o codigo DA829103819PT saiu para entrega na sua morada. Acompanhe em https://ctt.pt' },
+      { cat: 'Telecomunicações MEO Fatura', texto: 'MEO: A fatura do servico de fibra de outubro encontra-se disponivel na area de cliente my MEO no valor de 44,99 EUR.' },
+      { cat: 'Telecomunicações Vodafone Dados', texto: 'Vodafone: O seu pacote de dados foi renovado. Tem disponiveis 10 GB para utilizar ate ao final do ciclo de faturacao.' },
+      { cat: 'Saúde SNS24 Lembrete', texto: 'SNS24: Recordamos a toma da vacina da gripe sazonal agendada para dia 24/10 no seu Centro de Saude de referencia.' },
+      { cat: 'Saúde Trofa Saúde Agendamento', texto: 'Trofa Saude: Confirmamos o seu exame de imagiologia no Hospital Trofa Saude Amadora para o dia 26/10 as 09:15.' },
+      { cat: 'SMS Pessoal Rotina', texto: 'Ola pai, ja sai do trabalho e estou a caminho de casa. Precisas que compre alguma coisa no supermercado?' },
+      { cat: 'SMS Pessoal Agendamento', texto: 'Boa tarde Dr. Silva, confirmo a nossa reuniao de amanha as 10h no seu escritorio. Ate amanha e bom trabalho.' },
+      { cat: 'Via Verde Fatura Mensal', texto: 'Via Verde: O extrato de portagens e parques de setembro (34,10 EUR) foi debitado na sua conta com sucesso.' },
+      { cat: 'Comércio Fnac Entrega', texto: 'Fnac: A sua encomenda de livros esta disponivel para levantamento na loja Fnac Colombo durante os proximos 10 dias uteis.' },
+      { cat: 'Comércio Continente Entrega', texto: 'Continente Online: A sua entrega de compras de supermercado esta confirmada para hoje entre as 18h e as 20h.' },
+      { cat: 'Banca ActivoBank Cartão', texto: 'ActivoBank: Autorizou a transacao de 12,00 EUR com o cartao terminado em 4910. Se nao reconhece ligue 210030700.' },
+      { cat: 'Seguros Fidelidade Apólice', texto: 'Fidelidade: A renovacao da sua apolice automovel foi processada. O comprovativo verde digital esta disponivel na app MyFidelidade.' },
+      { cat: 'Serviço Municipal EPAL', texto: 'EPAL: Informamos que a leitura do seu contador de agua foi registada com sucesso para o ciclo corrente.' },
+      { cat: 'SMS Pessoal Família', texto: 'Ola [Nome], ja recebi as fotografias do jantar de sabado, ficaram otimas! Um abraco e boa semana.' },
+      { cat: 'Saúde Farmácia Receita', texto: 'Farmacia Central: A sua encomenda de medicamentos com receita medica eletronica SNS ja esta pronta para levantamento.' }
+    ];
+
+    // Estado da Aplicação
+    let amostras = [];
+
+    function initData() {
+      const salvo = localStorage.getItem('confirmequeme_benchmark_amostras_v2');
+      if (salvo) {
+        try {
+          amostras = JSON.parse(salvo);
+          return;
+        } catch (e) { console.error('Erro ao ler localStorage', e); }
+      }
+
+      // Inicializa 50 slots limpos
+      amostras = [];
+      for (let i = 1; i <= 50; i++) {
+        const id = `AM-${String(i).padStart(3, '0')}`;
+        if (i <= 25) {
+          const burla = BURLAS_INICIAIS[i - 1];
+          amostras.push({
+            id,
+            canal: burla.canal,
+            categoria: burla.cat,
+            texto: burla.texto,
+            tipoReal: '', // Em branco para a validação cega
+            classificadoPor: '',
+            dataClassificacao: ''
+          });
+        } else {
+          amostras.push({
+            id,
+            canal: 'SMS',
+            categoria: '',
+            texto: '',
+            tipoReal: '',
+            classificadoPor: '',
+            dataClassificacao: ''
+          });
+        }
+      }
+      saveData();
+    }
+
+    function saveData() {
+      localStorage.setItem('confirmequeme_benchmark_amostras_v2', JSON.stringify(amostras));
+      updateStats();
+    }
+
+    function showToast(msg) {
+      const toast = document.getElementById('toastBox');
+      toast.textContent = msg;
+      toast.style.display = 'block';
+      setTimeout(() => { toast.style.display = 'none'; }, 2600);
+    }
+
+    function updateStats() {
+      const total = amostras.length;
+      const comTexto = amostras.filter(a => a.texto && a.texto.trim() !== '').length;
+      const classificadas = amostras.filter(a => a.tipoReal && (a.tipoReal === 'Golpe' || a.tipoReal === 'Legítimo')).length;
+      const assinadas = amostras.filter(a => a.classificadoPor && a.classificadoPor.trim() !== '').length;
+
+      document.getElementById('statTotal').textContent = total;
+      document.getElementById('statTextos').textContent = `${comTexto} / ${total}`;
+      document.getElementById('statTextosSub').textContent = `${Math.round((comTexto/total)*100)}% preenchido`;
+      document.getElementById('statClassificadas').textContent = `${classificadas} / ${total}`;
+      document.getElementById('statClassificadasSub').textContent = classificadas === total ? '✅ Validação cega 100% pronta' : `${total - classificadas} pendentes`;
+      document.getElementById('statAssinadas').textContent = `${assinadas} / ${total}`;
+    }
+
+    let filtroAtual = 'all';
+
+    function renderTable() {
+      const tbody = document.getElementById('amostrasBody');
+      tbody.innerHTML = '';
+
+      const filtradas = amostras.filter((item, idx) => {
+        if (filtroAtual === 'scam') return idx < 25;
+        if (filtroAtual === 'clean') return idx >= 25;
+        if (filtroAtual === 'unclassified') return !item.tipoReal || (item.tipoReal !== 'Golpe' && item.tipoReal !== 'Legítimo');
+        return true;
+      });
+
+      filtradas.forEach(item => {
+        const tr = document.createElement('tr');
+
+        tr.innerHTML = `
+          <td><span class="id-pill">${item.id}</span></td>
+          <td>
+            <select class="channel-select" onchange="alterarCampo('${item.id}', 'canal', this.value)">
+              <option value="SMS" ${item.canal === 'SMS' ? 'selected' : ''}>SMS</option>
+              <option value="WhatsApp" ${item.canal === 'WhatsApp' ? 'selected' : ''}>WhatsApp</option>
+            </select>
+          </td>
+          <td>
+            <input type="text" class="cat-input" value="${escapeHtml(item.categoria || '')}" placeholder="Ex: CTT / 2FA" onchange="alterarCampo('${item.id}', 'categoria', this.value)">
+          </td>
+          <td>
+            <textarea class="text-area" placeholder="Cole aqui o texto anonimizado..." onchange="alterarCampo('${item.id}', 'texto', this.value)">${escapeHtml(item.texto || '')}</textarea>
+          </td>
+          <td>
+            <div class="toggle-group">
+              <button class="toggle-btn ${item.tipoReal === 'Golpe' ? 'active-golpe' : ''}" onclick="definirTipoReal('${item.id}', 'Golpe')">Golpe</button>
+              <button class="toggle-btn ${item.tipoReal === 'Legítimo' ? 'active-legitimo' : ''}" onclick="definirTipoReal('${item.id}', 'Legítimo')">Legítimo</button>
+            </div>
+          </td>
+          <td>
+            <input type="text" class="meta-input" value="${escapeHtml(item.classificadoPor || '')}" placeholder="Nome do validador" onchange="alterarCampo('${item.id}', 'classificadoPor', this.value)">
+          </td>
+          <td>
+            <input type="text" class="meta-input" value="${escapeHtml(item.dataClassificacao || '')}" placeholder="AAAA-MM-DD HH:MM" onchange="alterarCampo('${item.id}', 'dataClassificacao', this.value)">
+          </td>
+          <td>
+            <button class="btn-action-sm" onclick="limparLinha('${item.id}')" title="Limpar esta linha">✕</button>
+          </td>
+        `;
+
+        tbody.appendChild(tr);
+      });
+    }
+
+    function escapeHtml(text) {
+      if (!text) return '';
+      return String(text).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    }
+
+    window.alterarCampo = function(id, campo, valor) {
+      const item = amostras.find(a => a.id === id);
+      if (item) {
+        item[campo] = valor;
+        saveData();
+      }
+    };
+
+    window.definirTipoReal = function(id, valor) {
+      const item = amostras.find(a => a.id === id);
+      if (item) {
+        // Se clicar no mesmo, desmarca
+        if (item.tipoReal === valor) {
+          item.tipoReal = '';
+        } else {
+          item.tipoReal = valor;
+        }
+        saveData();
+        renderTable();
+      }
+    };
+
+    window.limparLinha = function(id) {
+      const item = amostras.find(a => a.id === id);
+      if (item) {
+        item.categoria = '';
+        item.texto = '';
+        item.tipoReal = '';
+        item.classificadoPor = '';
+        item.dataClassificacao = '';
+        saveData();
+        renderTable();
+        showToast(`Linha ${id} limpa.`);
+      }
+    };
+
+    // Filtros
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        filtroAtual = btn.dataset.filter;
+        renderTable();
+      });
+    });
+
+    // Preencher 25 Legítimas Sugeridas
+    document.getElementById('btnPreencherLegitimas').addEventListener('click', () => {
+      let count = 0;
+      for (let i = 26; i <= 50; i++) {
+        const item = amostras[i - 1];
+        const modelo = LEGITIMAS_SUGERIDAS[i - 26];
+        if (modelo && (!item.texto || item.texto.trim() === '')) {
+          item.categoria = modelo.cat;
+          item.texto = modelo.texto;
+          count++;
+        }
+      }
+      saveData();
+      renderTable();
+      showToast(`Preenchidas ${count} mensagens legítimas sugeridas nas linhas AM-026 a AM-050!`);
+    });
+
+    // Limpar Classificações
+    document.getElementById('btnLimparClassificacao').addEventListener('click', () => {
+      if (confirm('Tem a certeza de que deseja limpar todos os tipos reais, nomes de validador e datas?')) {
+        amostras.forEach(item => {
+          item.tipoReal = '';
+          item.classificadoPor = '';
+          item.dataClassificacao = '';
+        });
+        saveData();
+        renderTable();
+        showToast('Todas as classificações foram limpas.');
+      }
+    });
+
+    // Repor Originais
+    document.getElementById('btnResetGeral').addEventListener('click', () => {
+      if (confirm('Atenção: isto vai repor os dados de fábrica (AM-001..AM-025 com as 25 burlas reais e AM-026..AM-050 em branco). Continuar?')) {
+        localStorage.removeItem('confirmequeme_benchmark_amostras_v2');
+        initData();
+        renderTable();
+        showToast('Tabela reposta para o estado original.');
+      }
+    });
+
+    // Modal de Assinatura Humana
+    const modal = document.getElementById('modalAssinatura');
+    document.getElementById('btnAssinarModal').addEventListener('click', () => {
+      const agora = new Date().toISOString().replace('T', ' ').slice(0, 16);
+      document.getElementById('inputDataValidador').value = agora;
+      modal.classList.add('open');
+    });
+
+    document.getElementById('btnFecharModal').addEventListener('click', () => {
+      modal.classList.remove('open');
+    });
+
+    document.getElementById('btnSalvarAssinatura').addEventListener('click', () => {
+      const nome = document.getElementById('inputNomeValidador').value.trim();
+      const dataHora = document.getElementById('inputDataValidador').value.trim();
+
+      if (!nome) {
+        alert('Por favor introduza o nome real da pessoa que fez a validação cega.');
+        return;
+      }
+
+      let alteradas = 0;
+      amostras.forEach(item => {
+        // Aplica a todas as que têm tipoReal classificado
+        if (item.tipoReal && (item.tipoReal === 'Golpe' || item.tipoReal === 'Legítimo')) {
+          item.classificadoPor = nome;
+          item.dataClassificacao = dataHora;
+          alteradas++;
+        }
+      });
+
+      saveData();
+      renderTable();
+      modal.classList.remove('open');
+      showToast(`Carimbo de validação aplicado a ${alteradas} amostras classificadas!`);
+    });
+
+    // Copiar para Excel (TSV)
+    document.getElementById('btnCopiarExcel').addEventListener('click', () => {
+      let tsv = 'ID\tCanal\tCategoria\tTexto (anonimizado)\tTipo real\tClassificado por\tData Classificação Humana\n';
+      amostras.forEach(item => {
+        const textoLimpo = (item.texto || '').replace(/\r?\n/g, ' ');
+        tsv += `${item.id}\t${item.canal}\t${item.categoria || ''}\t${textoLimpo}\t${item.tipoReal || ''}\t${item.classificadoPor || ''}\t${item.dataClassificacao || ''}\n`;
+      });
+
+      navigator.clipboard.writeText(tsv).then(() => {
+        showToast('✅ Tabela copiada! Abra o Excel e prima Ctrl+V.');
+      }).catch(err => {
+        alert('Erro ao copiar: ' + err);
+      });
+    });
+
+    // Baixar CSV Oficial
+    document.getElementById('btnBaixarCsv').addEventListener('click', () => {
+      let csv = 'Benchmark de verificação: Confirme Quem É (Caderno de Recolha e Calibração),,,,,,,,,,,,,\n';
+      csv += ',,,,,,,,,,,,,\n';
+      csv += 'Objetivo,"Registar mensagens de teste recolhidas de fontes reais e anonimizadas, classificadas manualmente antes da submissão ao verificador.",,,,,,,,,,,,,\n';
+      csv += 'Regra 1: preencher antes do teste,"Preencha as colunas B (Canal), C (Categoria), D (Texto anonimizado), E (Tipo real: Golpe ou Legítimo), F (Classificado por) e G (Data/hora em que a pessoa classificou) ANTES de correr qualquer teste no sistema.",,,,,,,,,,,,,\n';
+      csv += 'Regra 2: separação de funções,De preferência quem classifica as mensagens não é quem desenvolveu o software ou treinou os prompts.,,,,,,,,,,,,,\n';
+      csv += 'Regra 3: anonimização obrigatória,"Substitua nomes próprios por [Nome], números por [Telemóvel], NIF por [NIF], IBAN por [IBAN] e referências pessoais antes de colar o texto.",,,,,,,,,,,,,\n';
+      csv += 'Regra 4: regra do alerta,"Alerta = \'golpe\' ou \'suspeito\'. Sem alerta = \'sem sinais de risco\'. Qualquer mensagem legítima que receba alerta conta como Falso Positivo (FP).",,,,,,,,,,,,,\n';
+      csv += ',,,,,,,,,,,,,\n';
+      csv += 'ID,Canal,Categoria,Texto (anonimizado),Tipo real (Golpe ou Legítimo),Classificado por,Data Classificação Humana,Veredito do sistema,Pontuação,Data do Teste,Modelo usado (Runtime),Origem do veredito (Fonte Real),Resultado Forense,Sinais Identificados\n';
+
+      amostras.forEach(item => {
+        const escapeCsv = (val) => {
+          if (!val) return '';
+          const s = String(val).replace(/"/g, '""');
+          return (s.includes(',') || s.includes(';') || s.includes('\n') || s.includes('"')) ? `"${s}"` : s;
+        };
+
+        csv += [
+          escapeCsv(item.id),
+          escapeCsv(item.canal),
+          escapeCsv(item.categoria),
+          escapeCsv(item.texto),
+          escapeCsv(item.tipoReal),
+          escapeCsv(item.classificadoPor),
+          escapeCsv(item.dataClassificacao),
+          '', '', '', '', '', '', ''
+        ].join(',') + '\n';
+      });
+
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.setAttribute('download', 'template_benchmark_100_amostras.csv');
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      showToast('Ficheiro template_benchmark_100_amostras.csv descarregado com sucesso!');
+    });
+
+    // Iniciar
+    initData();
+    renderTable();
+  </script>
+</body>
+</html>

@@ -8,6 +8,8 @@
     { "source": "/termos", "destination": "/termos.html" },
     { "source": "/privacidade", "destination": "/privacidade.html" },
     { "source": "/benchmark", "destination": "/benchmark.html" },
+    { "source": "/caderno", "destination": "/caderno-benchmark.html" },
+    { "source": "/caderno-benchmark", "destination": "/caderno-benchmark.html" },
     { "source": "/verify/:codigo", "destination": "/api/verify?codigo=:codigo" },
     { "source": "/badge/:codigo", "destination": "/api/badge?codigo=:codigo" },
     { "source": "/badge/:codigo/:formato", "destination": "/api/badge?codigo=:codigo&formato=:formato" }
