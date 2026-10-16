@@ -118,6 +118,11 @@ export default async function handler(req, res) {
     let leads = [];
     let marcas = [];
     let sinais = [];
+    let verificacoes = [];
+    let pagamentos = [];
+    let historico = [];
+    let contactosComerciais = [];
+    let relatorios = [];
     let isDbOnline = true;
     let dbErrorMessage = null;
 
@@ -180,35 +185,30 @@ export default async function handler(req, res) {
       } catch {}
 
       // 8. Buscar verificações de empresas (Checklist 4 pilares)
-      let verificacoes = [];
       try {
         const verifResp = await fetch(`${url}/rest/v1/verificacoes?select=*&order=criado_em.asc`, { headers });
         if (verifResp.ok) verificacoes = await verifResp.json();
       } catch {}
 
       // 9. Buscar registos financeiros de pagamentos
-      let pagamentos = [];
       try {
         const pagResp = await fetch(`${url}/rest/v1/pagamentos?select=*&order=data.desc&limit=100`, { headers });
         if (pagResp.ok) pagamentos = await pagResp.json();
       } catch {}
 
       // 10. Buscar histórico de auditoria
-      let historico = [];
       try {
         const histResp = await fetch(`${url}/rest/v1/historico?select=*&order=em.desc&limit=100`, { headers });
         if (histResp.ok) historico = await histResp.json();
       } catch {}
 
       // 11. Buscar contactos comerciais do funil
-      let contactosComerciais = [];
       try {
         const contResp = await fetch(`${url}/rest/v1/contactos_comerciais?select=*&order=data.desc&limit=100`, { headers });
         if (contResp.ok) contactosComerciais = await contResp.json();
       } catch {}
 
       // 12. Buscar relatórios periciais gerados
-      let relatorios = [];
       try {
         const relResp = await fetch(`${url}/rest/v1/relatorios_gerados?select=*&order=gerado_em.desc&limit=50`, { headers });
         if (relResp.ok) relatorios = await relResp.json();
