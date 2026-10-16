@@ -45,7 +45,7 @@ export default async function handler(req, res) {
       || lower === 'join';
 
     if ((!incomingText && numMedia === 0) || (isGreeting && numMedia === 0)) {
-      const welcome = `Olá! 👋 Eu sou o *Zap, quem é?*\n\nMe encaminhe qualquer mensagem suspeita ou envie um print (foto do SMS ou conversa do WhatsApp) que eu analiso na hora se é golpe ou legítimo! 🕵️\n\n_Pode colar o texto ou enviar a imagem direto aqui._\n\n💡 _Se você já foi vítima de um golpe e precisa de ajuda imediata, envie *fui vítima*._`;
+      const welcome = `Olá! 👋 Eu sou o *Confirme, Quem É?*\n\nMe encaminhe qualquer mensagem suspeita ou envie um print (foto do SMS ou conversa do WhatsApp) que eu analiso na hora!\n\n_Pode colar o texto ou enviar a imagem direto aqui._\n\n💡 _Se já clicou ou pagou, envie *AJUDA* para instruções de emergência._`;
       return sendTwiml(res, welcome);
     }
 

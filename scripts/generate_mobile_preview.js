@@ -75,7 +75,7 @@ const cardsHtml = testCases.map(tc => {
           <div class="wa-back">‹</div>
           <div class="wa-avatar">🛡️</div>
           <div class="wa-contact">
-            <div class="wa-name">Zap, quem é?</div>
+            <div class="wa-name">Confirme, Quem É?</div>
             <div class="wa-status">online</div>
           </div>
         </div>
