@@ -368,6 +368,103 @@
       border: 1px solid rgba(239, 68, 68, 0.3);
     }
 
+    /* CRM PIPELINE BADGES & CHECKLIST */
+    .badge-lead {
+      background: rgba(148, 163, 184, 0.15);
+      color: #94a3b8;
+      border: 1px solid rgba(148, 163, 184, 0.3);
+    }
+    .badge-contactado {
+      background: rgba(56, 189, 248, 0.15);
+      color: #38bdf8;
+      border: 1px solid rgba(56, 189, 248, 0.3);
+    }
+    .badge-proposta {
+      background: rgba(168, 85, 247, 0.15);
+      color: #c084fc;
+      border: 1px solid rgba(168, 85, 247, 0.3);
+    }
+    .badge-em_verificacao {
+      background: rgba(245, 158, 11, 0.15);
+      color: #fbbf24;
+      border: 1px solid rgba(245, 158, 11, 0.3);
+    }
+    .badge-revogado {
+      background: rgba(239, 68, 68, 0.25);
+      color: #fca5a5;
+      border: 1px solid rgba(239, 68, 68, 0.5);
+    }
+    .badge-inativo {
+      background: rgba(100, 116, 139, 0.15);
+      color: #94a3b8;
+      border: 1px solid rgba(100, 116, 139, 0.3);
+    }
+    .badge-ok {
+      background: rgba(16, 185, 129, 0.2);
+      color: #34d399;
+      border: 1px solid rgba(16, 185, 129, 0.4);
+    }
+    .badge-falhou {
+      background: rgba(239, 68, 68, 0.2);
+      color: #f87171;
+      border: 1px solid rgba(239, 68, 68, 0.4);
+    }
+    .badge-pendente {
+      background: rgba(245, 158, 11, 0.2);
+      color: #fbbf24;
+      border: 1px solid rgba(245, 158, 11, 0.4);
+    }
+
+    .pipeline-filter-btn {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      color: var(--text-muted);
+      padding: 6px 14px;
+      border-radius: 20px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .pipeline-filter-btn:hover {
+      background: rgba(255, 255, 255, 0.1);
+      color: #fff;
+    }
+    .pipeline-filter-btn.active {
+      background: rgba(16, 185, 129, 0.2);
+      border-color: rgba(16, 185, 129, 0.4);
+      color: #34d399;
+    }
+
+    .checklist-card {
+      background: rgba(0, 0, 0, 0.28);
+      border: 1px solid var(--card-border);
+      border-radius: 10px;
+      padding: 12px 16px;
+      margin-bottom: 10px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+    }
+    .checklist-info {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+    }
+    .checklist-title {
+      font-weight: 700;
+      font-size: 0.88rem;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .checklist-sub {
+      font-size: 0.76rem;
+      color: var(--text-muted);
+    }
+
     /* MODAL */
     .modal-overlay {
       position: fixed;
@@ -708,22 +805,38 @@
       </div>
     </section>
 
-    <!-- TAB 1: EMPRESAS (Seção 6) -->
+    <!-- TAB 1: EMPRESAS (Seção 6 & Funil B2B) -->
     <div id="tab-empresas" class="tab-pane">
       <div class="table-container">
-        <div class="table-header">
-          <h3>Empresas Cadastradas</h3>
+        <div class="table-header" style="flex-direction: column; align-items: stretch; gap: 14px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+            <div>
+              <h3>Empresas & Funil Comercial B2B</h3>
+              <p style="color: var(--text-muted); font-size: 0.8rem; margin-top: 2px;">Gestão de pipeline comercial, checklist dos 4 pilares, pagamentos e relatórios periciais</p>
+            </div>
+            <div style="display: flex; gap: 8px;">
+              <button onclick="openNewEmpresaModal()" class="btn-action">+ Criar Empresa</button>
+            </div>
+          </div>
+          <div style="display: flex; gap: 8px; flex-wrap: wrap;" id="pipelineFilterContainer">
+            <button class="pipeline-filter-btn active" id="filter_todos" onclick="filtrarPipeline('todos')">Todos (<span id="countPipelineTodos">0</span>)</button>
+            <button class="pipeline-filter-btn" id="filter_lead" onclick="filtrarPipeline('lead')">Leads (<span id="countPipelineLead">0</span>)</button>
+            <button class="pipeline-filter-btn" id="filter_contactado" onclick="filtrarPipeline('contactado')">Contactados (<span id="countPipelineContactado">0</span>)</button>
+            <button class="pipeline-filter-btn" id="filter_em_verificacao" onclick="filtrarPipeline('em_verificacao')">Em Verificação (<span id="countPipelineEmVerificacao">0</span>)</button>
+            <button class="pipeline-filter-btn" id="filter_ativo" onclick="filtrarPipeline('ativo')">Ativos / Selo (<span id="countPipelineAtivo">0</span>)</button>
+            <button class="pipeline-filter-btn" id="filter_suspenso_revogado" onclick="filtrarPipeline('suspenso_revogado')">Suspensos / Revogados (<span id="countPipelineSuspenso">0</span>)</button>
+          </div>
         </div>
         <table>
           <thead>
             <tr>
-              <th>Empresa</th>
+              <th>Empresa & NIF</th>
               <th>Plano</th>
-              <th>Status</th>
+              <th>Estado do Funil</th>
+              <th>4 Pilares</th>
               <th>Domínio</th>
               <th>Radar</th>
               <th>Selo</th>
-              <th>Criada em</th>
               <th>Ações</th>
             </tr>
           </thead>
@@ -1215,49 +1328,365 @@
     </div>
   </div>
 
-  <!-- MODAL 3: DETALHE DA EMPRESA (Seção 20) -->
+  <!-- MODAL 3: DETALHE DA EMPRESA & DOSSIÊ DE VERIFICAÇÃO B2B (Seção 20 + Critérios 1 a 6) -->
   <div id="detalheEmpresaModal" class="modal-overlay">
-    <div class="modal-content">
+    <div class="modal-content" style="max-width: 860px;">
       <div class="modal-title">
-        <span>Detalhe da Empresa</span>
+        <div>
+          <span style="font-size: 1.2rem; font-weight: 800; color: #fff;">Dossiê B2B & Verificação Oficial</span>
+          <div style="font-size: 0.8rem; color: var(--text-muted); font-weight: 500;">Gestão do selo, checklist pericial, pagamentos e relatórios</div>
+        </div>
         <button class="close-modal" onclick="closeModals()">×</button>
       </div>
 
+      <!-- BANNER DE ESTADO DO PIPELINE & TRAVA DE ATIVAÇÃO -->
+      <div style="background: rgba(15, 23, 42, 0.9); border: 1px solid var(--card-border); border-radius: 12px; padding: 16px; margin-bottom: 20px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
+          <div>
+            <span style="font-size: 0.72rem; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em;">Fase do Funil Comercial</span>
+            <div style="display: flex; align-items: center; gap: 10px; margin-top: 6px;">
+              <select id="detEstadoSelect" class="form-select" style="width: auto; padding: 6px 12px; font-weight: 700;">
+                <option value="lead">Lead</option>
+                <option value="contactado">Contactado</option>
+                <option value="proposta">Proposta Comercial</option>
+                <option value="em_verificacao">Em Verificação</option>
+                <option value="ativo">Ativo (Selo ZAP VERIFIED)</option>
+                <option value="suspenso">Suspenso</option>
+                <option value="revogado">Revogado</option>
+                <option value="expirado">Expirado</option>
+              </select>
+              <button class="btn-xs btn-xs-primary" onclick="salvarEstadoEmpresaDetalhe()">Alterar Estado</button>
+            </div>
+          </div>
+          <div id="detTravaIndicator" style="text-align: right; max-width: 400px; font-size: 0.8rem;"></div>
+        </div>
+      </div>
+
+      <!-- 1. IDENTIFICAÇÃO COMERCIAL & JURÍDICA -->
       <div class="detail-section">
-        <h4 style="font-size: 0.85rem; text-transform: uppercase; color: var(--text-muted); margin-bottom: 12px;">Identificação</h4>
-        <div class="detail-row"><span class="detail-label">Nome:</span> <span class="detail-value" id="detNome">-</span></div>
-        <div class="detail-row"><span class="detail-label">Status:</span> <span class="detail-value" id="detStatus">-</span></div>
-        <div class="detail-row"><span class="detail-label">Plano:</span> <span class="detail-value" id="detPlano">-</span></div>
+        <h4 style="font-size: 0.85rem; text-transform: uppercase; color: var(--text-muted); margin-bottom: 12px; display: flex; justify-content: space-between;">
+          <span>1. Identificação Jurídica & Comercial</span>
+          <span id="detStatus" class="badge badge-lead">-</span>
+        </h4>
+        <div class="detail-row"><span class="detail-label">Nome Comercial:</span> <span class="detail-value" id="detNome" style="font-weight: 700; color: #fff;">-</span></div>
+        <div class="detail-row"><span class="detail-label">Nome Legal / Firma:</span> <span class="detail-value" id="detNomeLegal">-</span></div>
+        <div class="detail-row"><span class="detail-label">Representante Legal:</span> <span class="detail-value" id="detRepresentante">-</span></div>
+        <div class="detail-row"><span class="detail-label">Plano & Preço:</span> <span class="detail-value"><span id="detPlano">-</span> • <strong id="detPreco" style="color: #38bdf8;">-</strong></span></div>
         <div class="detail-row"><span class="detail-label">Apelidos da marca:</span> <span class="detail-value" id="detApelidos">-</span></div>
       </div>
 
-      <div class="detail-section">
-        <h4 style="font-size: 0.85rem; text-transform: uppercase; color: var(--text-muted); margin-bottom: 12px;">Canais Oficiais</h4>
-        <div class="detail-row"><span class="detail-label">Domínio oficial:</span> <span class="detail-value" id="detDominio">-</span></div>
-        <div class="detail-row"><span class="detail-label">Email oficial:</span> <span class="detail-value" id="detEmail">-</span></div>
-        <div class="detail-row"><span class="detail-label">Telefone oficial:</span> <span class="detail-value" id="detTelefone">-</span></div>
-        <div class="detail-row"><span class="detail-label">NIF:</span> <span class="detail-value" id="detNif">-</span></div>
-        <div class="detail-row"><span class="detail-label">IBAN:</span> <span class="detail-value" id="detIban">-</span></div>
-        <div class="detail-row"><span class="detail-label">Notas de verificação:</span> <span class="detail-value" id="detNotas">-</span></div>
+      <!-- 2. CHECKLIST DOS 4 PILARES DE VERIFICAÇÃO (CRITÉRIO 1) -->
+      <div class="detail-section" style="background: rgba(16, 185, 129, 0.03); border-color: rgba(16, 185, 129, 0.2);">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
+          <div>
+            <h4 style="font-size: 0.85rem; text-transform: uppercase; color: #34d399; margin: 0;">2. Checklist Oficial de Verificação (4 Pilares)</h4>
+            <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 2px;">Todos os 4 pilares devem estar validados com prova antes da ativação do selo.</div>
+          </div>
+          <span id="detChecklistResumo" class="badge badge-pendente">0 / 4 Concluídos</span>
+        </div>
+
+        <!-- PILAR 1: NIF -->
+        <div class="checklist-card">
+          <div class="checklist-info">
+            <div class="checklist-title">
+              <span>🏛️ 1. NIF & Certidão Comercial</span>
+              <span id="chk_nif_badge" class="badge badge-pendente">Pendente</span>
+            </div>
+            <div class="checklist-sub" id="chk_nif_desc">Confirmação na AT / Registo Comercial. <span id="detNif" style="font-weight: 600; color: #fff;">-</span></div>
+            <div style="font-size: 0.75rem; color: #94a3b8; font-style: italic;" id="chk_nif_prova">Nenhuma prova anexada.</div>
+          </div>
+          <div style="display: flex; gap: 6px; flex-shrink: 0;">
+            <button class="btn-xs btn-xs-primary" onclick="marcarVerificacao('nif', 'ok')">✓ Validar OK</button>
+            <button class="btn-xs btn-xs-danger" onclick="marcarVerificacao('nif', 'falhou')">✗ Falhou</button>
+          </div>
+        </div>
+
+        <!-- PILAR 2: DOMÍNIO -->
+        <div class="checklist-card">
+          <div class="checklist-info">
+            <div class="checklist-title">
+              <span>🌐 2. Domínio Oficial</span>
+              <span id="chk_dominio_badge" class="badge badge-pendente">Pendente</span>
+            </div>
+            <div class="checklist-sub" id="chk_dominio_desc">DNS, Whois e certificado SSL/HTTPS. <span id="detDominio" style="font-weight: 600; color: #fff;">-</span></div>
+            <div style="font-size: 0.75rem; color: #94a3b8; font-style: italic;" id="chk_dominio_prova">Nenhuma prova anexada.</div>
+          </div>
+          <div style="display: flex; gap: 6px; flex-shrink: 0;">
+            <button class="btn-xs btn-xs-primary" onclick="marcarVerificacao('dominio', 'ok')">✓ Validar OK</button>
+            <button class="btn-xs btn-xs-danger" onclick="marcarVerificacao('dominio', 'falhou')">✗ Falhou</button>
+          </div>
+        </div>
+
+        <!-- PILAR 3: TELEFONE -->
+        <div class="checklist-card">
+          <div class="checklist-info">
+            <div class="checklist-title">
+              <span>📞 3. Telefone Oficial</span>
+              <span id="chk_telefone_badge" class="badge badge-pendente">Pendente</span>
+            </div>
+            <div class="checklist-sub" id="chk_telefone_desc">Posse demonstrada (chamada/SMS/fatura). <span id="detTelefone" style="font-weight: 600; color: #fff;">-</span></div>
+            <div style="font-size: 0.75rem; color: #94a3b8; font-style: italic;" id="chk_telefone_prova">Nenhuma prova anexada.</div>
+          </div>
+          <div style="display: flex; gap: 6px; flex-shrink: 0;">
+            <button class="btn-xs btn-xs-primary" onclick="marcarVerificacao('telefone', 'ok')">✓ Validar OK</button>
+            <button class="btn-xs btn-xs-danger" onclick="marcarVerificacao('telefone', 'falhou')">✗ Falhou</button>
+          </div>
+        </div>
+
+        <!-- PILAR 4: REPRESENTANTE -->
+        <div class="checklist-card">
+          <div class="checklist-info">
+            <div class="checklist-title">
+              <span>✍️ 4. Representante Legal</span>
+              <span id="chk_representante_badge" class="badge badge-pendente">Pendente</span>
+            </div>
+            <div class="checklist-sub" id="chk_representante_desc">Poderes de vinculação da empresa conferidos em certidão ou procuração.</div>
+            <div style="font-size: 0.75rem; color: #94a3b8; font-style: italic;" id="chk_representante_prova">Nenhuma prova anexada.</div>
+          </div>
+          <div style="display: flex; gap: 6px; flex-shrink: 0;">
+            <button class="btn-xs btn-xs-primary" onclick="marcarVerificacao('representante', 'ok')">✓ Validar OK</button>
+            <button class="btn-xs btn-xs-danger" onclick="marcarVerificacao('representante', 'falhou')">✗ Falhou</button>
+          </div>
+        </div>
+
+        <div class="detail-row" style="margin-top: 10px;"><span class="detail-label">Email Oficial:</span> <span class="detail-value" id="detEmail">-</span></div>
+        <div class="detail-row"><span class="detail-label">IBAN Oficial:</span> <span class="detail-value" id="detIban">-</span></div>
+        <div class="detail-row"><span class="detail-label">Notas Internas:</span> <span class="detail-value" id="detNotas">-</span></div>
       </div>
 
+      <!-- 3. REGISTO FINANCEIRO & PAGAMENTOS (CRITÉRIO 1) -->
       <div class="detail-section">
-        <h4 style="font-size: 0.85rem; text-transform: uppercase; color: var(--text-muted); margin-bottom: 12px;">Selo ZAP VERIFIED</h4>
-        <div class="detail-row"><span class="detail-label">Código:</span> <span class="detail-value" id="detSeloCodigo">-</span></div>
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+          <div>
+            <h4 style="font-size: 0.85rem; text-transform: uppercase; color: var(--text-muted); margin: 0;">3. Registo Financeiro & Pagamentos</h4>
+            <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 2px;">O selo só pode ser ativado se houver pagamento "pago" ou isenção justificada.</div>
+          </div>
+          <div style="display: flex; gap: 8px;">
+            <button class="btn-xs btn-xs-primary" onclick="abrirModalPagamento()">+ Registar Pagamento</button>
+            <button class="btn-xs" onclick="abrirModalIsencao()">Isenção Justificada</button>
+          </div>
+        </div>
+        <div id="detPagamentosLista" style="font-size: 0.85rem;">
+          <div style="color: var(--text-muted); font-style: italic;">Nenhum registo financeiro encontrado.</div>
+        </div>
+      </div>
+
+      <!-- 4. SELO ZAP VERIFIED -->
+      <div class="detail-section">
+        <h4 style="font-size: 0.85rem; text-transform: uppercase; color: var(--text-muted); margin-bottom: 12px;">4. Selo ZAP VERIFIED</h4>
+        <div class="detail-row"><span class="detail-label">Código Único:</span> <span class="detail-value" id="detSeloCodigo" style="font-family: 'JetBrains Mono', monospace; font-weight: 700; color: var(--primary);">-</span></div>
         <div class="detail-row"><span class="detail-label">Estado:</span> <span class="detail-value" id="detSeloEstado">-</span></div>
         <div class="detail-row"><span class="detail-label">Validade:</span> <span class="detail-value" id="detSeloValidade">-</span></div>
         <div class="detail-row"><span class="detail-label">URL pública:</span> <span class="detail-value" id="detSeloUrl">-</span></div>
+        <div class="detail-row"><span class="detail-label">Threat Radar:</span> <span class="detail-value"><span id="detRadarStatus">-</span> • Ocorrências: <strong id="detRadarOcorrencias">0</strong> • Última: <span id="detRadarUltima">-</span></span></div>
       </div>
 
+      <!-- 5. RELATÓRIOS MENSAIS PERICIAIS (CRITÉRIOS 5 & 6) -->
+      <div class="detail-section" style="background: rgba(59, 130, 246, 0.03); border-color: rgba(59, 130, 246, 0.2);">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; flex-wrap: wrap; gap: 10px;">
+          <div>
+            <h4 style="font-size: 0.85rem; text-transform: uppercase; color: #60a5fa; margin: 0;">5. Relatórios Mensais Periciais (Hash SHA-256)</h4>
+            <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 2px;">Relatório pericial mensal com dados sanitizados e integridade criptográfica.</div>
+          </div>
+          <div style="display: flex; gap: 8px; align-items: center;">
+            <select id="relatorioMesSelect" class="form-select" style="width: auto; padding: 4px 8px; font-size: 0.8rem;">
+              <option value="1">Janeiro</option><option value="2">Fevereiro</option><option value="3">Março</option>
+              <option value="4">Abril</option><option value="5">Maio</option><option value="6">Junho</option>
+              <option value="7">Julho</option><option value="8">Agosto</option><option value="9">Setembro</option>
+              <option value="10" selected>Outubro</option><option value="11">Novembro</option><option value="12">Dezembro</option>
+            </select>
+            <select id="relatorioAnoSelect" class="form-select" style="width: auto; padding: 4px 8px; font-size: 0.8rem;">
+              <option value="2026" selected>2026</option>
+              <option value="2025">2025</option>
+            </select>
+            <button class="btn-xs btn-xs-primary" onclick="gerarRelatorioMensalEmpresa()">📊 Gerar Relatório</button>
+          </div>
+        </div>
+        <div id="detRelatoriosLista" style="font-size: 0.85rem;">
+          <div style="color: var(--text-muted); font-style: italic;">Nenhum relatório gerado ainda para esta empresa.</div>
+        </div>
+      </div>
+
+      <!-- 6. CRM: HISTÓRICO DE CONTACTOS & AUDITORIA (CRITÉRIO 2 & 3) -->
       <div class="detail-section">
-        <h4 style="font-size: 0.85rem; text-transform: uppercase; color: var(--text-muted); margin-bottom: 12px;">Threat Radar</h4>
-        <div class="detail-row"><span class="detail-label">Radar:</span> <span class="detail-value" id="detRadarStatus">-</span></div>
-        <div class="detail-row"><span class="detail-label">Ocorrências detectadas:</span> <span class="detail-value" id="detRadarOcorrencias">0</span></div>
-        <div class="detail-row"><span class="detail-label">Última ocorrência:</span> <span class="detail-value" id="detRadarUltima">-</span></div>
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+          <div>
+            <h4 style="font-size: 0.85rem; text-transform: uppercase; color: var(--text-muted); margin: 0;">6. CRM de Contactos & Auditoria</h4>
+            <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 2px;">Registo de interações comerciais e trilha imutável de alterações.</div>
+          </div>
+          <button class="btn-xs btn-xs-primary" onclick="abrirModalContacto()">+ Novo Contacto</button>
+        </div>
+        <div id="detContactosLista" style="margin-bottom: 14px; font-size: 0.85rem;">
+          <div style="color: var(--text-muted); font-style: italic;">Nenhum contacto comercial registado.</div>
+        </div>
+
+        <h5 style="font-size: 0.75rem; text-transform: uppercase; color: var(--text-muted); margin: 12px 0 6px;">Trilha de Auditoria (Últimas ações)</h5>
+        <div id="detHistoricoLista" style="max-height: 140px; overflow-y: auto; font-size: 0.8rem; background: rgba(0,0,0,0.2); border-radius: 6px; padding: 8px;">
+          <div style="color: var(--text-muted); font-style: italic;">Nenhum histórico registado.</div>
+        </div>
       </div>
 
-      <div style="display: flex; justify-content: flex-end; margin-top: 20px;">
+      <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px;">
         <button type="button" class="btn-secondary" onclick="closeModals()">Fechar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: REGISTAR PAGAMENTO -->
+  <div id="novoPagamentoModal" class="modal-overlay">
+    <div class="modal-content" style="max-width: 480px;">
+      <div class="modal-title">
+        <span>Registar Pagamento / Receita</span>
+        <button class="close-modal" onclick="document.getElementById('novoPagamentoModal').style.display='none'">×</button>
+      </div>
+      <form onsubmit="handleSalvarPagamento(event)">
+        <div class="form-group">
+          <label class="form-label">Valor (€) *</label>
+          <input type="number" step="0.01" id="pagValor" class="form-input" required placeholder="Ex: 149.00">
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Período (Meses)</label>
+            <input type="number" id="pagPeriodo" class="form-input" value="12" min="1" max="36">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Método</label>
+            <select id="pagMetodo" class="form-select">
+              <option value="transferencia_bancaria" selected>Transferência Bancária</option>
+              <option value="mbway">MB WAY</option>
+              <option value="debito_direto">Débito Direto</option>
+              <option value="cartao">Cartão de Crédito</option>
+              <option value="outro">Outro</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Referência / Fatura</label>
+          <input type="text" id="pagReferencia" class="form-input" placeholder="Ex: FT 2026/042">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Notas Adicionais</label>
+          <input type="text" id="pagNotas" class="form-input" placeholder="Ex: Pagamento anual antecipado">
+        </div>
+        <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px;">
+          <button type="button" class="btn-secondary" onclick="document.getElementById('novoPagamentoModal').style.display='none'">Cancelar</button>
+          <button type="submit" class="btn-action">Gravar Pagamento</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: REGISTAR ISENÇÃO JUSTIFICADA -->
+  <div id="isencaoModal" class="modal-overlay">
+    <div class="modal-content" style="max-width: 480px;">
+      <div class="modal-title">
+        <span>Conceder Isenção de Pagamento</span>
+        <button class="close-modal" onclick="document.getElementById('isencaoModal').style.display='none'">×</button>
+      </div>
+      <form onsubmit="handleSalvarIsencao(event)">
+        <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 14px;">
+          A concessão de selo gratuito ou cortesia exige justificação escrita obrigatória para arquivo de conformidade e auditoria.
+        </p>
+        <div class="form-group">
+          <label class="form-label">Motivo Escrito da Isenção * (mínimo 4 caracteres)</label>
+          <textarea id="isencaoMotivo" class="form-input" rows="3" required placeholder="Ex: Parceiro institucional de utilidade pública ou cliente piloto homologado"></textarea>
+        </div>
+        <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px;">
+          <button type="button" class="btn-secondary" onclick="document.getElementById('isencaoModal').style.display='none'">Cancelar</button>
+          <button type="submit" class="btn-action">Gravar Isenção</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: REGISTAR CONTACTO COMERCIAL (CRM) -->
+  <div id="novoContactoModal" class="modal-overlay">
+    <div class="modal-content" style="max-width: 480px;">
+      <div class="modal-title">
+        <span>Registar Contacto Comercial</span>
+        <button class="close-modal" onclick="document.getElementById('novoContactoModal').style.display='none'">×</button>
+      </div>
+      <form onsubmit="handleSalvarContacto(event)">
+        <div class="form-group">
+          <label class="form-label">Canal de Contacto *</label>
+          <select id="contCanal" class="form-select">
+            <option value="email" selected>Email</option>
+            <option value="telefone">Telefone</option>
+            <option value="reuniao">Reunião / Call</option>
+            <option value="linkedin">LinkedIn</option>
+            <option value="whatsapp">WhatsApp</option>
+            <option value="outro">Outro</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Notas da Conversa *</label>
+          <textarea id="contNotas" class="form-input" rows="3" required placeholder="Ex: CISO confirmou interesse no monitoramento e solicitou minuta de proposta."></textarea>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Próximo Passo / Ação</label>
+          <input type="text" id="contProximoPasso" class="form-input" placeholder="Ex: Enviar proposta até sexta-feira">
+        </div>
+        <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px;">
+          <button type="button" class="btn-secondary" onclick="document.getElementById('novoContactoModal').style.display='none'">Cancelar</button>
+          <button type="submit" class="btn-action">Gravar Contacto</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: ALERTA GRATUITO DE MARCA (CRITÉRIO 4) -->
+  <div id="alertaGratuitoModal" class="modal-overlay">
+    <div class="modal-content" style="max-width: 680px;">
+      <div class="modal-title">
+        <div>
+          <span style="font-size: 1.15rem; font-weight: 800; color: #fff;">✉️ Alerta Preventivo de Segurança</span>
+          <div style="font-size: 0.75rem; color: var(--text-muted);">Mensagem neutra de alerta com dados de vítimas estritamente ofuscados</div>
+        </div>
+        <button class="close-modal" onclick="document.getElementById('alertaGratuitoModal').style.display='none'">×</button>
+      </div>
+
+      <div style="background: rgba(245, 158, 11, 0.08); border: 1px solid rgba(245, 158, 11, 0.25); border-radius: 8px; padding: 12px; margin-bottom: 16px; font-size: 0.8rem; color: #fbbf24;">
+        🛡️ <strong>Escudo de Privacidade & Legal:</strong> Este rascunho utiliza apenas a expressão "sinais detetados" e remove automaticamente quaisquer contactos ou dados pessoais de cidadãos.
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Assunto Sugerido</label>
+        <div style="display: flex; gap: 8px;">
+          <input type="text" id="alertaAssuntoInput" class="form-input" readonly>
+          <button class="btn-xs btn-xs-primary" onclick="copiarAlertaAssunto()">Copiar</button>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+          <label class="form-label" style="margin: 0;">Corpo da Mensagem (Pronto a Enviar)</label>
+          <button class="btn-xs btn-xs-primary" onclick="copiarAlertaTexto()">📋 Copiar Texto Completo</button>
+        </div>
+        <textarea id="alertaTextoTextarea" class="form-input" rows="12" readonly style="font-family: 'JetBrains Mono', monospace; font-size: 0.82rem; line-height: 1.45;"></textarea>
+      </div>
+
+      <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 18px;">
+        <button type="button" class="btn-secondary" onclick="document.getElementById('alertaGratuitoModal').style.display='none'">Fechar</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL: PRÉ-VISUALIZAÇÃO DE RELATÓRIO MENSAL PERICIAL (CRITÉRIOS 5 & 6) -->
+  <div id="verRelatorioModal" class="modal-overlay">
+    <div class="modal-content" style="max-width: 900px; height: 90vh; display: flex; flex-direction: column;">
+      <div class="modal-title" style="flex-shrink: 0;">
+        <div>
+          <span style="font-size: 1.15rem; font-weight: 800; color: #fff;">Relatório Mensal Pericial — <span id="verRelatorioTitulo"></span></span>
+          <div style="font-size: 0.75rem; color: var(--text-muted); font-family: 'JetBrains Mono', monospace;" id="verRelatorioHash">-</div>
+        </div>
+        <div style="display: flex; gap: 8px; align-items: center;">
+          <button class="btn-xs btn-xs-primary" onclick="imprimirRelatorioVisualizado()">🖨️ Imprimir / Guardar PDF</button>
+          <button class="close-modal" onclick="document.getElementById('verRelatorioModal').style.display='none'">×</button>
+        </div>
+      </div>
+
+      <div style="flex: 1; overflow-y: auto; background: #fff; border-radius: 8px; margin-top: 10px; padding: 20px;" id="verRelatorioConteudo">
+        <!-- Renderizado dinamicamente -->
       </div>
     </div>
   </div>
@@ -1296,6 +1725,7 @@
 
       <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px;">
         <button type="button" class="btn-secondary" onclick="closeModals()">Fechar</button>
+        <button type="button" class="btn-xs" style="color: #fbbf24; background: rgba(245, 158, 11, 0.2); border-color: rgba(245, 158, 11, 0.4); padding: 8px 14px;" onclick="const empNome = document.getElementById('radarEmpresaNome').textContent; closeModals(); prepararAlertaGratuito(empNome);">✉️ Preparar Alerta Gratuito</button>
         <button type="button" class="btn-action" onclick="const empNome = document.getElementById('radarEmpresaNome').textContent; closeModals(); gerarDossieParaEmpresa(empNome);">📄 Gerar Dossiê CISO</button>
       </div>
     </div>
@@ -1819,6 +2249,22 @@ Zap, Quem É?`;
         document.getElementById('kpiThreatRadar').textContent = kpis.totalThreatRadar || 0;
         document.getElementById('kpiOcorrencias').textContent = kpis.totalOcorrencias || 0;
 
+        // Atualizar contadores do Pipeline B2B
+        const empresasList = data.empresas || [];
+        const countTodos = empresasList.length;
+        const countLead = empresasList.filter(e => (e.estado === 'lead' || (!e.estado && e.status !== 'ativo'))).length;
+        const countContactado = empresasList.filter(e => e.estado === 'contactado' || e.estado === 'proposta').length;
+        const countEmVerif = empresasList.filter(e => e.estado === 'em_verificacao').length;
+        const countAtivo = empresasList.filter(e => e.estado === 'ativo' || e.status === 'ativo').length;
+        const countSuspenso = empresasList.filter(e => e.estado === 'suspenso' || e.estado === 'revogado' || e.estado === 'expirado' || e.status === 'suspenso').length;
+
+        if (document.getElementById('countPipelineTodos')) document.getElementById('countPipelineTodos').textContent = countTodos;
+        if (document.getElementById('countPipelineLead')) document.getElementById('countPipelineLead').textContent = countLead;
+        if (document.getElementById('countPipelineContactado')) document.getElementById('countPipelineContactado').textContent = countContactado;
+        if (document.getElementById('countPipelineEmVerificacao')) document.getElementById('countPipelineEmVerificacao').textContent = countEmVerif;
+        if (document.getElementById('countPipelineAtivo')) document.getElementById('countPipelineAtivo').textContent = countAtivo;
+        if (document.getElementById('countPipelineSuspenso')) document.getElementById('countPipelineSuspenso').textContent = countSuspenso;
+
         // Banner de banco de dados
         const banner = document.getElementById('dbWarningBanner');
         if (banner) {
@@ -1907,41 +2353,78 @@ Zap, Quem É?`;
       }
     }
 
-    // TAB 1: RENDER EMPRESAS (Seção 6)
+    // TAB 1: RENDER EMPRESAS COM FILTRO DE FUNIL (Seção 6 & Funil B2B)
+    let currentPipelineFilter = 'todos';
+
+    function filtrarPipeline(filtro) {
+      currentPipelineFilter = filtro;
+      const ids = ['todos', 'lead', 'contactado', 'em_verificacao', 'ativo', 'suspenso_revogado'];
+      ids.forEach(id => {
+        const el = document.getElementById(`filter_${id}`);
+        if (el) el.classList.toggle('active', id === filtro);
+      });
+      renderEmpresas(dashboardState.empresas || []);
+    }
+
     function renderEmpresas(empresas) {
       const tbody = document.getElementById('empresasTableBody');
-      if (!empresas.length) {
-        tbody.innerHTML = '<tr><td colspan="8" style="text-align: center; color: var(--text-muted); padding: 30px;">Nenhuma empresa cadastrada ainda.</td></tr>';
+      if (!tbody) return;
+
+      let filtradas = empresas || [];
+      if (currentPipelineFilter === 'lead') {
+        filtradas = filtradas.filter(e => e.estado === 'lead' || (!e.estado && e.status !== 'ativo'));
+      } else if (currentPipelineFilter === 'contactado') {
+        filtradas = filtradas.filter(e => e.estado === 'contactado' || e.estado === 'proposta');
+      } else if (currentPipelineFilter === 'em_verificacao') {
+        filtradas = filtradas.filter(e => e.estado === 'em_verificacao');
+      } else if (currentPipelineFilter === 'ativo') {
+        filtradas = filtradas.filter(e => e.estado === 'ativo' || e.status === 'ativo');
+      } else if (currentPipelineFilter === 'suspenso_revogado') {
+        filtradas = filtradas.filter(e => e.estado === 'suspenso' || e.estado === 'revogado' || e.estado === 'expirado' || e.status === 'suspenso');
+      }
+
+      if (!filtradas.length) {
+        tbody.innerHTML = '<tr><td colspan="8" style="text-align: center; color: var(--text-muted); padding: 30px;">Nenhuma empresa cadastrada nesta fase do funil.</td></tr>';
         return;
       }
 
-      tbody.innerHTML = empresas.map(emp => {
+      tbody.innerHTML = filtradas.map(emp => {
         const selosEmp = (dashboardState.selos || []).filter(s => s.empresa_id === emp.id);
         const seloInfo = selosEmp.length
           ? `<span style="font-family: 'JetBrains Mono', monospace; font-size: 0.8rem; color: var(--primary); font-weight: 700;">${selosEmp[0].codigo}</span>`
-          : '<span style="color: var(--text-muted);">Sem selo</span>';
+          : (emp.codigo_selo ? `<span style="font-family: 'JetBrains Mono', monospace; font-size: 0.8rem; color: var(--primary); font-weight: 700;">${emp.codigo_selo}</span>` : '<span style="color: var(--text-muted);">Sem selo</span>');
         const radarAtivo = selosEmp.some(s => s.monitorizacao_impersonation) ? '🟢 Ativo' : '⚪ Inativo';
-        const dataCriada = emp.criado_em ? new Date(emp.criado_em).toLocaleDateString('pt-PT') : '-';
+        
+        // Estado no funil
+        const estado = emp.estado || (emp.status === 'ativo' ? 'ativo' : (emp.status === 'suspenso' ? 'suspenso' : 'lead'));
+
+        // 4 Pilares
+        const verifs = (dashboardState.verificacoes || []).filter(v => v.empresa_id === emp.id && v.estado === 'ok');
+        const countOk = verifs.length;
+        const pilaresBadge = countOk === 4
+          ? '<span class="badge badge-ok">4 / 4 OK</span>'
+          : `<span class="badge badge-pendente">${countOk} / 4</span>`;
 
         return `
           <tr>
             <td>
-              <div style="font-weight: 700; color: #fff;">${escapeHtml(emp.nome)}</div>
-              <div style="font-size: 0.8rem; color: var(--text-muted);">${escapeHtml(emp.email_oficial || '')}</div>
+              <div style="font-weight: 700; color: #fff;">${escapeHtml(emp.nome_comercial || emp.nome)}</div>
+              ${emp.nome_legal && emp.nome_legal !== emp.nome ? `<div style="font-size: 0.75rem; color: var(--text-muted);">${escapeHtml(emp.nome_legal)}</div>` : ''}
+              <div style="font-size: 0.75rem; color: #94a3b8; font-family: 'JetBrains Mono', monospace;">NIF: ${escapeHtml(emp.nif || 'Não informado')}</div>
             </td>
-            <td><span class="badge badge-plano">${escapeHtml(emp.plano)}</span></td>
-            <td><span class="badge badge-${emp.status === 'ativo' ? 'ativo' : 'suspenso'}">${escapeHtml(emp.status)}</span></td>
-            <td>${escapeHtml(emp.dominio_oficial || '–')}</td>
+            <td><span class="badge badge-plano">${escapeHtml(emp.plano || 'business')}</span></td>
+            <td><span class="badge badge-${estado}">${escapeHtml(estado.replace('_', ' '))}</span></td>
+            <td>${pilaresBadge}</td>
+            <td style="font-size: 0.85rem;">${escapeHtml(emp.dominio_oficial || '–')}</td>
             <td>${radarAtivo}</td>
             <td>${seloInfo}</td>
-            <td style="color: var(--text-muted); font-size: 0.85rem;">${dataCriada}</td>
             <td>
               <div style="display: flex; gap: 6px; flex-wrap: wrap;">
-                <button class="btn-xs btn-xs-primary" onclick="verEmpresa('${emp.id}')">Ver</button>
+                <button class="btn-xs btn-xs-primary" onclick="verEmpresa('${emp.id}')">Dossiê & Verificação</button>
                 <button class="btn-xs" onclick="editarEmpresa('${emp.id}')">Editar</button>
-                ${emp.status === 'ativo'
+                ${(emp.status === 'ativo' || emp.estado === 'ativo')
                   ? `<button class="btn-xs btn-xs-danger" onclick="toggleStatusEmpresa('${emp.id}', 'suspenso')">Suspender</button>`
-                  : `<button class="btn-xs btn-xs-primary" onclick="toggleStatusEmpresa('${emp.id}', 'ativo')">Reativar</button>`
+                  : `<button class="btn-xs btn-xs-primary" onclick="toggleStatusEmpresa('${emp.id}', 'ativo')">Ativar</button>`
                 }
               </div>
             </td>
@@ -2017,6 +2500,7 @@ Zap, Quem É?`;
             <td>
               <div style="display: flex; gap: 6px; flex-wrap: wrap;">
                 <button class="btn-xs btn-xs-primary" onclick="abrirDetalheRadar('${r.empresa_id}')">Ver Detalhe</button>
+                <button class="btn-xs" style="color: #fbbf24; background: rgba(245, 158, 11, 0.15); border-color: rgba(245, 158, 11, 0.3);" onclick="prepararAlertaGratuito('${escapeHtml(r.empresa)}', '${r.empresa_id || ''}')">✉️ Alerta Gratuito</button>
                 <button class="btn-xs" style="color: #93c5fd; background: rgba(59, 130, 246, 0.15); border-color: rgba(59, 130, 246, 0.3);" onclick="gerarDossieParaEmpresa('${escapeHtml(r.empresa)}')">📄 Dossiê CISO</button>
               </div>
             </td>
@@ -2468,8 +2952,13 @@ Zap, Quem É?`;
       }
     }
 
-    // MODAL DETALHE DA EMPRESA (Seção 20)
+    // =========================================================================
+    // MODAL DETALHE DA EMPRESA & DOSSIÊ B2B (Seção 20 + Critérios 1 a 6)
+    // =========================================================================
+    let currentEmpresaDetalheId = null;
+
     function verEmpresa(id) {
+      currentEmpresaDetalheId = id;
       const emp = (dashboardState.empresas || []).find(e => e.id === id);
       if (!emp) return;
 
@@ -2477,11 +2966,23 @@ Zap, Quem É?`;
       const selo = selos[0];
       const radarRow = (dashboardState.radar || []).find(r => r.empresa_id === emp.id);
 
-      document.getElementById('detNome').textContent = emp.nome;
-      document.getElementById('detStatus').textContent = emp.status;
-      document.getElementById('detPlano').textContent = emp.plano;
+      // 1. Identificação Básica & Legal
+      document.getElementById('detNome').textContent = emp.nome_comercial || emp.nome;
+      document.getElementById('detNomeLegal').textContent = emp.nome_legal || emp.nome;
+      document.getElementById('detRepresentante').textContent = emp.representante_nome
+        ? `${emp.representante_nome}${emp.representante_cargo ? ' (' + emp.representante_cargo + ')' : ''}`
+        : 'Não indicado';
+      document.getElementById('detPlano').textContent = (emp.plano || 'business').toUpperCase();
+      document.getElementById('detPreco').textContent = emp.preco_acordado ? `€${Number(emp.preco_acordado).toFixed(2)} / mês` : 'Tabela base';
       document.getElementById('detApelidos').textContent = Array.isArray(emp.apelidos_marca) && emp.apelidos_marca.length ? emp.apelidos_marca.join(', ') : 'Nenhum';
 
+      const estadoAtual = emp.estado || (emp.status === 'ativo' ? 'ativo' : (emp.status === 'suspenso' ? 'suspenso' : 'lead'));
+      document.getElementById('detEstadoSelect').value = estadoAtual;
+      const statusBadge = document.getElementById('detStatus');
+      statusBadge.className = 'badge badge-' + estadoAtual;
+      statusBadge.textContent = estadoAtual.toUpperCase().replace('_', ' ');
+
+      // Canais Oficiais
       document.getElementById('detDominio').textContent = emp.dominio_oficial
         ? `${emp.dominio_oficial} [${emp.dominio_verificado ? 'verificado' : 'registado'}]`
         : '–';
@@ -2497,11 +2998,87 @@ Zap, Quem É?`;
       document.getElementById('detIban').textContent = emp.iban
         ? `${emp.iban} [${emp.iban_verificado ? 'confirmado, visível no selo' : 'não confirmado, oculto no selo'}]`
         : '–';
-      document.getElementById('detNotas').textContent = emp.verificacao_notas || '–';
-        document.getElementById('detSeloCodigo').textContent = selo.codigo;
-        document.getElementById('detSeloEstado').textContent = emp.status === 'ativo' ? 'Ativo' : 'Inativo';
-        document.getElementById('detSeloValidade').textContent = selo.valido_ate ? new Date(selo.valido_ate).toLocaleDateString('pt-PT') : 'Indeterminada';
-        document.getElementById('detSeloUrl').innerHTML = `<a href="/verify/${selo.codigo}" target="_blank" style="color: var(--primary);">/verify/${selo.codigo} ↗</a>`;
+      document.getElementById('detNotas').textContent = emp.verificacao_notas || emp.notas || '–';
+
+      // 2. Checklist dos 4 Pilares (Critério 1)
+      const verifs = (dashboardState.verificacoes || []).filter(v => v.empresa_id === emp.id);
+      const tipos = ['nif', 'dominio', 'telefone', 'representante'];
+      let countOk = 0;
+
+      tipos.forEach(tipo => {
+        const v = verifs.find(item => item.tipo === tipo);
+        const estado = v ? v.estado : 'pendente';
+        if (estado === 'ok') countOk++;
+
+        const badgeEl = document.getElementById(`chk_${tipo}_badge`);
+        const provaEl = document.getElementById(`chk_${tipo}_prova`);
+        if (badgeEl) {
+          badgeEl.className = 'badge badge-' + estado;
+          badgeEl.textContent = estado.toUpperCase();
+        }
+        if (provaEl) {
+          provaEl.textContent = v && v.prova ? `Evidência: ${v.prova}` : 'Nenhuma prova anexada.';
+        }
+      });
+
+      const resumoEl = document.getElementById('detChecklistResumo');
+      if (resumoEl) {
+        resumoEl.className = countOk === 4 ? 'badge badge-ok' : 'badge badge-pendente';
+        resumoEl.textContent = `${countOk} / 4 Concluídos`;
+      }
+
+      // 3. Pagamentos (Critério 1)
+      const pags = (dashboardState.pagamentos || []).filter(p => p.empresa_id === emp.id);
+      const temPagamentoValido = pags.some(p => p.estado === 'pago' || (p.estado === 'isento' && p.motivo_isencao && p.motivo_isencao.trim().length >= 4));
+      const containerPags = document.getElementById('detPagamentosLista');
+      if (containerPags) {
+        if (!pags.length) {
+          containerPags.innerHTML = '<div style="color: var(--text-muted); font-style: italic; padding: 6px 0;">Nenhum registo financeiro encontrado.</div>';
+        } else {
+          containerPags.innerHTML = `
+            <table style="width: 100%; font-size: 0.8rem; margin-top: 6px;">
+              <thead>
+                <tr>
+                  <th>Data</th><th>Valor</th><th>Período</th><th>Método</th><th>Estado</th><th>Ref / Justificação</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${pags.map(p => `
+                  <tr>
+                    <td>${p.data ? new Date(p.data).toLocaleDateString('pt-PT') : '-'}</td>
+                    <td style="font-weight: 700; color: #fff;">€${Number(p.valor || 0).toFixed(2)}</td>
+                    <td>${p.periodo_meses ? p.periodo_meses + ' meses' : '-'}</td>
+                    <td>${escapeHtml(p.metodo || '-')}</td>
+                    <td><span class="badge badge-${p.estado === 'pago' ? 'ok' : (p.estado === 'isento' ? 'contactado' : 'pendente')}">${p.estado}</span></td>
+                    <td style="color: var(--text-muted); font-size: 0.75rem;">${escapeHtml(p.motivo_isencao || p.referencia || '-')}</td>
+                  </tr>
+                `).join('')}
+              </tbody>
+            </table>
+          `;
+        }
+      }
+
+      // Trava de Ativação Indicator
+      const indicadorTrava = document.getElementById('detTravaIndicator');
+      if (indicadorTrava) {
+        if (countOk === 4 && temPagamentoValido) {
+          indicadorTrava.innerHTML = `<span style="color: #34d399; font-weight: 700; background: rgba(16,185,129,0.12); padding: 4px 10px; border-radius: 6px; border: 1px solid rgba(16,185,129,0.3);">🟢 Trava Liberada: 4 Pilares OK & Pagamento Válido</span>`;
+        } else {
+          const pendencias = [];
+          if (countOk < 4) pendencias.push(`faltam ${4 - countOk} verificações`);
+          if (!temPagamentoValido) pendencias.push('pagamento pendente');
+          indicadorTrava.innerHTML = `<span style="color: #fbbf24; font-weight: 700; background: rgba(245,158,11,0.12); padding: 4px 10px; border-radius: 6px; border: 1px solid rgba(245,158,11,0.3);">🔒 Bloqueio de Ativação: ${pendencias.join(', ')}</span>`;
+        }
+      }
+
+      // 4. Selo Zap Verified
+      const codigoSelo = selo ? selo.codigo : (emp.codigo_selo || null);
+      if (codigoSelo) {
+        document.getElementById('detSeloCodigo').textContent = codigoSelo;
+        document.getElementById('detSeloEstado').textContent = (emp.status === 'ativo' || emp.estado === 'ativo') ? 'Ativo' : 'Inativo';
+        document.getElementById('detSeloValidade').textContent = (selo && selo.valido_ate) ? new Date(selo.valido_ate).toLocaleDateString('pt-PT') : (emp.data_validade ? new Date(emp.data_validade).toLocaleDateString('pt-PT') : 'Indeterminada');
+        document.getElementById('detSeloUrl').innerHTML = `<a href="/verify/${codigoSelo}" target="_blank" style="color: var(--primary);">/verify/${codigoSelo} ↗</a>`;
       } else {
         document.getElementById('detSeloCodigo').textContent = 'Nenhum selo emitido';
         document.getElementById('detSeloEstado').textContent = '-';
@@ -2513,7 +3090,376 @@ Zap, Quem É?`;
       document.getElementById('detRadarOcorrencias').textContent = radarRow ? radarRow.ocorrencias : 0;
       document.getElementById('detRadarUltima').textContent = radarRow && radarRow.ultima_deteccao ? new Date(radarRow.ultima_deteccao).toLocaleString('pt-PT') : 'Nenhuma ocorrência';
 
+      // 5. Relatórios Mensais Periciais (Critérios 5 & 6)
+      const rels = (dashboardState.relatorios || []).filter(r => r.empresa_id === emp.id);
+      const containerRels = document.getElementById('detRelatoriosLista');
+      if (containerRels) {
+        if (!rels.length) {
+          containerRels.innerHTML = '<div style="color: var(--text-muted); font-style: italic; padding: 6px 0;">Nenhum relatório gerado ainda para esta empresa.</div>';
+        } else {
+          containerRels.innerHTML = `
+            <table style="width: 100%; font-size: 0.8rem; margin-top: 6px;">
+              <thead>
+                <tr>
+                  <th>Período</th><th>Gerado em</th><th>Hash SHA-256</th><th>Estado</th><th>Ações</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${rels.map(r => `
+                  <tr>
+                    <td style="font-weight: 700; color: #fff;">${r.mes}/${r.ano}</td>
+                    <td>${r.gerado_em ? new Date(r.gerado_em).toLocaleDateString('pt-PT') : '-'}</td>
+                    <td style="font-family: 'JetBrains Mono', monospace; font-size: 0.75rem; color: #38bdf8;">
+                      ${(r.hash_sha256 || '').slice(0, 10)}...
+                      <button class="btn-xs" style="padding: 1px 4px; font-size: 0.65rem;" onclick="navigator.clipboard.writeText('${r.hash_sha256}'); showToast('Hash SHA-256 copiada!');">Copiar</button>
+                    </td>
+                    <td><span class="badge badge-${r.estado === 'aprovado' ? 'ok' : 'pendente'}">${escapeHtml(r.estado || 'rascunho')}</span></td>
+                    <td>
+                      <div style="display: flex; gap: 4px;">
+                        <button class="btn-xs btn-xs-primary" onclick="visualizarRelatorio('${r.id}')">🖨️ Ver / Imprimir</button>
+                        ${r.estado !== 'aprovado' ? `<button class="btn-xs" style="color: #34d399; border-color: rgba(16,185,129,0.3);" onclick="aprovarRelatorioExecutivo('${r.id}')">✓ Aprovar</button>` : ''}
+                      </div>
+                    </td>
+                  </tr>
+                `).join('')}
+              </tbody>
+            </table>
+          `;
+        }
+      }
+
+      // 6. CRM & Trilha de Auditoria (Critérios 2 & 3)
+      const conts = (dashboardState.contactos_comerciais || []).filter(c => c.empresa_id === emp.id);
+      const containerConts = document.getElementById('detContactosLista');
+      if (containerConts) {
+        if (!conts.length) {
+          containerConts.innerHTML = '<div style="color: var(--text-muted); font-style: italic; padding: 6px 0;">Nenhum contacto comercial registado.</div>';
+        } else {
+          containerConts.innerHTML = conts.map(c => `
+            <div style="background: rgba(0,0,0,0.25); border: 1px solid var(--card-border); border-radius: 8px; padding: 10px; margin-bottom: 8px;">
+              <div style="display: flex; justify-content: space-between; font-size: 0.75rem; color: var(--text-muted); margin-bottom: 4px;">
+                <span>Canal: <strong style="color: #38bdf8;">${escapeHtml(c.canal.toUpperCase())}</strong> por ${escapeHtml(c.por || 'admin')}</span>
+                <span>${c.data ? new Date(c.data).toLocaleString('pt-PT') : '-'}</span>
+              </div>
+              <div style="font-size: 0.82rem; color: #fff;">${escapeHtml(c.notas || '')}</div>
+              ${c.proximo_passo ? `<div style="font-size: 0.75rem; color: #fbbf24; margin-top: 4px;">➔ Próximo passo: ${escapeHtml(c.proximo_passo)}</div>` : ''}
+            </div>
+          `).join('');
+        }
+      }
+
+      const hists = (dashboardState.historico || []).filter(h => h.empresa_id === emp.id);
+      const containerHists = document.getElementById('detHistoricoLista');
+      if (containerHists) {
+        if (!hists.length) {
+          containerHists.innerHTML = '<div style="color: var(--text-muted); font-style: italic;">Nenhum histórico registado.</div>';
+        } else {
+          containerHists.innerHTML = hists.map(h => `
+            <div style="padding: 4px 0; border-bottom: 1px solid rgba(255,255,255,0.05); display: flex; justify-content: space-between;">
+              <span><strong>${escapeHtml(h.acao)}:</strong> ${escapeHtml(h.motivo || JSON.stringify(h.depois || {}))}</span>
+              <span style="color: var(--text-muted); flex-shrink: 0; margin-left: 10px;">${h.em ? new Date(h.em).toLocaleDateString('pt-PT') : '-'}</span>
+            </div>
+          `).join('');
+        }
+      }
+
       document.getElementById('detalheEmpresaModal').style.display = 'flex';
+    }
+
+    // ATUALIZAR VERIFICAÇÃO (4 PILARES)
+    async function marcarVerificacao(tipo, estado) {
+      if (!currentEmpresaDetalheId) return;
+      const prova = prompt(`Insira a nota ou evidência para a verificação "${tipo.toUpperCase()}" (${estado.toUpperCase()}):`, estado === 'ok' ? 'Certidão / registo verificado com sucesso' : 'Não em conformidade');
+      if (prova === null) return;
+
+      try {
+        const res = await fetch('/api/admin', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'x-admin-key': globalAdminSecret },
+          body: JSON.stringify({
+            action: 'update_verificacao',
+            empresa_id: currentEmpresaDetalheId,
+            tipo,
+            estado,
+            prova
+          })
+        });
+        if (!res.ok) {
+          const errData = await res.json().catch(() => ({}));
+          throw new Error(errData.error || await res.text());
+        }
+        showToast(`Verificação ${tipo.toUpperCase()} atualizada para ${estado.toUpperCase()}!`);
+        await loadDashboardData();
+        verEmpresa(currentEmpresaDetalheId);
+      } catch (err) {
+        alert('Erro ao atualizar verificação: ' + err.message);
+      }
+    }
+
+    // ALTERAR ESTADO COM TRAVA DE ATIVAÇÃO E MOTIVO OBRIGATÓRIO (CRITÉRIO 1)
+    async function salvarEstadoEmpresaDetalhe() {
+      if (!currentEmpresaDetalheId) return;
+      const novoEstado = document.getElementById('detEstadoSelect').value;
+      let motivo = '';
+
+      if (novoEstado === 'suspenso' || novoEstado === 'revogado') {
+        motivo = prompt(`A alteração para "${novoEstado.toUpperCase()}" exige obrigatoriamente um motivo escrito para arquivo no histórico de auditoria:`);
+        if (!motivo || motivo.trim().length < 4) {
+          alert('Operação cancelada: motivo escrito obrigatório (mínimo 4 caracteres).');
+          return;
+        }
+      }
+
+      try {
+        const res = await fetch('/api/admin', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'x-admin-key': globalAdminSecret },
+          body: JSON.stringify({
+            action: 'set_empresa_estado',
+            empresa_id: currentEmpresaDetalheId,
+            estado: novoEstado,
+            motivo
+          })
+        });
+        if (!res.ok) {
+          const errData = await res.json().catch(() => ({}));
+          throw new Error(errData.error || await res.text());
+        }
+        showToast(`Estado alterado para ${novoEstado.toUpperCase()}!`);
+        await loadDashboardData();
+        verEmpresa(currentEmpresaDetalheId);
+      } catch (err) {
+        alert('Erro: ' + err.message);
+      }
+    }
+
+    // PAGAMENTOS (CRITÉRIO 1)
+    function abrirModalPagamento() {
+      document.getElementById('novoPagamentoModal').style.display = 'flex';
+    }
+
+    async function handleSalvarPagamento(e) {
+      e.preventDefault();
+      if (!currentEmpresaDetalheId) return;
+
+      const valor = parseFloat(document.getElementById('pagValor').value);
+      const periodo_meses = parseInt(document.getElementById('pagPeriodo').value, 10);
+      const metodo = document.getElementById('pagMetodo').value;
+      const referencia = document.getElementById('pagReferencia').value.trim();
+      const notas = document.getElementById('pagNotas').value.trim();
+
+      try {
+        const res = await fetch('/api/admin', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'x-admin-key': globalAdminSecret },
+          body: JSON.stringify({
+            action: 'add_pagamento',
+            empresa_id: currentEmpresaDetalheId,
+            valor,
+            periodo_meses,
+            metodo,
+            referencia,
+            notas
+          })
+        });
+        if (!res.ok) {
+          const errData = await res.json().catch(() => ({}));
+          throw new Error(errData.error || await res.text());
+        }
+        document.getElementById('novoPagamentoModal').style.display = 'none';
+        showToast('Pagamento registado com sucesso!');
+        await loadDashboardData();
+        verEmpresa(currentEmpresaDetalheId);
+      } catch (err) {
+        alert('Erro ao registar pagamento: ' + err.message);
+      }
+    }
+
+    function abrirModalIsencao() {
+      document.getElementById('isencaoModal').style.display = 'flex';
+    }
+
+    async function handleSalvarIsencao(e) {
+      e.preventDefault();
+      if (!currentEmpresaDetalheId) return;
+      const motivo = document.getElementById('isencaoMotivo').value.trim();
+
+      try {
+        const res = await fetch('/api/admin', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'x-admin-key': globalAdminSecret },
+          body: JSON.stringify({
+            action: 'add_pagamento',
+            empresa_id: currentEmpresaDetalheId,
+            estado: 'isento',
+            motivo_isencao: motivo
+          })
+        });
+        if (!res.ok) {
+          const errData = await res.json().catch(() => ({}));
+          throw new Error(errData.error || await res.text());
+        }
+        document.getElementById('isencaoModal').style.display = 'none';
+        showToast('Isenção justificada registada com sucesso!');
+        await loadDashboardData();
+        verEmpresa(currentEmpresaDetalheId);
+      } catch (err) {
+        alert('Erro ao registar isenção: ' + err.message);
+      }
+    }
+
+    // CONTACTOS COMERCIAIS (CRM)
+    function abrirModalContacto() {
+      document.getElementById('novoContactoModal').style.display = 'flex';
+    }
+
+    async function handleSalvarContacto(e) {
+      e.preventDefault();
+      if (!currentEmpresaDetalheId) return;
+
+      const canal = document.getElementById('contCanal').value;
+      const notas = document.getElementById('contNotas').value.trim();
+      const proximo_passo = document.getElementById('contProximoPasso').value.trim();
+
+      try {
+        const res = await fetch('/api/admin', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'x-admin-key': globalAdminSecret },
+          body: JSON.stringify({
+            action: 'add_contacto_comercial',
+            empresa_id: currentEmpresaDetalheId,
+            canal,
+            notas,
+            proximo_passo
+          })
+        });
+        if (!res.ok) {
+          const errData = await res.json().catch(() => ({}));
+          throw new Error(errData.error || await res.text());
+        }
+        document.getElementById('novoContactoModal').style.display = 'none';
+        showToast('Contacto comercial registado!');
+        await loadDashboardData();
+        verEmpresa(currentEmpresaDetalheId);
+      } catch (err) {
+        alert('Erro ao registar contacto: ' + err.message);
+      }
+    }
+
+    // RELATÓRIOS MENSAIS PERICIAIS (CRITÉRIOS 5 & 6)
+    async function gerarRelatorioMensalEmpresa() {
+      if (!currentEmpresaDetalheId) return;
+      const mes = parseInt(document.getElementById('relatorioMesSelect').value, 10);
+      const ano = parseInt(document.getElementById('relatorioAnoSelect').value, 10);
+
+      try {
+        const res = await fetch('/api/admin', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'x-admin-key': globalAdminSecret },
+          body: JSON.stringify({
+            action: 'gerar_relatorio_mensal',
+            empresa_id: currentEmpresaDetalheId,
+            mes,
+            ano
+          })
+        });
+        if (!res.ok) {
+          const errData = await res.json().catch(() => ({}));
+          throw new Error(errData.error || await res.text());
+        }
+        const data = await res.json();
+        showToast('Relatório pericial gerado com sucesso!');
+        await loadDashboardData();
+        verEmpresa(currentEmpresaDetalheId);
+        if (data.relatorio && data.relatorio.id) {
+          visualizarRelatorio(data.relatorio.id);
+        }
+      } catch (err) {
+        alert('Erro ao gerar relatório mensal: ' + err.message);
+      }
+    }
+
+    async function aprovarRelatorioExecutivo(relatorioId) {
+      if (!confirm('Deseja aprovar formalmente este relatório mensal para envio executivo?')) return;
+      try {
+        const res = await fetch('/api/admin', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'x-admin-key': globalAdminSecret },
+          body: JSON.stringify({
+            action: 'aprovar_relatorio',
+            relatorio_id: relatorioId
+          })
+        });
+        if (!res.ok) {
+          const errData = await res.json().catch(() => ({}));
+          throw new Error(errData.error || await res.text());
+        }
+        showToast('Relatório aprovado formalmente!');
+        await loadDashboardData();
+        if (currentEmpresaDetalheId) verEmpresa(currentEmpresaDetalheId);
+      } catch (err) {
+        alert('Erro ao aprovar relatório: ' + err.message);
+      }
+    }
+
+    let relatorioVisualizadoHtml = '';
+
+    function visualizarRelatorio(relatorioId) {
+      const rel = (dashboardState.relatorios || []).find(r => r.id === relatorioId);
+      if (!rel) return;
+
+      const emp = (dashboardState.empresas || []).find(e => e.id === rel.empresa_id);
+      document.getElementById('verRelatorioTitulo').textContent = `${emp ? emp.nome : 'Empresa'} — ${rel.mes}/${rel.ano}`;
+      document.getElementById('verRelatorioHash').textContent = `SHA-256: ${rel.hash_sha256}`;
+      relatorioVisualizadoHtml = rel.html || '<div style="color: #000; padding: 20px;">Relatório sem conteúdo HTML.</div>';
+      document.getElementById('verRelatorioConteudo').innerHTML = relatorioVisualizadoHtml;
+      document.getElementById('verRelatorioModal').style.display = 'flex';
+    }
+
+    function imprimirRelatorioVisualizado() {
+      const win = window.open('', '_blank');
+      win.document.write(relatorioVisualizadoHtml);
+      win.document.close();
+      win.focus();
+      setTimeout(() => { win.print(); }, 500);
+    }
+
+    // ALERTA GRATUITO DE MARCA (CRITÉRIO 4)
+    async function prepararAlertaGratuito(marca, empresaId) {
+      try {
+        const res = await fetch('/api/admin', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'x-admin-key': globalAdminSecret },
+          body: JSON.stringify({
+            action: 'gerar_alerta_gratuito',
+            marca,
+            empresa_id: empresaId || undefined
+          })
+        });
+        if (!res.ok) {
+          const errData = await res.json().catch(() => ({}));
+          throw new Error(errData.error || await res.text());
+        }
+        const data = await res.json();
+        const draft = data.draft;
+        document.getElementById('alertaAssuntoInput').value = draft.assunto;
+        document.getElementById('alertaTextoTextarea').value = draft.texto;
+        document.getElementById('alertaGratuitoModal').style.display = 'flex';
+      } catch (err) {
+        alert('Erro ao preparar alerta gratuito: ' + err.message);
+      }
+    }
+
+    function copiarAlertaAssunto() {
+      const val = document.getElementById('alertaAssuntoInput').value;
+      navigator.clipboard.writeText(val);
+      showToast('Assunto copiado!');
+    }
+
+    function copiarAlertaTexto() {
+      const val = document.getElementById('alertaTextoTextarea').value;
+      navigator.clipboard.writeText(val);
+      showToast('Texto do alerta copiado com sucesso!');
     }
 
     // MODAL DETALHE DO RADAR (Seção 21)

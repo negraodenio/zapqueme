@@ -3,11 +3,18 @@
 // Seções 6, 7, 8, 19, 20, 21
 
 import { gerarCodigoSelo } from '../lib/radar.js';
+import {
+  limparTextoVitima,
+  estruturarRelatorioMensal,
+  renderRelatorioHtml
+} from '../lib/report_generator.js';
 
-// Campos de verificação comercial (migração 20261015). Se a migração ainda não
-// tiver sido executada, o PostgREST rejeita colunas desconhecidas: nesse caso
-// repetimos o pedido sem estes campos para não bloquear a operação.
-const CAMPOS_VERIFICACAO = ['nif', 'nif_verificado', 'iban', 'iban_verificado', 'verificacao_notas', 'verificado_em'];
+// Campos de verificação comercial e CRM (migração 20261016 e 20261015).
+const CAMPOS_VERIFICACAO = [
+  'nif', 'nif_verificado', 'iban', 'iban_verificado', 'verificacao_notas', 'verificado_em',
+  'nome_legal', 'nome_comercial', 'email_contacto', 'representante_nome', 'representante_cargo',
+  'plano', 'estado', 'codigo_selo', 'data_emissao', 'data_validade', 'preco_acordado', 'notas', 'marca_aliases'
+];
 
 function extrairCamposVerificacao(body) {
   const out = {};
@@ -17,7 +24,46 @@ function extrairCamposVerificacao(body) {
   if (body.iban_verificado !== undefined) out.iban_verificado = !!body.iban_verificado;
   if (body.verificacao_notas !== undefined) out.verificacao_notas = body.verificacao_notas ? String(body.verificacao_notas).trim() : null;
   if (out.nif_verificado || out.iban_verificado) out.verificado_em = new Date().toISOString();
+
+  // Campos CRM 20261016
+  if (body.nome_legal !== undefined) out.nome_legal = body.nome_legal ? String(body.nome_legal).trim() : null;
+  if (body.nome_comercial !== undefined) out.nome_comercial = body.nome_comercial ? String(body.nome_comercial).trim() : null;
+  if (body.email_contacto !== undefined) out.email_contacto = body.email_contacto ? String(body.email_contacto).trim().toLowerCase() : null;
+  if (body.representante_nome !== undefined) out.representante_nome = body.representante_nome ? String(body.representante_nome).trim() : null;
+  if (body.representante_cargo !== undefined) out.representante_cargo = body.representante_cargo ? String(body.representante_cargo).trim() : null;
+  if (body.plano !== undefined) out.plano = body.plano;
+  if (body.estado !== undefined) out.estado = body.estado;
+  if (body.codigo_selo !== undefined) out.codigo_selo = body.codigo_selo;
+  if (body.data_emissao !== undefined) out.data_emissao = body.data_emissao;
+  if (body.data_validade !== undefined) out.data_validade = body.data_validade;
+  if (body.preco_acordado !== undefined) out.preco_acordado = Number(body.preco_acordado) || 49.00;
+  if (body.notas !== undefined) out.notas = body.notas ? String(body.notas).trim() : null;
+  if (body.marca_aliases !== undefined) {
+    out.marca_aliases = Array.isArray(body.marca_aliases)
+      ? body.marca_aliases.map(a => String(a).trim()).filter(Boolean)
+      : (typeof body.marca_aliases === 'string' ? body.marca_aliases.split(',').map(a => a.trim()).filter(Boolean) : []);
+  }
+
   return out;
+}
+
+async function registrarHistorico(supabaseUrl, headers, { empresa_id, acao, antes, depois, por = 'admin', motivo = null }) {
+  try {
+    await fetch(`${supabaseUrl}/rest/v1/historico`, {
+      method: 'POST',
+      headers,
+      body: JSON.stringify({
+        empresa_id,
+        acao,
+        antes: antes || null,
+        depois: depois || null,
+        por,
+        motivo: motivo || null
+      })
+    });
+  } catch (err) {
+    console.warn('[Admin Historico] Falha ao registar histórico:', err.message);
+  }
 }
 
 async function fetchComFallback(fetchUrl, options, payload) {
@@ -26,7 +72,7 @@ async function fetchComFallback(fetchUrl, options, payload) {
     const errText = await resp.text();
     const temCamposNovos = CAMPOS_VERIFICACAO.some(c => c in payload);
     if (temCamposNovos && /column|schema cache/i.test(errText)) {
-      console.warn('[Admin] Migração 20261015 ainda não aplicada; a gravar sem NIF/IBAN.');
+      console.warn('[Admin] Migração pendente; a gravar com fallback retrocompatível.');
       const semNovos = { ...payload };
       CAMPOS_VERIFICACAO.forEach(c => delete semNovos[c]);
       resp = await fetch(fetchUrl, { ...options, body: JSON.stringify(semNovos) });
@@ -132,6 +178,42 @@ export default async function handler(req, res) {
         );
         if (sinaisResp.ok) sinais = await sinaisResp.json();
       } catch {}
+
+      // 8. Buscar verificações de empresas (Checklist 4 pilares)
+      let verificacoes = [];
+      try {
+        const verifResp = await fetch(`${url}/rest/v1/verificacoes?select=*&order=criado_em.asc`, { headers });
+        if (verifResp.ok) verificacoes = await verifResp.json();
+      } catch {}
+
+      // 9. Buscar registos financeiros de pagamentos
+      let pagamentos = [];
+      try {
+        const pagResp = await fetch(`${url}/rest/v1/pagamentos?select=*&order=data.desc&limit=100`, { headers });
+        if (pagResp.ok) pagamentos = await pagResp.json();
+      } catch {}
+
+      // 10. Buscar histórico de auditoria
+      let historico = [];
+      try {
+        const histResp = await fetch(`${url}/rest/v1/historico?select=*&order=em.desc&limit=100`, { headers });
+        if (histResp.ok) historico = await histResp.json();
+      } catch {}
+
+      // 11. Buscar contactos comerciais do funil
+      let contactosComerciais = [];
+      try {
+        const contResp = await fetch(`${url}/rest/v1/contactos_comerciais?select=*&order=data.desc&limit=100`, { headers });
+        if (contResp.ok) contactosComerciais = await contResp.json();
+      } catch {}
+
+      // 12. Buscar relatórios periciais gerados
+      let relatorios = [];
+      try {
+        const relResp = await fetch(`${url}/rest/v1/relatorios_gerados?select=*&order=gerado_em.desc&limit=50`, { headers });
+        if (relResp.ok) relatorios = await relResp.json();
+      } catch {}
+
     } catch (err) {
       isDbOnline = false;
       dbErrorMessage = err.message || 'Falha ao conectar ao banco de dados Supabase.';
@@ -171,7 +253,9 @@ export default async function handler(req, res) {
       totalSelos: selos.length,
       totalThreatRadar: radar.length,
       totalOcorrencias: totalOcorrencias || ocorrencias.length,
-      totalLeads: leads.length
+      totalLeads: leads.length,
+      totalPagamentos: (pagamentos || []).filter(p => p.estado === 'pago').length,
+      totalSinais: sinais.length
     };
 
     return res.status(200).json({
@@ -183,6 +267,11 @@ export default async function handler(req, res) {
       leads,
       marcas,
       sinais,
+      verificacoes: verificacoes || [],
+      pagamentos: pagamentos || [],
+      historico: historico || [],
+      contactos_comerciais: contactosComerciais || [],
+      relatorios: relatorios || [],
       database_online: isDbOnline,
       database_warning: isDbOnline ? null : `Supabase inacessível (${dbErrorMessage}). Verifique se o projeto está pausado em supabase.com.`
     });
@@ -476,6 +565,436 @@ export default async function handler(req, res) {
         return res.status(200).json({ success: true });
       } catch (err) {
         return res.status(500).json({ error: 'Falha ao desativar selo.' });
+      }
+    }
+
+    // 2.7 ATUALIZAR CHECKLIST DE VERIFICAÇÃO (4 Pilares)
+    if (action === 'update_verificacao') {
+      const { empresa_id, tipo, estado, prova, verificado_por = 'admin' } = req.body;
+      if (!empresa_id || !tipo || !estado) {
+        return res.status(400).json({ error: 'empresa_id, tipo e estado são obrigatórios.' });
+      }
+      if (!['nif', 'dominio', 'telefone', 'representante'].includes(tipo)) {
+        return res.status(400).json({ error: 'Tipo inválido. Permitidos: nif, dominio, telefone, representante.' });
+      }
+      if (!['pendente', 'ok', 'falhou'].includes(estado)) {
+        return res.status(400).json({ error: 'Estado inválido. Permitidos: pendente, ok, falhou.' });
+      }
+
+      try {
+        const verifResp = await fetch(`${url}/rest/v1/verificacoes`, {
+          method: 'POST',
+          headers: { ...headers, Prefer: 'resolution=merge-duplicates,return=representation' },
+          body: JSON.stringify({
+            empresa_id,
+            tipo,
+            estado,
+            prova: prova ? String(prova).trim() : null,
+            verificado_por,
+            verificado_em: new Date().toISOString()
+          })
+        });
+
+        if (!verifResp.ok) throw new Error(await verifResp.text());
+        const verifRows = await verifResp.json();
+
+        await registrarHistorico(url, headers, {
+          empresa_id,
+          acao: `verificacao_${tipo}`,
+          depois: { tipo, estado, prova },
+          por: verificado_por,
+          motivo: `Checklist ${tipo.toUpperCase()} atualizada para ${estado.toUpperCase()}`
+        });
+
+        return res.status(200).json({ success: true, verificacao: verifRows[0] });
+      } catch (err) {
+        console.error('[Admin] Erro update_verificacao:', err);
+        return res.status(500).json({ error: 'Falha ao atualizar verificação: ' + err.message });
+      }
+    }
+
+    // 2.8 ALTERAR ESTADO DA EMPRESA COM TRAVA ESTRITA DE ATIVAÇÃO (Critério 1)
+    if (action === 'set_empresa_estado') {
+      const { empresa_id, estado: novoEstado, motivo, por = 'admin' } = req.body;
+      if (!empresa_id || !novoEstado) {
+        return res.status(400).json({ error: 'empresa_id e estado são obrigatórios.' });
+      }
+
+      const estadosValidos = ['lead', 'contactado', 'proposta', 'em_verificacao', 'ativo', 'suspenso', 'revogado', 'expirado'];
+      if (!estadosValidos.includes(novoEstado)) {
+        return res.status(400).json({ error: `Estado inválido. Permitidos: ${estadosValidos.join(', ')}` });
+      }
+
+      try {
+        const empResp = await fetch(`${url}/rest/v1/empresas?id=eq.${encodeURIComponent(empresa_id)}&select=*&limit=1`, { headers });
+        const emps = empResp.ok ? await empResp.json() : [];
+        if (!emps.length) return res.status(404).json({ error: 'Empresa não encontrada.' });
+        const empresaAtual = emps[0];
+        const estadoAnterior = empresaAtual.estado || empresaAtual.status;
+
+        // CRITÉRIO 1 DE ACEITAÇÃO: Não é possível ativar selo sem 4 verificações OK e pagamento (ou isenção justificada)
+        if (novoEstado === 'ativo') {
+          // A) Checar 4 verificações
+          const verifResp = await fetch(`${url}/rest/v1/verificacoes?empresa_id=eq.${encodeURIComponent(empresa_id)}&select=*`, { headers });
+          const verifs = verifResp.ok ? await verifResp.json() : [];
+          const tiposOk = new Set(verifs.filter(v => v.estado === 'ok').map(v => v.tipo));
+          const obrigatorios = ['nif', 'dominio', 'telefone', 'representante'];
+          const faltantes = obrigatorios.filter(t => !tiposOk.has(t));
+
+          if (faltantes.length > 0) {
+            return res.status(400).json({
+              error: `Bloqueio de ativação: as 4 verificações obrigatórias devem estar OK. Faltam: ${faltantes.join(', ')}.`
+            });
+          }
+
+          // B) Checar pagamento válido ou isenção justificada
+          const pagResp = await fetch(`${url}/rest/v1/pagamentos?empresa_id=eq.${encodeURIComponent(empresa_id)}&select=*`, { headers });
+          const pags = pagResp.ok ? await pagResp.json() : [];
+          const temPagamentoValido = pags.some(p => p.estado === 'pago' || (p.estado === 'isento' && p.motivo_isencao && p.motivo_isencao.trim().length >= 4));
+
+          if (!temPagamentoValido) {
+            return res.status(400).json({
+              error: 'Bloqueio de ativação: é obrigatório registrar pelo menos um pagamento "pago" ou uma isenção com motivo escrito antes de ativar o selo.'
+            });
+          }
+        }
+
+        // Suspensão ou revogação exige motivo escrito obrigatório
+        if ((novoEstado === 'suspenso' || novoEstado === 'revogado') && (!motivo || motivo.trim().length < 4)) {
+          return res.status(400).json({
+            error: `A transição para ${novoEstado} exige obrigatoriamente um motivo escrito para arquivo no histórico de auditoria.`
+          });
+        }
+
+        let codigoSelo = empresaAtual.codigo_selo;
+        if (novoEstado === 'ativo' && !codigoSelo) {
+          codigoSelo = gerarCodigoSelo();
+        }
+
+        const dataEmissao = novoEstado === 'ativo' ? (empresaAtual.data_emissao || new Date().toISOString()) : empresaAtual.data_emissao;
+        let dataValidade = empresaAtual.data_validade;
+        if (novoEstado === 'ativo' && !dataValidade) {
+          const v = new Date();
+          v.setFullYear(v.getFullYear() + 1);
+          dataValidade = v.toISOString();
+        }
+
+        const patchPayload = {
+          estado: novoEstado,
+          status: novoEstado === 'ativo' ? 'ativo' : (novoEstado === 'suspenso' ? 'suspenso' : 'inativo'),
+          codigo_selo: codigoSelo,
+          data_emissao: dataEmissao,
+          data_validade: dataValidade
+        };
+
+        const updateResp = await fetchComFallback(`${url}/rest/v1/empresas?id=eq.${encodeURIComponent(empresa_id)}`, {
+          method: 'PATCH',
+          headers: { ...headers, Prefer: 'return=representation' }
+        }, patchPayload);
+
+        if (!updateResp.ok) throw new Error(await updateResp.text());
+
+        // Atualizar selos
+        if (novoEstado === 'ativo') {
+          await fetch(`${url}/rest/v1/selos`, {
+            method: 'POST',
+            headers: { ...headers, Prefer: 'resolution=merge-duplicates,return=representation' },
+            body: JSON.stringify({
+              empresa_id,
+              codigo: codigoSelo,
+              tipo: 'canal_verificado',
+              valido_ate: dataValidade,
+              ativo: true
+            })
+          });
+        } else if (novoEstado === 'suspenso' || novoEstado === 'revogado' || novoEstado === 'expirado') {
+          await fetch(`${url}/rest/v1/selos?empresa_id=eq.${encodeURIComponent(empresa_id)}`, {
+            method: 'PATCH',
+            headers,
+            body: JSON.stringify({
+              ativo: false,
+              desativado_em: new Date().toISOString(),
+              motivo_desativacao: motivo || `Empresa em estado ${novoEstado}`
+            })
+          });
+        }
+
+        await registrarHistorico(url, headers, {
+          empresa_id,
+          acao: `mudanca_estado_${novoEstado}`,
+          antes: { estado: estadoAnterior },
+          depois: { estado: novoEstado, codigo_selo: codigoSelo },
+          por,
+          motivo: motivo || `Transição de estado para ${novoEstado}`
+        });
+
+        return res.status(200).json({ success: true, estado: novoEstado, codigo_selo: codigoSelo });
+      } catch (err) {
+        console.error('[Admin] Erro set_empresa_estado:', err);
+        return res.status(500).json({ error: 'Falha ao alterar estado: ' + err.message });
+      }
+    }
+
+    // 2.9 REGISTAR PAGAMENTO
+    if (action === 'add_pagamento') {
+      const { empresa_id, valor, data, metodo, referencia, fatura_numero, periodo_inicio, periodo_fim, estado, motivo_isencao } = req.body;
+      if (!empresa_id || !estado) {
+        return res.status(400).json({ error: 'empresa_id e estado são obrigatórios.' });
+      }
+
+      try {
+        const pagResp = await fetch(`${url}/rest/v1/pagamentos`, {
+          method: 'POST',
+          headers: { ...headers, Prefer: 'return=representation' },
+          body: JSON.stringify({
+            empresa_id,
+            valor: Number(valor) || 0.00,
+            data: data || new Date().toISOString(),
+            metodo: metodo || 'transferencia',
+            referencia: referencia ? String(referencia).trim() : null,
+            fatura_numero: fatura_numero ? String(fatura_numero).trim() : null,
+            periodo_inicio: periodo_inicio || null,
+            periodo_fim: periodo_fim || null,
+            estado: estado || 'pendente',
+            motivo_isencao: motivo_isencao ? String(motivo_isencao).trim() : null
+          })
+        });
+
+        if (!pagResp.ok) throw new Error(await pagResp.text());
+        const pagRows = await pagResp.json();
+
+        await registrarHistorico(url, headers, {
+          empresa_id,
+          acao: 'registo_pagamento',
+          depois: { valor, estado, metodo },
+          motivo: `Pagamento registado: ${estado} (${valor}€)`
+        });
+
+        return res.status(200).json({ success: true, pagamento: pagRows[0] });
+      } catch (err) {
+        console.error('[Admin] Erro add_pagamento:', err);
+        return res.status(500).json({ error: 'Falha ao registar pagamento: ' + err.message });
+      }
+    }
+
+    // 2.10 REGISTAR CONTACTO COMERCIAL (Funil)
+    if (action === 'add_contacto_comercial') {
+      const { empresa_id, tipo, canal, data, resumo, resposta } = req.body;
+      if (!empresa_id || !tipo) {
+        return res.status(400).json({ error: 'empresa_id e tipo são obrigatórios.' });
+      }
+
+      try {
+        const contResp = await fetch(`${url}/rest/v1/contactos_comerciais`, {
+          method: 'POST',
+          headers: { ...headers, Prefer: 'return=representation' },
+          body: JSON.stringify({
+            empresa_id,
+            tipo: tipo || 'seguimento',
+            canal: canal || 'email',
+            data: data || new Date().toISOString(),
+            resumo: resumo ? String(resumo).trim() : '',
+            resposta: resposta ? String(resposta).trim() : null
+          })
+        });
+
+        if (!contResp.ok) throw new Error(await contResp.text());
+        const contRows = await contResp.json();
+
+        return res.status(200).json({ success: true, contacto: contRows[0] });
+      } catch (err) {
+        console.error('[Admin] Erro add_contacto_comercial:', err);
+        return res.status(500).json({ error: 'Falha ao registar contacto comercial.' });
+      }
+    }
+
+    // 2.11 GERAR ALERTA GRATUITO (Radar -> Empresa)
+    if (action === 'gerar_alerta_gratuito') {
+      const { empresa_id, marca } = req.body;
+      if (!empresa_id && !marca) {
+        return res.status(400).json({ error: 'empresa_id ou marca é obrigatório.' });
+      }
+
+      try {
+        let empresa = null;
+        let marcaNome = marca;
+        if (empresa_id) {
+          const empResp = await fetch(`${url}/rest/v1/empresas?id=eq.${encodeURIComponent(empresa_id)}&select=*&limit=1`, { headers });
+          const emps = empResp.ok ? await empResp.json() : [];
+          if (emps.length) {
+            empresa = emps[0];
+            marcaNome = empresa.nome_comercial || empresa.nome;
+          }
+        }
+
+        const marcasFiltro = empresa?.marca_aliases?.length ? [marcaNome, ...empresa.marca_aliases] : [marcaNome];
+        const sinaisResp = await fetch(
+          `${url}/rest/v1/analises?marca_mencionada=not.is.null&veredito=in.(golpe,suspeito)&order=criado_em.desc&limit=100`,
+          { headers }
+        );
+        const allSinais = sinaisResp.ok ? await sinaisResp.json() : [];
+        const sinaisMarca = allSinais.filter(s => {
+          const m = (s.marca_mencionada || '').toLowerCase();
+          return marcasFiltro.some(al => m.includes(al.toLowerCase()));
+        });
+
+        const totalSinais = sinaisMarca.length;
+        const canais = [...new Set(sinaisMarca.map(s => s.canal || 'SMS/WhatsApp'))].join(', ') || 'SMS / WhatsApp';
+        
+        const exemplos = sinaisMarca.slice(0, 3).map(s => {
+          const limpo = limparTextoVitima(s.texto_original || s.resumo || 'Tentativa de cobrança urgente com link não oficial.');
+          return limpo.length > 100 ? limpo.slice(0, 97) + '...' : limpo;
+        });
+
+        const draftTexto = `Assunto: Alerta Preventivo de Segurança: Sinais de personificação da marca ${marcaNome}
+
+Exma. Equipa de Segurança / Comunicação de ${marcaNome},
+
+No âmbito da monitorização contínua da rede Confirme, Quem É? (confirmequeme.pt), detetámos recentemente ${totalSinais} sinal(is) de mensagens em circulação utilizando o nome da vossa marca.
+
+Resumo dos sinais detetados:
+• Total de ocorrências: ${totalSinais}
+• Canais reportados: ${canais}
+• Exemplos limpos (sem qualquer dado pessoal de utilizadores):
+${exemplos.map(e => `  - "${e}"`).join('\n') || '  - Mensagens simulando notificações oficiais com links externos.'}
+
+Recomendação preventiva:
+Sugerimos avaliar a publicação de uma nota preventiva nos vossos canais oficiais, alertando os vossos utilizadores para não acederem a links não oficiais nem partilharem dados confidenciais.
+
+Nota de integridade e utilidade pública:
+Este alerta é estritamente informativo e não constitui proposta comercial.
+
+Atenciosamente,
+Equipa de Inteligência & Verificação — Confirme, Quem É?
+https://confirmequeme.pt`;
+
+        if (empresa_id) {
+          await fetch(`${url}/rest/v1/contactos_comerciais`, {
+            method: 'POST',
+            headers,
+            body: JSON.stringify({
+              empresa_id,
+              tipo: 'alerta_gratuito',
+              canal: 'email',
+              resumo: `Alerta gratuito gerado com ${totalSinais} sinais detetados`,
+              resposta: 'Alerta pronto para envio'
+            })
+          });
+
+          await registrarHistorico(url, headers, {
+            empresa_id,
+            acao: 'geracao_alerta_gratuito',
+            depois: { total_sinais: totalSinais },
+            motivo: 'Alerta preventivo gratuito gerado pelo operador'
+          });
+        }
+
+        return res.status(200).json({
+          success: true,
+          total_sinais: totalSinais,
+          alerta_texto: draftTexto
+        });
+      } catch (err) {
+        console.error('[Admin] Erro gerar_alerta_gratuito:', err);
+        return res.status(500).json({ error: 'Falha ao gerar alerta gratuito.' });
+      }
+    }
+
+    // 2.12 GERAR RELATÓRIO MENSAL EM HTML/PDF
+    if (action === 'gerar_relatorio_mensal') {
+      const { empresa_id, periodo = new Date().toISOString().slice(0, 7), versao = '1.0' } = req.body;
+      if (!empresa_id) return res.status(400).json({ error: 'empresa_id é obrigatório.' });
+
+      try {
+        const empResp = await fetch(`${url}/rest/v1/empresas?id=eq.${encodeURIComponent(empresa_id)}&select=*&limit=1`, { headers });
+        const emps = empResp.ok ? await empResp.json() : [];
+        if (!emps.length) return res.status(404).json({ error: 'Empresa não encontrada.' });
+        const empresa = emps[0];
+
+        const marcaNome = empresa.nome_comercial || empresa.nome;
+        const aliases = empresa.marca_aliases || [];
+        const allMarcas = [marcaNome, ...aliases].map(m => m.toLowerCase());
+
+        const sinaisResp = await fetch(`${url}/rest/v1/analises?marca_mencionada=not.is.null&veredito=in.(golpe,suspeito)&limit=200`, { headers });
+        const allSinais = sinaisResp.ok ? await sinaisResp.json() : [];
+        const ocorrencias = allSinais.filter(s => {
+          const m = (s.marca_mencionada || '').toLowerCase();
+          return allMarcas.some(al => m.includes(al));
+        });
+
+        const usoResp = await fetch(`${url}/rest/v1/uso_selo?empresa_id=eq.${encodeURIComponent(empresa_id)}&select=*`, { headers });
+        const usos = usoResp.ok ? await usoResp.json() : [];
+        const metricas = {
+          visitas_pagina: usos.reduce((a, b) => a + (b.visitas_pagina || 0), 0),
+          verificacoes_widget: usos.reduce((a, b) => a + (b.verificacoes_widget || 0), 0)
+        };
+
+        const dadosRelatorio = estruturarRelatorioMensal({
+          empresa,
+          periodo,
+          ocorrencias,
+          metricasSelo: metricas,
+          versao,
+          geradoPor: 'admin'
+        });
+
+        const html = renderRelatorioHtml(dadosRelatorio);
+
+        const relInsert = await fetch(`${url}/rest/v1/relatorios_gerados`, {
+          method: 'POST',
+          headers: { ...headers, Prefer: 'return=representation' },
+          body: JSON.stringify({
+            empresa_id,
+            periodo,
+            versao,
+            hash_ficheiro: dadosRelatorio.hash_sha256,
+            gerado_por: 'admin'
+          })
+        });
+
+        const relRows = relInsert.ok ? await relInsert.json() : [];
+
+        await registrarHistorico(url, headers, {
+          empresa_id,
+          acao: 'geracao_relatorio_mensal',
+          depois: { periodo, versao, hash: dadosRelatorio.hash_sha256 },
+          motivo: `Relatório mensal gerado para ${periodo}`
+        });
+
+        return res.status(200).json({
+          success: true,
+          relatorio: relRows[0] || null,
+          hash_sha256: dadosRelatorio.hash_sha256,
+          dados: dadosRelatorio,
+          html
+        });
+      } catch (err) {
+        console.error('[Admin] Erro gerar_relatorio_mensal:', err);
+        return res.status(500).json({ error: 'Falha ao compilar relatório mensal.' });
+      }
+    }
+
+    // 2.13 APROVAÇÃO MANUAL DE RELATÓRIO (Critério 6)
+    if (action === 'aprovar_relatorio') {
+      const { relatorio_id, aprovado_por = 'admin' } = req.body;
+      if (!relatorio_id) return res.status(400).json({ error: 'relatorio_id é obrigatório.' });
+
+      try {
+        const patchResp = await fetch(`${url}/rest/v1/relatorios_gerados?id=eq.${encodeURIComponent(relatorio_id)}`, {
+          method: 'PATCH',
+          headers: { ...headers, Prefer: 'return=representation' },
+          body: JSON.stringify({
+            aprovado_por,
+            aprovado_em: new Date().toISOString()
+          })
+        });
+
+        if (!patchResp.ok) throw new Error(await patchResp.text());
+        const rows = await patchResp.json();
+
+        return res.status(200).json({ success: true, relatorio: rows[0] });
+      } catch (err) {
+        return res.status(500).json({ error: 'Falha ao aprovar relatório.' });
       }
     }
 

@@ -24,7 +24,10 @@ export function escapeHtml(str) {
  * - Empresa inativa: "⚠️ Verificação inativa"
  */
 export function calcularStatusPublico({ selo, empresa, agora = new Date() }) {
-  const expirado = selo?.valido_ate ? new Date(selo.valido_ate) < agora : false;
+  const dataValidade = empresa?.data_validade || selo?.valido_ate;
+  const expirado = dataValidade ? new Date(dataValidade) < agora : false;
+  const est = (empresa?.estado || empresa?.status || 'ativo').toLowerCase();
+
   let statusPublico = '✓ Verificação ativa';
   let statusClasse = 'status-valido';
   let statusRaw = 'valido';
@@ -33,18 +36,22 @@ export function calcularStatusPublico({ selo, empresa, agora = new Date() }) {
     statusPublico = '⚠️ Verificação inativa';
     statusClasse = 'status-inativo';
     statusRaw = 'inativo';
-  } else if (empresa?.status === 'suspenso') {
+  } else if (est === 'revogado') {
+    statusPublico = '❌ Verificação revogada';
+    statusClasse = 'status-revogado';
+    statusRaw = 'revogado';
+  } else if (est === 'suspenso') {
     statusPublico = '⚠️ Verificação suspensa';
     statusClasse = 'status-suspenso';
     statusRaw = 'suspenso';
-  } else if (empresa?.status !== 'ativo') {
-    statusPublico = '⚠️ Verificação inativa';
-    statusClasse = 'status-inativo';
-    statusRaw = 'inativo';
-  } else if (expirado) {
+  } else if (est === 'expirado' || expirado) {
     statusPublico = '⚠️ Verificação expirada';
     statusClasse = 'status-expirado';
     statusRaw = 'expirado';
+  } else if (est !== 'ativo') {
+    statusPublico = '⚠️ Verificação inativa';
+    statusClasse = 'status-inativo';
+    statusRaw = 'inativo';
   }
 
   return { statusPublico, statusClasse, statusRaw, expirado };
@@ -97,7 +104,7 @@ export default async function handler(req, res) {
       if (req.headers.accept?.includes('application/json') || req.query.format === 'json') {
         return res.status(404).json({ error: 'Selo não encontrado.', status_selo: 'nao_encontrado' });
       }
-      return res.status(404).send(renderErrorHtml('Selo Não Encontrado', 'O código de selo consultado não existe no registro oficial ZAP VERIFIED.'));
+      return res.status(404).send(renderErrorHtml('Código Não Encontrado', 'O código de verificação consultado não foi localizado no registo oficial.'));
     }
 
     const selo = selos[0];
@@ -303,7 +310,7 @@ export function renderVerifyHtml({ selo, empresa, statusPublico, statusClasse })
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ZAP VERIFIED — ${nomeEmpresa}</title>
+  <title>Confirme, Quem É? — ${nomeEmpresa}</title>
   <meta name="robots" content="noindex, nofollow">
   <link rel="icon" type="image/png" href="/favicon.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -537,7 +544,7 @@ export function renderVerifyHtml({ selo, empresa, statusPublico, statusClasse })
 <body>
   <div class="container">
     <div class="header">
-      <div class="brand-title">ZAP VERIFIED</div>
+      <div class="brand-title">🛡️ CONFIRME, QUEM É?</div>
       <a href="/" class="btn btn-secondary" style="padding: 6px 14px; font-size: 0.8rem;">Página Inicial</a>
     </div>
 
@@ -584,9 +591,9 @@ export function renderVerifyHtml({ selo, empresa, statusPublico, statusClasse })
         <div class="meta-item">VALIDADE: <strong>${validadeTexto}</strong></div>
       </div>
 
-      <!-- Texto Público Obrigatório (Seção 17) -->
+      <!-- Texto Público Obrigatório (Seção 5 e 17) -->
       <div class="disclaimer-box">
-        ⚠️ <strong>Aviso Importante:</strong> Este selo confirma a associação dos canais apresentados à organização. Não significa que toda mensagem recebida em nome da empresa seja legítima.
+        ⚠️ <strong>Aviso Oficial:</strong> O selo confirma a identidade e os contactos da empresa na data da verificação. Não garante que não existam tentativas de burla em seu nome.
       </div>
 
       <!-- Botões Obrigatórios (Seção 17) -->
