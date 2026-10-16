@@ -3,7 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "description": "ZAP, QUEM É? — Verificador de golpes e inteligência contra impersonation B2B.",
+  "description": "CONFIRME, QUEM É? — Verificador de fraudes e inteligência contra impersonation B2B.",
   "scripts": {
     "start": "node bot.js",
     "dev": "vercel dev",
