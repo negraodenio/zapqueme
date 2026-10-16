@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+  <meta charset="UTF-8">
+  <title>Simulação Telemóvel Real — WhatsApp (Confirme, Quem É?)</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background: #0f172a;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      color: #f8fafc;
+      padding: 30px 20px;
+    }
+    h1 { text-align: center; font-size: 24px; margin-bottom: 8px; color: #38bdf8; }
+    p.subtitle { text-align: center; font-size: 14px; color: #94a3b8; margin-bottom: 30px; }
+    
+    .grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 30px;
+      justify-content: center;
+      max-width: 1600px;
+      margin: 0 auto;
+    }
+    .phone-wrapper {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .phone-label {
+      font-weight: 700;
+      font-size: 15px;
+      color: #38bdf8;
+      margin-bottom: 4px;
+      text-align: center;
+    }
+    .phone-meta {
+      font-size: 12px;
+      color: #94a3b8;
+      margin-bottom: 12px;
+    }
+    .phone-mockup {
+      width: 375px;
+      height: 720px;
+      background: #efeae2;
+      border: 10px solid #1e293b;
+      border-radius: 40px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7);
+      position: relative;
+    }
+    .phone-notch {
+      position: absolute;
+      top: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 140px;
+      height: 20px;
+      background: #1e293b;
+      border-bottom-left-radius: 14px;
+      border-bottom-right-radius: 14px;
+      z-index: 10;
+    }
+    .wa-header {
+      background: #008069;
+      color: #fff;
+      padding: 26px 12px 10px 12px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .wa-back { font-size: 22px; cursor: pointer; }
+    .wa-avatar {
+      width: 36px;
+      height: 36px;
+      background: #fff;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+    }
+    .wa-name { font-size: 15px; font-weight: 600; }
+    .wa-status { font-size: 11px; opacity: 0.85; }
+    
+    .wa-chat-area {
+      flex: 1;
+      padding: 12px;
+      overflow-y: hidden;
+      background-image: radial-gradient(#d1d7db 1px, transparent 1px);
+      background-size: 16px 16px;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-start;
+    }
+    .wa-date-pill {
+      align-self: center;
+      background: #ffffff;
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-size: 11px;
+      color: #54656f;
+      margin-bottom: 12px;
+      box-shadow: 0 1px 1px rgba(0,0,0,0.1);
+      text-transform: uppercase;
+      font-weight: 500;
+    }
+    .wa-bubble-in {
+      align-self: flex-start;
+      background: #ffffff;
+      padding: 9px 12px 20px 12px;
+      border-radius: 10px;
+      border-top-left-radius: 0;
+      max-width: 96%;
+      box-shadow: 0 1px 1.5px rgba(11,20,26,0.13);
+      position: relative;
+      font-size: 13.6px;
+      line-height: 18px;
+      color: #111b21;
+    }
+    .wa-bubble-text strong {
+      color: #0b141a;
+      font-weight: 700;
+    }
+    .wa-bubble-text em {
+      color: #667781;
+      font-size: 12px;
+      line-height: 16px;
+      display: inline-block;
+      margin-top: 2px;
+    }
+    .wa-time {
+      position: absolute;
+      right: 8px;
+      bottom: 4px;
+      font-size: 10.5px;
+      color: #667781;
+    }
+    .wa-input-bar {
+      background: #f0f2f5;
+      padding: 10px 14px;
+      display: flex;
+      align-items: center;
+    }
+    .wa-input-placeholder {
+      background: #fff;
+      border-radius: 20px;
+      padding: 8px 14px;
+      font-size: 14px;
+      color: #8696a0;
+      width: 100%;
+    }
+  </style>
+</head>
+<body>
+  <h1>📱 Validação Visual em Ecrã de Telemóvel Real (375 × 720 px)</h1>
+  <p class="subtitle">Demonstração das 4 novas categorias — Comprovativo de ausência de corte "Ler mais" e adaptação ao ecrã</p>
+  <div class="grid">
+    
+    <div class="phone-wrapper">
+      <div class="phone-label">1. MB WAY Vendedor OLX / Multibanco</div>
+      <div class="phone-meta">Tamanho: <strong>583 chars</strong> | Linhas de conteúdo: <strong>10</strong> | Veredito: <strong>HIGH</strong></div>
+      <div class="phone-mockup">
+        <div class="phone-notch"></div>
+        <div class="wa-header">
+          <div class="wa-back">‹</div>
+          <div class="wa-avatar">🛡️</div>
+          <div class="wa-contact">
+            <div class="wa-name">Zap, quem é?</div>
+            <div class="wa-status">online</div>
+          </div>
+        </div>
+        <div class="wa-chat-area">
+          <div class="wa-date-pill">HOJE</div>
+          <div class="wa-bubble-in">
+            <div class="wa-bubble-text">🔴 <strong>Provável golpe: não vá ao Multibanco.</strong><br><br><strong>Porquê:</strong> o suposto comprador tenta fazê-lo ir a um Multibanco ou autorizar débitos em vez de lhe pagar.<br><br><strong>O que fazer:</strong><br>1. Para receber por MB WAY só precisa de dar o seu número de telemóvel.<br>2. Não é necessário aceder a uma caixa Multibanco nem fornecer códigos.<br>3. Guarde uma captura de ecrã para prova e cancele o negócio.<br><br><strong>Já autorizou alguma operação?</strong> Responda <strong>AJUDA</strong>.<br><br><em>Análise automática: confirme sempre por um canal oficial.</em><br><em>Foi útil? Responda ÚTIL ou ERRO · Mais informação: DETALHES</em><br><em>Confirme, Quem É? · confirmequeme.pt</em></div>
+            <div class="wa-time">10:45</div>
+          </div>
+        </div>
+        <div class="wa-input-bar">
+          <div class="wa-input-placeholder">Mensagem</div>
+        </div>
+      </div>
+    </div>
+  
+
+    <div class="phone-wrapper">
+      <div class="phone-label">2. Falso Apoio Bancário por Telefone</div>
+      <div class="phone-meta">Tamanho: <strong>597 chars</strong> | Linhas de conteúdo: <strong>10</strong> | Veredito: <strong>HIGH</strong></div>
+      <div class="phone-mockup">
+        <div class="phone-notch"></div>
+        <div class="wa-header">
+          <div class="wa-back">‹</div>
+          <div class="wa-avatar">🛡️</div>
+          <div class="wa-contact">
+            <div class="wa-name">Zap, quem é?</div>
+            <div class="wa-status">online</div>
+          </div>
+        </div>
+        <div class="wa-chat-area">
+          <div class="wa-date-pill">HOJE</div>
+          <div class="wa-bubble-in">
+            <div class="wa-bubble-text">🔴 <strong>Provável golpe: não ligue para este número.</strong><br><br><strong>Porquê:</strong> a mensagem simula um alerta de segurança bancária para o levar a telefonar e ceder códigos de autorização.<br><br><strong>O que fazer:</strong><br>1. Não ligue para o número indicado nem responda à mensagem.<br>2. Ligue diretamente para o seu banco através do número no verso do cartão.<br>3. Guarde uma captura de ecrã para prova e bloqueie o remetente.<br><br><strong>Já forneceu códigos ou dados?</strong> Responda <strong>AJUDA</strong>.<br><br><em>Análise automática: confirme sempre por um canal oficial.</em><br><em>Foi útil? Responda ÚTIL ou ERRO · Mais informação: DETALHES</em><br><em>Confirme, Quem É? · confirmequeme.pt</em></div>
+            <div class="wa-time">10:45</div>
+          </div>
+        </div>
+        <div class="wa-input-bar">
+          <div class="wa-input-placeholder">Mensagem</div>
+        </div>
+      </div>
+    </div>
+  
+
+    <div class="phone-wrapper">
+      <div class="phone-label">3. Falsa Notificação Policial / Judicial</div>
+      <div class="phone-meta">Tamanho: <strong>575 chars</strong> | Linhas de conteúdo: <strong>10</strong> | Veredito: <strong>HIGH</strong></div>
+      <div class="phone-mockup">
+        <div class="phone-notch"></div>
+        <div class="wa-header">
+          <div class="wa-back">‹</div>
+          <div class="wa-avatar">🛡️</div>
+          <div class="wa-contact">
+            <div class="wa-name">Zap, quem é?</div>
+            <div class="wa-status">online</div>
+          </div>
+        </div>
+        <div class="wa-chat-area">
+          <div class="wa-date-pill">HOJE</div>
+          <div class="wa-bubble-in">
+            <div class="wa-bubble-text">🔴 <strong>Provável golpe: não responda nem pague.</strong><br><br><strong>Porquê:</strong> utiliza falsas ameaças judiciais ou policiais para coagir ao pagamento rápido de supostas multas.<br><br><strong>O que fazer:</strong><br>1. Não faça nenhum pagamento nem forneça dados pessoais.<br>2. Confirme sempre diretamente com a entidade, pelos contactos oficiais.<br>3. Guarde uma captura de ecrã para prova e bloqueie o remetente.<br><br><strong>Já efetuou algum pagamento?</strong> Responda <strong>AJUDA</strong>.<br><br><em>Análise automática: confirme sempre por um canal oficial.</em><br><em>Foi útil? Responda ÚTIL ou ERRO · Mais informação: DETALHES</em><br><em>Confirme, Quem É? · confirmequeme.pt</em></div>
+            <div class="wa-time">10:45</div>
+          </div>
+        </div>
+        <div class="wa-input-bar">
+          <div class="wa-input-placeholder">Mensagem</div>
+        </div>
+      </div>
+    </div>
+  
+
+    <div class="phone-wrapper">
+      <div class="phone-label">4. Criptomoedas / Lucro Garantido</div>
+      <div class="phone-meta">Tamanho: <strong>554 chars</strong> | Linhas de conteúdo: <strong>10</strong> | Veredito: <strong>HIGH</strong></div>
+      <div class="phone-mockup">
+        <div class="phone-notch"></div>
+        <div class="wa-header">
+          <div class="wa-back">‹</div>
+          <div class="wa-avatar">🛡️</div>
+          <div class="wa-contact">
+            <div class="wa-name">Zap, quem é?</div>
+            <div class="wa-status">online</div>
+          </div>
+        </div>
+        <div class="wa-chat-area">
+          <div class="wa-date-pill">HOJE</div>
+          <div class="wa-bubble-in">
+            <div class="wa-bubble-text">🔴 <strong>Provável golpe: não envie dinheiro.</strong><br><br><strong>Porquê:</strong> promete ganhos rápidos ou retornos garantidos, padrão clássico para induzir transferências sem retorno.<br><br><strong>O que fazer:</strong><br>1. Não transfira dinheiro nem compre criptoativos.<br>2. Desconfie sempre de promessas de lucros fáceis ou garantidos.<br>3. Guarde uma captura de ecrã para prova e bloqueie o contacto.<br><br><strong>Já enviou dinheiro?</strong> Responda <strong>AJUDA</strong>.<br><br><em>Análise automática: confirme sempre por um canal oficial.</em><br><em>Foi útil? Responda ÚTIL ou ERRO · Mais informação: DETALHES</em><br><em>Confirme, Quem É? · confirmequeme.pt</em></div>
+            <div class="wa-time">10:45</div>
+          </div>
+        </div>
+        <div class="wa-input-bar">
+          <div class="wa-input-placeholder">Mensagem</div>
+        </div>
+      </div>
+    </div>
+  
+  </div>
+</body>
+</html>

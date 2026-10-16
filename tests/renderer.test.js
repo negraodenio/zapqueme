@@ -128,7 +128,7 @@ const contractCaso7 = buildDataContract(parsedCaso7, 'Recrutamento Amazon: ganhe
 const msgCaso7 = renderWhatsAppResponse(contractCaso7);
 assert(contractCaso7.template === 'job_offer', 'Caso 7 identifica job_offer');
 assert(msgCaso7.includes('🔴 *Provável golpe: não faça pagamentos.*'), 'Caso 7 tem título de emprego falso');
-assert(msgCaso7.includes('Nenhuma empresa séria cobra dinheiro para trabalhar'), 'Caso 7 orienta sobre recrutamento');
+assert(msgCaso7.includes('Pedir pagamento antecipado para trabalhar costuma ser um sinal de alerta'), 'Caso 7 usa frase não-absoluta');
 
 // Caso 8: Burla MB WAY no Multibanco (vendedor OLX / Vinted)
 const parsedCaso8 = {
@@ -140,7 +140,7 @@ const contractCaso8 = buildDataContract(parsedCaso8, 'Quero comprar o artigo no 
 const msgCaso8 = renderWhatsAppResponse(contractCaso8);
 assert(contractCaso8.template === 'mbway_seller', 'Caso 8 identifica mbway_seller');
 assert(msgCaso8.includes('🔴 *Provável golpe: não vá ao Multibanco.*'), 'Caso 8 alerta especificamente contra ida ao ATM');
-assert(msgCaso8.includes('Para receber por MB WAY só precisa de dar o seu número'), 'Caso 8 esclarece mecanismo do MB WAY');
+assert(msgCaso8.includes('Para receber por MB WAY só precisa de dar o seu número de telemóvel'), 'Caso 8 esclarece mecanismo do MB WAY');
 
 // Caso 9: Falso Apoio Bancário por Telefone / Spoofing
 const parsedCaso9 = {
@@ -164,6 +164,7 @@ const contractCaso10 = buildDataContract(parsedCaso10, 'Polícia Judiciária e E
 const msgCaso10 = renderWhatsAppResponse(contractCaso10);
 assert(contractCaso10.template === 'fake_police_legal', 'Caso 10 identifica fake_police_legal');
 assert(msgCaso10.includes('🔴 *Provável golpe: não responda nem pague.*'), 'Caso 10 tem título de notificação judicial');
+assert(msgCaso10.includes('Confirme sempre diretamente com a entidade, pelos contactos oficiais.'), 'Caso 10 não afirma o que as autoridades fazem');
 
 // Caso 11: Golpe Dinâmico Universal (ex: burla de chantagem ou categoria atípica sem template fixo)
 const parsedCaso11 = {
@@ -176,8 +177,8 @@ const contractCaso11 = buildDataContract(parsedCaso11, 'Temos controlo do seu co
 const msgCaso11 = renderWhatsAppResponse(contractCaso11);
 assert(contractCaso11.template === 'general_scam', 'Caso 11 cai no motor universal general_scam');
 assert(msgCaso11.includes('🔴 *Provável golpe: não pague nem aceda.*'), 'Caso 11 gera título universal de alerta');
-assert(msgCaso11.includes('a mensagem exige resgate sob ameaça'), 'Caso 11 sintetiza explicação higienizada');
-assert(msgCaso11.includes('1. Não clique em links, não forneça códigos nem transfira dinheiro.'), 'Caso 11 aplica 3 passos universais');
+assert(msgCaso11.includes('*Porquê:* esta mensagem apresenta sinais de risco e pede uma ação urgente.'), 'Caso 11 usa frase fixa segura sem depender de IA livre');
+assert(msgCaso11.includes('Guarde uma captura de ecrã para prova e bloqueie o remetente.'), 'Caso 11 preserva provas antes de apagar');
 
 // 3. Teste Estrito de Caracteres (≤ 600) e Linhas (≤ 12) para TODAS as categorias
 const todasMensagens = [
