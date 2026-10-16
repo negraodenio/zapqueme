@@ -1,0 +1,1571 @@
+{
+  "tipo": "teste_interno_regressao_20_exemplos",
+  "git_commit": "b1615f945b7dbd42f592f5ab518d5f0829f9ca1a",
+  "dataset_hash": "3bc4fb7797a324a1fc31186133ec195f9f8bf8ceb671389ddd7d76e88af5ac7b",
+  "num_amostras": 20,
+  "num_voltas": 3,
+  "timestamp_inicio": "2026-10-16T11:19:16.423Z",
+  "timestamp_fim": "2026-10-16T11:28:57.090Z",
+  "parametros": {
+    "temperatura": 0.2,
+    "canal": "benchmark",
+    "bypass_cache": true,
+    "bypass_persistencias": true
+  },
+  "variancia": {
+    "casos_com_oscilacao": 15,
+    "detalhes_oscilacoes": [
+      {
+        "id": "PT-01",
+        "categoria": "Phishing CTT",
+        "esperado": "golpe",
+        "tipo_variacao": "Flutuação Numérica (Cosmético)",
+        "v1": "golpe [96]",
+        "v2": "golpe [95]",
+        "v3": "golpe [95]"
+      },
+      {
+        "id": "PT-03",
+        "categoria": "Saúde Legítima CUF",
+        "esperado": "legitimo",
+        "tipo_variacao": "Flutuação Numérica (Cosmético)",
+        "v1": "legitimo [10]",
+        "v2": "legitimo [8]",
+        "v3": "legitimo [8]"
+      },
+      {
+        "id": "PT-04",
+        "categoria": "Banca 2FA Santander Legítimo",
+        "esperado": "legitimo",
+        "tipo_variacao": "Flutuação Numérica (Cosmético)",
+        "v1": "legitimo [10]",
+        "v2": "legitimo [15]",
+        "v3": "legitimo [15]"
+      },
+      {
+        "id": "PT-06",
+        "categoria": "Fatura EDP Entidade Neutra",
+        "esperado": "legitimo",
+        "tipo_variacao": "Mudança de Veredito (Crítico / Fronteira)",
+        "v1": "legitimo [15]",
+        "v2": "suspeito [48]",
+        "v3": "legitimo [15]"
+      },
+      {
+        "id": "PT-08",
+        "categoria": "Falso Suporte MEO Smishing",
+        "esperado": "golpe",
+        "tipo_variacao": "Flutuação Numérica (Cosmético)",
+        "v1": "golpe [95]",
+        "v2": "golpe [95]",
+        "v3": "golpe [96]"
+      },
+      {
+        "id": "PT-09",
+        "categoria": "SMS Diário Familiar",
+        "esperado": "legitimo",
+        "tipo_variacao": "Flutuação Numérica (Cosmético)",
+        "v1": "legitimo [8]",
+        "v2": "legitimo [5]",
+        "v3": "legitimo [8]"
+      },
+      {
+        "id": "PT-10",
+        "categoria": "Burla Sinal Imobiliária",
+        "esperado": "golpe",
+        "tipo_variacao": "Flutuação Numérica (Cosmético)",
+        "v1": "golpe [90]",
+        "v2": "golpe [88]",
+        "v3": "golpe [90]"
+      },
+      {
+        "id": "PT-11",
+        "categoria": "Saúde Hospital da Luz Legítimo",
+        "esperado": "legitimo",
+        "tipo_variacao": "Flutuação Numérica (Cosmético)",
+        "v1": "legitimo [10]",
+        "v2": "legitimo [10]",
+        "v3": "legitimo [8]"
+      },
+      {
+        "id": "PT-12",
+        "categoria": "Phishing Autoridade Tributária (AT)",
+        "esperado": "golpe",
+        "tipo_variacao": "Flutuação Numérica (Cosmético)",
+        "v1": "golpe [98]",
+        "v2": "golpe [95]",
+        "v3": "golpe [96]"
+      },
+      {
+        "id": "PT-14",
+        "categoria": "Smishing Via Verde",
+        "esperado": "golpe",
+        "tipo_variacao": "Flutuação Numérica (Cosmético)",
+        "v1": "golpe [98]",
+        "v2": "golpe [95]",
+        "v3": "golpe [95]"
+      },
+      {
+        "id": "PT-15",
+        "categoria": "Operadora NOS Legítimo",
+        "esperado": "legitimo",
+        "tipo_variacao": "Flutuação Numérica (Cosmético)",
+        "v1": "legitimo [8]",
+        "v2": "legitimo [10]",
+        "v3": "legitimo [10]"
+      },
+      {
+        "id": "PT-16",
+        "categoria": "Falso Reembolso Segurança Social",
+        "esperado": "golpe",
+        "tipo_variacao": "Flutuação Numérica (Cosmético)",
+        "v1": "golpe [96]",
+        "v2": "golpe [96]",
+        "v3": "golpe [95]"
+      },
+      {
+        "id": "PT-17",
+        "categoria": "Água Municipal Multibanco Legítimo",
+        "esperado": "legitimo",
+        "tipo_variacao": "Mudança de Veredito (Crítico / Fronteira)",
+        "v1": "legitimo [18]",
+        "v2": "legitimo [15]",
+        "v3": "suspeito [45]"
+      },
+      {
+        "id": "PT-18",
+        "categoria": "Burla Investimento Crypto WhatsApp",
+        "esperado": "golpe",
+        "tipo_variacao": "Flutuação Numérica (Cosmético)",
+        "v1": "golpe [98]",
+        "v2": "golpe [98]",
+        "v3": "golpe [95]"
+      },
+      {
+        "id": "PT-19",
+        "categoria": "Saudação Comercial Comum",
+        "esperado": "legitimo",
+        "tipo_variacao": "Flutuação Numérica (Cosmético)",
+        "v1": "legitimo [5]",
+        "v2": "legitimo [5]",
+        "v3": "legitimo [10]"
+      }
+    ]
+  },
+  "voltas": [
+    {
+      "volta": 1,
+      "status": "NOMINAL (IA e Listas Ativas)",
+      "contagem_fontes": {
+        "IA": 14,
+        "Lista de ameaças": 0,
+        "Regra": 6,
+        "Fallback": 0,
+        "desconhecido": 0
+      },
+      "regra_combinada_real": {
+        "contagens": {
+          "total": 20,
+          "tp": 10,
+          "tn": 10,
+          "fp": 0,
+          "fn": 0
+        },
+        "valores": {
+          "acuracia": 100,
+          "precisao": 100,
+          "recall": 100,
+          "taxa_falsos_positivos": 0
+        },
+        "intervalos_wilson_95": {
+          "acuracia": [
+            83.9,
+            100
+          ],
+          "precisao": [
+            72.2,
+            100
+          ],
+          "recall": [
+            72.2,
+            100
+          ],
+          "taxa_falsos_positivos": [
+            0,
+            27.8
+          ]
+        }
+      },
+      "regra_historica_60pts": {
+        "contagens": {
+          "total": 20,
+          "tp": 10,
+          "tn": 10,
+          "fp": 0,
+          "fn": 0
+        },
+        "valores": {
+          "acuracia": 100,
+          "precisao": 100,
+          "recall": 100,
+          "taxa_falsos_positivos": 0
+        },
+        "intervalos_wilson_95": {
+          "acuracia": [
+            83.9,
+            100
+          ],
+          "precisao": [
+            72.2,
+            100
+          ],
+          "recall": [
+            72.2,
+            100
+          ],
+          "taxa_falsos_positivos": [
+            0,
+            27.8
+          ]
+        }
+      },
+      "casos": [
+        {
+          "id": "PT-01",
+          "categoria": "Phishing CTT",
+          "esperado": "Golpe",
+          "veredito": "golpe",
+          "score": 96,
+          "modelo": "google/gemini-3.8-flash",
+          "origem_decisiva": "Regra",
+          "fonte_detalhe": "Dicionário de Marcas Oficiais (Typosquatting)",
+          "fontes_contributos": [
+            "Regra",
+            "IA"
+          ],
+          "sinais": [
+            "A mensagem faz referência a [CTT], mas o site [ctt-desalfandega.top] NÃO é o domínio oficial verificado (ctt.pt).",
+            "Uso de domínio não oficial com terminação .top para imitar os CTT",
+            "Pretexto comum de taxa aduaneira pendente de baixo valor para induzir clique rápido",
+            "Sentido de urgência para entrega imediata mediante pagamento via link externo"
+          ],
+          "timestamp": "2026-10-16T11:19:23.737Z"
+        },
+        {
+          "id": "PT-02",
+          "categoria": "Falso Filho / MB WAY",
+          "esperado": "Golpe",
+          "veredito": "golpe",
+          "score": 95,
+          "modelo": "google/gemini-3.8-flash",
+          "origem_decisiva": "IA",
+          "fonte_detalhe": "OpenRouter (google/gemini-3.8-flash)",
+          "fontes_contributos": [
+            "IA"
+          ],
+          "sinais": [
+            "Pretexto clássico de telemóvel perdido ou avariado ('olá mãe/pai')",
+            "Falsa urgência com ameaça de corte de serviço",
+            "Pedido de transferência de dinheiro imediata via MB WAY para número desconhecido"
+          ],
+          "timestamp": "2026-10-16T11:19:32.003Z"
+        },
+        {
+          "id": "PT-03",
+          "categoria": "Saúde Legítima CUF",
+          "esperado": "Legítimo",
+          "veredito": "legitimo",
+          "score": 10,
+          "modelo": "google/gemini-3.8-flash",
+          "origem_decisiva": "IA",
+          "fonte_detalhe": "OpenRouter (google/gemini-3.8-flash)",
+          "fontes_contributos": [
+            "IA"
+          ],
+          "sinais": [
+            "Mensagem meramente informativa de agendamento de consulta sem pedidos de dados bancários",
+            "Ausência de links suspeitos ou formulários externos para roubo de dados",
+            "Sem sinais de risco detetados na estrutura ou conteúdo da comunicação"
+          ],
+          "timestamp": "2026-10-16T11:19:41.123Z"
+        },
+        {
+          "id": "PT-04",
+          "categoria": "Banca 2FA Santander Legítimo",
+          "esperado": "Legítimo",
+          "veredito": "legitimo",
+          "score": 10,
+          "modelo": "google/gemini-3.8-flash",
+          "origem_decisiva": "IA",
+          "fonte_detalhe": "OpenRouter (google/gemini-3.8-flash)",
+          "fontes_contributos": [
+            "IA"
+          ],
+          "sinais": [
+            "Mensagem informativa sem links ou pedidos de pagamento direto",
+            "Formato típico de autenticação de dois fatores (código OTP)",
+            "Contém recomendação expressa de segurança para não partilhar o código"
+          ],
+          "timestamp": "2026-10-16T11:19:52.185Z"
+        },
+        {
+          "id": "PT-05",
+          "categoria": "Phishing Millennium BCP",
+          "esperado": "Golpe",
+          "veredito": "golpe",
+          "score": 95,
+          "modelo": "google/gemini-3.8-flash",
+          "origem_decisiva": "Regra",
+          "fonte_detalhe": "Dicionário de Marcas Oficiais (Typosquatting)",
+          "fontes_contributos": [
+            "Regra",
+            "IA"
+          ],
+          "sinais": [
+            "A mensagem faz referência a [MILLENNIUM], mas o site [millennium-seguranca-acesso.com] NÃO é o domínio oficial verificado (millenniumbcp.pt, ind.millenniumbcp.pt).",
+            "Uso de endereço web fraudulento que imita o nome do banco",
+            "Criação de falso alarme de bloqueio para induzir pânico e urgência",
+            "Pedido direto de validação de dados confidenciais por ligação externa via SMS"
+          ],
+          "timestamp": "2026-10-16T11:20:00.430Z"
+        },
+        {
+          "id": "PT-06",
+          "categoria": "Fatura EDP Entidade Neutra",
+          "esperado": "Legítimo",
+          "veredito": "legitimo",
+          "score": 15,
+          "modelo": "google/gemini-3.8-flash",
+          "origem_decisiva": "IA",
+          "fonte_detalhe": "OpenRouter (google/gemini-3.8-flash)",
+          "fontes_contributos": [
+            "IA"
+          ],
+          "sinais": [
+            "Ausência de links suspeitos ou páginas externas",
+            "Sem tom de urgência agressivo ou ameaça de corte imediato",
+            "Estrutura padrão de aviso de faturação com entidade e referência"
+          ],
+          "timestamp": "2026-10-16T11:20:12.745Z"
+        },
+        {
+          "id": "PT-07",
+          "categoria": "Logística DPD Legítimo",
+          "esperado": "Legítimo",
+          "veredito": "legitimo",
+          "score": 10,
+          "modelo": "google/gemini-3.8-flash",
+          "origem_decisiva": "IA",
+          "fonte_detalhe": "OpenRouter (google/gemini-3.8-flash)",
+          "fontes_contributos": [
+            "IA"
+          ],
+          "sinais": [
+            "Domínio legítimo e oficial da transportadora (dpd.pt)",
+            "Ausência de pedidos de pagamento, taxas alfandegárias ou dados confidenciais",
+            "Comunicação puramente informativa com janela temporal de entrega padrão"
+          ],
+          "timestamp": "2026-10-16T11:20:19.827Z"
+        },
+        {
+          "id": "PT-08",
+          "categoria": "Falso Suporte MEO Smishing",
+          "esperado": "Golpe",
+          "veredito": "golpe",
+          "score": 95,
+          "modelo": "google/gemini-3.8-flash",
+          "origem_decisiva": "Regra",
+          "fonte_detalhe": "Dicionário de Marcas Oficiais (Typosquatting)",
+          "fontes_contributos": [
+            "Regra",
+            "IA"
+          ],
+          "sinais": [
+            "A mensagem faz referência a [MEO], mas o site [meo-faturas-atraso.xyz] NÃO é o domínio oficial verificado (meo.pt).",
+            "Criação de falso sentido de urgência com ameaça de suspensão imediata do serviço",
+            "Utilização de um domínio não oficial (.xyz) a imitar a marca",
+            "Ausência de identificação do número de cliente ou fatura específica"
+          ],
+          "timestamp": "2026-10-16T11:20:30.093Z"
+        },
+        {
+          "id": "PT-09",
+          "categoria": "SMS Diário Familiar",
+          "esperado": "Legítimo",
+          "veredito": "legitimo",
+          "score": 8,
+          "modelo": "google/gemini-3.8-flash",
+          "origem_decisiva": "IA",
+          "fonte_detalhe": "OpenRouter (google/gemini-3.8-flash)",
+          "fontes_contributos": [
+            "IA"
+          ],
+          "sinais": [
+            "Comunicação quotidiana habitual sem pedidos de dinheiro ou códigos",
+            "Ausência de links, ficheiros ou pedidos de pagamento",
+            "Sem sinais de urgência artificial ou ameaças"
+          ],
+          "timestamp": "2026-10-16T11:20:44.685Z"
+        },
+        {
+          "id": "PT-10",
+          "categoria": "Burla Sinal Imobiliária",
+          "esperado": "Golpe",
+          "veredito": "golpe",
+          "score": 90,
+          "modelo": "google/gemini-3.8-flash",
+          "origem_decisiva": "IA",
+          "fonte_detalhe": "OpenRouter (google/gemini-3.8-flash)",
+          "fontes_contributos": [
+            "IA"
+          ],
+          "sinais": [
+            "Pedido de sinal ou caução antes da realização de qualquer visita presencial",
+            "Criação de urgência artificial ('muitos interessados') para forçar a transferência imediata",
+            "Solicitação de pagamento direto por MB WAY para número de telemóvel individual"
+          ],
+          "timestamp": "2026-10-16T11:20:53.077Z"
+        },
+        {
+          "id": "PT-11",
+          "categoria": "Saúde Hospital da Luz Legítimo",
+          "esperado": "Legítimo",
+          "veredito": "legitimo",
+          "score": 10,
+          "modelo": "google/gemini-3.8-flash",
+          "origem_decisiva": "IA",
+          "fonte_detalhe": "OpenRouter (google/gemini-3.8-flash)",
+          "fontes_contributos": [
+            "IA"
+          ],
+          "sinais": [
+            "O endereço web pertence ao domínio oficial da instituição de saúde",
+            "Ausência de pedidos de dinheiro, transferências ou dados confidenciais",
+            "Mensagem meramente informativa sugerindo o acesso pela área de cliente ou aplicação oficial"
+          ],
+          "timestamp": "2026-10-16T11:21:01.471Z"
+        },
+        {
+          "id": "PT-12",
+          "categoria": "Phishing Autoridade Tributária (AT)",
+          "esperado": "Golpe",
+          "veredito": "golpe",
+          "score": 98,
+          "modelo": "google/gemini-3.8-flash",
+          "origem_decisiva": "Regra",
+          "fonte_detalhe": "Dicionário de Marcas Oficiais (Typosquatting)",
+          "fontes_contributos": [
+            "Regra",
+            "IA"
+          ],
+          "sinais": [
+            "A mensagem faz referência a [FINANCAS], mas o site [at-portaldasfinancas-reembolso.live] NÃO é o domínio oficial verificado (portaldasfinancas.gov.pt, at.gov.pt).",
+            "Uso de domínio fraudulento (.live) a imitar o Portal das Finanças",
+            "A Autoridade Tributária nunca solicita dados de cartão para efetuar reembolsos de IRS",
+            "Engodo financeiro com promessa de reembolso imediato para roubar dados bancários"
+          ],
+          "timestamp": "2026-10-16T11:21:13.314Z"
+        },
+        {
+          "id": "PT-13",
+          "categoria": "Institucional Ordem dos Advogados",
+          "esperado": "Legítimo",
+          "veredito": "legitimo",
+          "score": 10,
+          "modelo": "google/gemini-3.8-flash",
+          "origem_decisiva": "IA",
+          "fonte_detalhe": "OpenRouter (google/gemini-3.8-flash)",
+          "fontes_contributos": [
+            "IA"
+          ],
+          "sinais": [
+            "Domínio oficial da Ordem dos Advogados (oa.pt)",
+            "Comunicação institucional de cariz meramente informativo",
+            "Ausência de pedidos de pagamentos, dados bancários ou códigos de acesso"
+          ],
+          "timestamp": "2026-10-16T11:21:21.330Z"
+        },
+        {
+          "id": "PT-14",
+          "categoria": "Smishing Via Verde",
+          "esperado": "Golpe",
+          "veredito": "golpe",
+          "score": 98,
+          "modelo": "google/gemini-3.8-flash",
+          "origem_decisiva": "Regra",
+          "fonte_detalhe": "Dicionário de Marcas Oficiais (Typosquatting)",
+          "fontes_contributos": [
+            "Regra",
+            "IA"
+          ],
+          "sinais": [
+            "A mensagem faz referência a [VIA_VERDE], mas o site [viaverde-portagens-pagamento.online] NÃO é o domínio oficial verificado (viaverde.pt).",
+            "Uso de endereço web fraudulento com terminação '.online' em vez do domínio oficial viaverde.pt",
+            "Sentido de urgência e intimidação mencionando processo de contraordenação",
+            "Método típico de phishing para obtenção de dados de cartões ou pagamentos indevidos"
+          ],
+          "timestamp": "2026-10-16T11:21:30.553Z"
+        },
+        {
+          "id": "PT-15",
+          "categoria": "Operadora NOS Legítimo",
+          "esperado": "Legítimo",
+          "veredito": "legitimo",
+          "score": 8,
+          "modelo": "google/gemini-3.8-flash",
+          "origem_decisiva": "IA",
+          "fonte_detalhe": "OpenRouter (google/gemini-3.8-flash)",
+          "fontes_contributos": [
+            "IA"
+          ],
+          "sinais": [
+            "Ausência de ligações externas ou links suspeitos",
+            "Mensagem meramente informativa de plafond móvel sem pedidos de dados pessoais",
+            "Remete para a aplicação habitual ou canal de atendimento habitual"
+          ],
+          "timestamp": "2026-10-16T11:21:36.969Z"
+        },
+        {
+          "id": "PT-16",
+          "categoria": "Falso Reembolso Segurança Social",
+          "esperado": "Golpe",
+          "veredito": "golpe",
+          "score": 96,
+          "modelo": "google/gemini-3.8-flash",
+          "origem_decisiva": "IA",
+          "fonte_detalhe": "OpenRouter (google/gemini-3.8-flash)",
+          "fontes_contributos": [
+            "IA"
+          ],
+          "sinais": [
+            "Falsa promessa de subsídio extraordinário para induzir o utilizador a agir",
+            "Sentido de urgência com prazo de expiração para apressar a vítima",
+            "Link fraudulento utilizando extensão '.click' em vez do domínio oficial de Portugal"
+          ],
+          "timestamp": "2026-10-16T11:21:48.351Z"
+        },
+        {
+          "id": "PT-17",
+          "categoria": "Água Municipal Multibanco Legítimo",
+          "esperado": "Legítimo",
+          "veredito": "legitimo",
+          "score": 18,
+          "modelo": "google/gemini-3.8-flash",
+          "origem_decisiva": "IA",
+          "fonte_detalhe": "OpenRouter (google/gemini-3.8-flash)",
+          "fontes_contributos": [
+            "IA"
+          ],
+          "sinais": [
+            "Ausência de links suspeitos ou pedidos de dados pessoais",
+            "Estrutura padrão de aviso de faturação de serviços de água em Portugal",
+            "Dados de pagamento por referência Multibanco sem tom alarmista de urgência"
+          ],
+          "timestamp": "2026-10-16T11:22:02.161Z"
+        },
+        {
+          "id": "PT-18",
+          "categoria": "Burla Investimento Crypto WhatsApp",
+          "esperado": "Golpe",
+          "veredito": "golpe",
+          "score": 98,
+          "modelo": "google/gemini-3.8-flash",
+          "origem_decisiva": "IA",
+          "fonte_detalhe": "OpenRouter (google/gemini-3.8-flash)",
+          "fontes_contributos": [
+            "IA"
+          ],
+          "sinais": [
+            "Promessa de retorno financeiro irrealista de 15% ao dia",
+            "Afirmação enganosa de 'investimento sem risco'",
+            "Uso de domínio recente e suspeito (.shop) não regulamentado",
+            "Urgência e apelo a enriquecimento imediato"
+          ],
+          "timestamp": "2026-10-16T11:22:11.057Z"
+        },
+        {
+          "id": "PT-19",
+          "categoria": "Saudação Comercial Comum",
+          "esperado": "Legítimo",
+          "veredito": "legitimo",
+          "score": 5,
+          "modelo": "google/gemini-3.8-flash",
+          "origem_decisiva": "IA",
+          "fonte_detalhe": "OpenRouter (google/gemini-3.8-flash)",
+          "fontes_contributos": [
+            "IA"
+          ],
+          "sinais": [
+            "Ausência de links externos ou anexos",
+            "Sem pedidos de pagamento ou solicitação de dados sensíveis",
+            "Mensagem de contexto profissional e agendamento habitual"
+          ],
+          "timestamp": "2026-10-16T11:22:17.266Z"
+        },
+        {
+          "id": "PT-20",
+          "categoria": "Phishing Galp Energia",
+          "esperado": "Golpe",
+          "veredito": "golpe",
+          "score": 95,
+          "modelo": "google/gemini-3.8-flash",
+          "origem_decisiva": "Regra",
+          "fonte_detalhe": "Dicionário de Marcas Oficiais (Typosquatting)",
+          "fontes_contributos": [
+            "Regra",
+            "IA"
+          ],
+          "sinais": [
+            "A mensagem faz referência a [GALP], mas o site [galp-regularizacao-faturas.site] NÃO é o domínio oficial verificado (galp.pt, galpenergia.com).",
+            "Ameaça de suspensão de serviço com prazo de 24 horas para criar pânico.",
+            "Domínio do link ('galp-regularizacao-faturas.site') não pertence ao site oficial da Galp.",
+            "Exigência de pagamento imediato através de link externo suspeito."
+          ],
+          "timestamp": "2026-10-16T11:22:27.847Z"
+        }
+      ]
+    },
+    {
+      "volta": 2,
+      "status": "NOMINAL (IA e Listas Ativas)",
+      "contagem_fontes": {
+        "IA": 14,
+        "Lista de ameaças": 0,
+        "Regra": 6,
+        "Fallback": 0,
+        "desconhecido": 0
+      },
+      "regra_combinada_real": {
+        "contagens": {
+          "total": 20,
+          "tp": 10,
+          "tn": 9,
+          "fp": 1,
+          "fn": 0
+        },
+        "valores": {
+          "acuracia": 95,
+          "precisao": 90.9,
+          "recall": 100,
+          "taxa_falsos_positivos": 10
+        },
+        "intervalos_wilson_95": {
+          "acuracia": [
+            76.4,
+            99.1
+          ],
+          "precisao": [
+            62.3,
+            98.4
+          ],
+          "recall": [
+            72.2,
+            100
+          ],
+          "taxa_falsos_positivos": [
+            1.8,
+            40.4
+          ]
+        }
+      },
+      "regra_historica_60pts": {
+        "contagens": {
+          "total": 20,
+          "tp": 10,
+          "tn": 10,
+          "fp": 0,
+          "fn": 0
+        },
+        "valores": {
+          "acuracia": 100,
+          "precisao": 100,
+          "recall": 100,
+          "taxa_falsos_positivos": 0
+        },
+        "intervalos_wilson_95": {
+          "acuracia": [
+            83.9,
+            100
+          ],
+          "precisao": [
+            72.2,
+            100
+          ],
+          "recall": [
+            72.2,
+            100
+          ],
+          "taxa_falsos_positivos": [
+            0,
+            27.8
+          ]
+        }
+      },
+      "casos": [
+        {
+          "id": "PT-01",
+          "categoria": "Phishing CTT",
+          "esperado": "Golpe",
+          "veredito": "golpe",
+          "score": 95,
+          "modelo": "google/gemini-3.8-flash",
+          "origem_decisiva": "Regra",
+          "fonte_detalhe": "Dicionário de Marcas Oficiais (Typosquatting)",
+          "fontes_contributos": [
+            "Regra",
+            "IA"
+          ],
+          "sinais": [
+            "A mensagem faz referência a [CTT], mas o site [ctt-desalfandega.top] NÃO é o domínio oficial verificado (ctt.pt).",
+            "Utilização de domínio falso (ctt-desalfandega.top) em vez do domínio oficial ctt.pt",
+            "Pedido de pagamento de taxa aduaneira por SMS com link direto para recolha de dados",
+            "Pretexto comum de encomenda bloqueada para criar urgência na vítima"
+          ],
+          "timestamp": "2026-10-16T11:22:35.269Z"
+        },
+        {
+          "id": "PT-02",
+          "categoria": "Falso Filho / MB WAY",
+          "esperado": "Golpe",
+          "veredito": "golpe",
+          "score": 95,
+          "modelo": "google/gemini-3.8-flash",
+          "origem_decisiva": "IA",
+          "fonte_detalhe": "OpenRouter (google/gemini-3.8-flash)",
+          "fontes_contributos": [
+            "IA"
+          ],
+          "sinais": [
+            "Pretexto clássico de número temporário devido a telemóvel perdido ou avariado (burla do 'olá mãe/pai')",
+            "Pressão de urgência com ameaça de corte de serviço para forçar uma decisão rápida",
+            "Pedido direto de transferência de dinheiro por MB WAY para um número desconhecido"
+          ],
+          "timestamp": "2026-10-16T11:22:42.579Z"
+        },
+        {
+          "id": "PT-03",
+          "categoria": "Saúde Legítima CUF",
+          "esperado": "Legítimo",
+          "veredito": "legitimo",
+          "score": 8,
+          "modelo": "google/gemini-3.8-flash",
+          "origem_decisiva": "IA",
+          "fonte_detalhe": "OpenRouter (google/gemini-3.8-flash)",
+          "fontes_contributos": [
+            "IA"
+          ],
+          "sinais": [
+            "Ausência de links externos ou pedidos de dados confidenciais",
+            "Comunicação puramente informativa de lembrete de consulta médica",
+            "Sem solicitações de transferências ou pagamentos de qualquer tipo"
+          ],
+          "timestamp": "2026-10-16T11:22:56.195Z"
+        },
+        {
+          "id": "PT-04",
+          "categoria": "Banca 2FA Santander Legítimo",
+          "esperado": "Legítimo",
+          "veredito": "legitimo",
+          "score": 15,
+          "modelo": "google/gemini-3.8-flash",
+          "origem_decisiva": "IA",
+          "fonte_detalhe": "OpenRouter (google/gemini-3.8-flash)",
+          "fontes_contributos": [
+            "IA"
+          ],
+          "sinais": [
+            "Ausência de links externos ou pedidos de contacto suspeitos",
+            "Formato típico de autenticação de dois fatores com validade temporária",
+            "Aviso explícito de segurança a alertar para não partilhar o código"
+          ],
+          "timestamp": "2026-10-16T11:23:05.473Z"
+        },
+        {
+          "id": "PT-05",
+          "categoria": "Phishing Millennium BCP",
+          "esperado": "Golpe",
+          "veredito": "golpe",
+          "score": 95,
+          "modelo": "google/gemini-3.8-flash",
+          "origem_decisiva": "Regra",
+          "fonte_detalhe": "Dicionário de Marcas Oficiais (Typosquatting)",
+          "fontes_contributos": [
+            "Regra",
+            "IA"
+          ],
+          "sinais": [
+            "A mensagem faz referência a [MILLENNIUM], mas o site [millennium-seguranca-acesso.com] NÃO é o domínio oficial verificado (millenniumbcp.pt, ind.millenniumbcp.pt).",
+            "Falsa alegação de bloqueio de segurança para criar pânico e urgência",
+            "Uso de endereço web falso (phishing) que imita o nome do banco",
+            "Solicitação de validação imediata de dados confidenciais por ligação externa"
+          ],
+          "timestamp": "2026-10-16T11:23:14.975Z"
+        },
+        {
+          "id": "PT-06",
+          "categoria": "Fatura EDP Entidade Neutra",
+          "esperado": "Legítimo",
+          "veredito": "suspeito",
+          "score": 48,
+          "modelo": "google/gemini-3.8-flash",
+          "origem_decisiva": "IA",
+          "fonte_detalhe": "OpenRouter (google/gemini-3.8-flash)",
+          "fontes_contributos": [
+            "IA"
+          ],
+          "sinais": [
+            "Apresenta dados para pagamento por referência Multibanco sem inclusão de links externos suspeitos",
+            "Não inclui dados identificativos específicos do destinatário, como número de cliente ou NIF",
+            "Formato comum de aviso de faturação, frequentemente imitado em envios aleatórios"
+          ],
+          "timestamp": "2026-10-16T11:23:29.482Z"
+        },
+        {
+          "id": "PT-07",
+          "categoria": "Logística DPD Legítimo",
+          "esperado": "Legítimo",
+          "veredito": "legitimo",
+          "score": 10,
+          "modelo": "google/gemini-3.8-flash",
+          "origem_decisiva": "IA",
+          "fonte_detalhe": "OpenRouter (google/gemini-3.8-flash)",
+          "fontes_contributos": [
+            "IA"
+          ],
+          "sinais": [
+            "O endereço indicado pertence ao domínio oficial da transportadora (dpd.pt).",
+            "Não solicita pagamentos inesperados, taxas alfandegárias nem dados pessoais.",
+            "Comportamento e formato típicos de notificação de janela horária de entrega."
+          ],
+          "timestamp": "2026-10-16T11:23:40.840Z"
+        },
+        {
+          "id": "PT-08",
+          "categoria": "Falso Suporte MEO Smishing",
+          "esperado": "Golpe",
+          "veredito": "golpe",
+          "score": 95,
+          "modelo": "google/gemini-3.8-flash",
+          "origem_decisiva": "Regra",
+          "fonte_detalhe": "Dicionário de Marcas Oficiais (Typosquatting)",
+          "fontes_contributos": [
+            "Regra",
+            "IA"
+          ],
+          "sinais": [
+            "A mensagem faz referência a [MEO], mas o site [meo-faturas-atraso.xyz] NÃO é o domínio oficial verificado (meo.pt).",
+            "Link para domínio externo suspeito com extensão .xyz",
+            "Urgência e ameaça imediata de suspensão de serviço",
+            "Ausência de identificação do cliente ou detalhes contratuais específicos"
+          ],
+          "timestamp": "2026-10-16T11:23:51.852Z"
+        },
+        {
+          "id": "PT-09",
+          "categoria": "SMS Diário Familiar",
+          "esperado": "Legítimo",
+          "veredito": "legitimo",
+          "score": 5,
+          "modelo": "google/gemini-3.8-flash",
+          "origem_decisiva": "IA",
+          "fonte_detalhe": "OpenRouter (google/gemini-3.8-flash)",
+          "fontes_contributos": [
+            "IA"
+          ],
+          "sinais": [
+            "Ausência de links, ficheiros anexos ou pedidos de dados",
+            "Sem pedidos de dinheiro ou menção a novo número de telemóvel",
+            "Comunicação familiar e rotineira sem indicadores de risco detetados"
+          ],
+          "timestamp": "2026-10-16T11:23:58.543Z"
+        },
+        {
+          "id": "PT-10",
+          "categoria": "Burla Sinal Imobiliária",
+          "esperado": "Golpe",
+          "veredito": "golpe",
+          "score": 88,
+          "modelo": "google/gemini-3.8-flash",
+          "origem_decisiva": "IA",
+          "fonte_detalhe": "OpenRouter (google/gemini-3.8-flash)",
+          "fontes_contributos": [
+            "IA"
+          ],
+          "sinais": [
+            "Exigência de sinal em dinheiro antes de qualquer visita presencial ao imóvel",
+            "Pressão de urgência ('muitos interessados') para forçar uma decisão imediata sem reflexão",
+            "Pedido de transferência irreversível via MB WAY para número de telemóvel particular"
+          ],
+          "timestamp": "2026-10-16T11:24:08.102Z"
+        },
+        {
+          "id": "PT-11",
+          "categoria": "Saúde Hospital da Luz Legítimo",
+          "esperado": "Legítimo",
+          "veredito": "legitimo",
+          "score": 10,
+          "modelo": "google/gemini-3.8-flash",
+          "origem_decisiva": "IA",
+          "fonte_detalhe": "OpenRouter (google/gemini-3.8-flash)",
+          "fontes_contributos": [
+            "IA"
+          ],
+          "sinais": [
+            "Domínio indicado corresponde ao site oficial do prestador de saúde",
+            "Ausência de pedidos de dados pessoais, códigos de segurança ou pagamentos",
+            "Mensagem puramente informativa direcionando para os canais habituais"
+          ],
+          "timestamp": "2026-10-16T11:24:15.585Z"
+        },
+        {
+          "id": "PT-12",
+          "categoria": "Phishing Autoridade Tributária (AT)",
+          "esperado": "Golpe",
+          "veredito": "golpe",
+          "score": 95,
+          "modelo": "google/gemini-3.8-flash",
+          "origem_decisiva": "Regra",
+          "fonte_detalhe": "Dicionário de Marcas Oficiais (Typosquatting)",
+          "fontes_contributos": [
+            "Regra",
+            "IA"
+          ],
+          "sinais": [
+            "A mensagem faz referência a [FINANCAS], mas o site [at-portaldasfinancas-reembolso.live] NÃO é o domínio oficial verificado (portaldasfinancas.gov.pt, at.gov.pt).",
+            "Uso de domínio suspeito (.live) a imitar a Autoridade Tributária",
+            "Pedido indevido de dados de cartão bancário para suposto reembolso fiscal",
+            "A Autoridade Tributária nunca solicita dados bancários nem reembolsa IRS via SMS com links diretos"
+          ],
+          "timestamp": "2026-10-16T11:24:24.800Z"
+        },
+        {
+          "id": "PT-13",
+          "categoria": "Institucional Ordem dos Advogados",
+          "esperado": "Legítimo",
+          "veredito": "legitimo",
+          "score": 10,
+          "modelo": "google/gemini-3.8-flash",
+          "origem_decisiva": "IA",
+          "fonte_detalhe": "OpenRouter (google/gemini-3.8-flash)",
+          "fontes_contributos": [
+            "IA"
+          ],
+          "sinais": [
+            "Endereço indicado pertence ao domínio oficial da Ordem dos Advogados (oa.pt)",
+            "Comunicação institucional informativa sem pedidos de dinheiro ou dados bancários",
+            "Ausência de linguagem de urgência, ameaça ou coerção típica de burlas"
+          ],
+          "timestamp": "2026-10-16T11:24:32.206Z"
+        },
+        {
+          "id": "PT-14",
+          "categoria": "Smishing Via Verde",
+          "esperado": "Golpe",
+          "veredito": "golpe",
+          "score": 95,
+          "modelo": "google/gemini-3.8-flash",
+          "origem_decisiva": "Regra",
+          "fonte_detalhe": "Dicionário de Marcas Oficiais (Typosquatting)",
+          "fontes_contributos": [
+            "Regra",
+            "IA"
+          ],
+          "sinais": [
+            "A mensagem faz referência a [VIA_VERDE], mas o site [viaverde-portagens-pagamento.online] NÃO é o domínio oficial verificado (viaverde.pt).",
+            "Utilização de endereço web suspeito e não oficial (.online em vez de viaverde.pt)",
+            "Urgência e ameaça de processo de contraordenação para forçar o pagamento",
+            "Padrão clássico de burla por SMS simulando dívidas de portagens inexistentes"
+          ],
+          "timestamp": "2026-10-16T11:24:41.433Z"
+        },
+        {
+          "id": "PT-15",
+          "categoria": "Operadora NOS Legítimo",
+          "esperado": "Legítimo",
+          "veredito": "legitimo",
+          "score": 10,
+          "modelo": "google/gemini-3.8-flash",
+          "origem_decisiva": "IA",
+          "fonte_detalhe": "OpenRouter (google/gemini-3.8-flash)",
+          "fontes_contributos": [
+            "IA"
+          ],
+          "sinais": [
+            "Notificação meramente informativa sobre consumo de pacote de dados móveis",
+            "Não contém hiperligações externas nem pedidos de dados pessoais",
+            "Não exige pagamentos imediatos nem solicita códigos de segurança"
+          ],
+          "timestamp": "2026-10-16T11:24:48.927Z"
+        },
+        {
+          "id": "PT-16",
+          "categoria": "Falso Reembolso Segurança Social",
+          "esperado": "Golpe",
+          "veredito": "golpe",
+          "score": 96,
+          "modelo": "google/gemini-3.8-flash",
+          "origem_decisiva": "IA",
+          "fonte_detalhe": "OpenRouter (google/gemini-3.8-flash)",
+          "fontes_contributos": [
+            "IA"
+          ],
+          "sinais": [
+            "Uso de ligação não oficial com terminação suspeita (.click)",
+            "Tentativa de criar urgência ('antes que expire')",
+            "Falsa promessa de subsídio financeiro para roubar dados pessoais ou bancários"
+          ],
+          "timestamp": "2026-10-16T11:24:56.798Z"
+        },
+        {
+          "id": "PT-17",
+          "categoria": "Água Municipal Multibanco Legítimo",
+          "esperado": "Legítimo",
+          "veredito": "legitimo",
+          "score": 15,
+          "modelo": "google/gemini-3.8-flash",
+          "origem_decisiva": "IA",
+          "fonte_detalhe": "OpenRouter (google/gemini-3.8-flash)",
+          "fontes_contributos": [
+            "IA"
+          ],
+          "sinais": [
+            "Ausência de links externos suspeitos ou pedidos de credenciais",
+            "Estrutura típica de notificação de faturação de serviços públicos essenciais",
+            "Utilização de referência Multibanco padrão para liquidação de faturas"
+          ],
+          "timestamp": "2026-10-16T11:25:09.243Z"
+        },
+        {
+          "id": "PT-18",
+          "categoria": "Burla Investimento Crypto WhatsApp",
+          "esperado": "Golpe",
+          "veredito": "golpe",
+          "score": 98,
+          "modelo": "google/gemini-3.8-flash",
+          "origem_decisiva": "IA",
+          "fonte_detalhe": "OpenRouter (google/gemini-3.8-flash)",
+          "fontes_contributos": [
+            "IA"
+          ],
+          "sinais": [
+            "Promessa de retorno financeiro irrealista e absurdo (15% ao dia)",
+            "Alegação falsa de investimento em criptomoedas 'sem risco'",
+            "Uso de domínio suspeito e não verificado (.shop) para atrair depósitos"
+          ],
+          "timestamp": "2026-10-16T11:25:15.722Z"
+        },
+        {
+          "id": "PT-19",
+          "categoria": "Saudação Comercial Comum",
+          "esperado": "Legítimo",
+          "veredito": "legitimo",
+          "score": 5,
+          "modelo": "google/gemini-3.8-flash",
+          "origem_decisiva": "IA",
+          "fonte_detalhe": "OpenRouter (google/gemini-3.8-flash)",
+          "fontes_contributos": [
+            "IA"
+          ],
+          "sinais": [
+            "Ausência de links externos ou pedidos de clique",
+            "Sem solicitação de pagamentos, dados bancários ou códigos de verificação",
+            "Comunicação contextual e profissional sem sentido de urgência artificial"
+          ],
+          "timestamp": "2026-10-16T11:25:22.975Z"
+        },
+        {
+          "id": "PT-20",
+          "categoria": "Phishing Galp Energia",
+          "esperado": "Golpe",
+          "veredito": "golpe",
+          "score": 95,
+          "modelo": "google/gemini-3.8-flash",
+          "origem_decisiva": "Regra",
+          "fonte_detalhe": "Dicionário de Marcas Oficiais (Typosquatting)",
+          "fontes_contributos": [
+            "Regra",
+            "IA"
+          ],
+          "sinais": [
+            "A mensagem faz referência a [GALP], mas o site [galp-regularizacao-faturas.site] NÃO é o domínio oficial verificado (galp.pt, galpenergia.com).",
+            "Ameaça de suspensão de serviço em 24 horas para criar pânico e urgência",
+            "Domínio fraudulento (.site) não oficial que não pertence à Galp",
+            "Tentativa de pressão para pagamento imediato sem apresentação de fatura detalhada"
+          ],
+          "timestamp": "2026-10-16T11:25:31.581Z"
+        }
+      ]
+    },
+    {
+      "volta": 3,
+      "status": "NOMINAL (IA e Listas Ativas)",
+      "contagem_fontes": {
+        "IA": 14,
+        "Lista de ameaças": 0,
+        "Regra": 6,
+        "Fallback": 0,
+        "desconhecido": 0
+      },
+      "regra_combinada_real": {
+        "contagens": {
+          "total": 20,
+          "tp": 10,
+          "tn": 9,
+          "fp": 1,
+          "fn": 0
+        },
+        "valores": {
+          "acuracia": 95,
+          "precisao": 90.9,
+          "recall": 100,
+          "taxa_falsos_positivos": 10
+        },
+        "intervalos_wilson_95": {
+          "acuracia": [
+            76.4,
+            99.1
+          ],
+          "precisao": [
+            62.3,
+            98.4
+          ],
+          "recall": [
+            72.2,
+            100
+          ],
+          "taxa_falsos_positivos": [
+            1.8,
+            40.4
+          ]
+        }
+      },
+      "regra_historica_60pts": {
+        "contagens": {
+          "total": 20,
+          "tp": 10,
+          "tn": 10,
+          "fp": 0,
+          "fn": 0
+        },
+        "valores": {
+          "acuracia": 100,
+          "precisao": 100,
+          "recall": 100,
+          "taxa_falsos_positivos": 0
+        },
+        "intervalos_wilson_95": {
+          "acuracia": [
+            83.9,
+            100
+          ],
+          "precisao": [
+            72.2,
+            100
+          ],
+          "recall": [
+            72.2,
+            100
+          ],
+          "taxa_falsos_positivos": [
+            0,
+            27.8
+          ]
+        }
+      },
+      "casos": [
+        {
+          "id": "PT-01",
+          "categoria": "Phishing CTT",
+          "esperado": "Golpe",
+          "veredito": "golpe",
+          "score": 95,
+          "modelo": "google/gemini-3.8-flash",
+          "origem_decisiva": "Regra",
+          "fonte_detalhe": "Dicionário de Marcas Oficiais (Typosquatting)",
+          "fontes_contributos": [
+            "Regra",
+            "IA"
+          ],
+          "sinais": [
+            "A mensagem faz referência a [CTT], mas o site [ctt-desalfandega.top] NÃO é o domínio oficial verificado (ctt.pt).",
+            "Uso de domínio falso (.top) para usurpar a identidade dos CTT",
+            "Cobrança fraudulenta de pequena taxa aduaneira para roubo de dados bancários",
+            "Senso de urgência para entrega imediata mediante pagamento via link externo"
+          ],
+          "timestamp": "2026-10-16T11:25:40.719Z"
+        },
+        {
+          "id": "PT-02",
+          "categoria": "Falso Filho / MB WAY",
+          "esperado": "Golpe",
+          "veredito": "golpe",
+          "score": 95,
+          "modelo": "google/gemini-3.8-flash",
+          "origem_decisiva": "IA",
+          "fonte_detalhe": "OpenRouter (google/gemini-3.8-flash)",
+          "fontes_contributos": [
+            "IA"
+          ],
+          "sinais": [
+            "Pretexto típico de telemóvel avariado ou perdido e uso de número provisório",
+            "Sentido de urgência associado a suposta ameaça de corte de serviço",
+            "Pedido direto de transferência de dinheiro via MB WAY para um contacto não habitual"
+          ],
+          "timestamp": "2026-10-16T11:25:49.648Z"
+        },
+        {
+          "id": "PT-03",
+          "categoria": "Saúde Legítima CUF",
+          "esperado": "Legítimo",
+          "veredito": "legitimo",
+          "score": 8,
+          "modelo": "google/gemini-3.8-flash",
+          "origem_decisiva": "IA",
+          "fonte_detalhe": "OpenRouter (google/gemini-3.8-flash)",
+          "fontes_contributos": [
+            "IA"
+          ],
+          "sinais": [
+            "Mensagem meramente informativa de lembrete de marcação médica",
+            "Ausência total de links externos, páginas falsas ou anexos",
+            "Sem pedidos de dados confidenciais, códigos de segurança ou transferências financeiras"
+          ],
+          "timestamp": "2026-10-16T11:25:58.733Z"
+        },
+        {
+          "id": "PT-04",
+          "categoria": "Banca 2FA Santander Legítimo",
+          "esperado": "Legítimo",
+          "veredito": "legitimo",
+          "score": 15,
+          "modelo": "google/gemini-3.8-flash",
+          "origem_decisiva": "IA",
+          "fonte_detalhe": "OpenRouter (google/gemini-3.8-flash)",
+          "fontes_contributos": [
+            "IA"
+          ],
+          "sinais": [
+            "Mensagem informativa sem links externos ou pedidos de clique.",
+            "Contém aviso de segurança padrão alertando para não partilhar o código.",
+            "Estrutura típica de autenticação de dois fatores (código OTP) para validação de compra."
+          ],
+          "timestamp": "2026-10-16T11:26:13.328Z"
+        },
+        {
+          "id": "PT-05",
+          "categoria": "Phishing Millennium BCP",
+          "esperado": "Golpe",
+          "veredito": "golpe",
+          "score": 95,
+          "modelo": "google/gemini-3.8-flash",
+          "origem_decisiva": "Regra",
+          "fonte_detalhe": "Dicionário de Marcas Oficiais (Typosquatting)",
+          "fontes_contributos": [
+            "Regra",
+            "IA"
+          ],
+          "sinais": [
+            "A mensagem faz referência a [MILLENNIUM], mas o site [millennium-seguranca-acesso.com] NÃO é o domínio oficial verificado (millenniumbcp.pt, ind.millenniumbcp.pt).",
+            "Urgência e ameaça de bloqueio de cartão para provocar pânico.",
+            "Ligação externa para domínio não oficial que imita a marca do banco.",
+            "Solicitação de validação de dados através de link por mensagem."
+          ],
+          "timestamp": "2026-10-16T11:26:22.719Z"
+        },
+        {
+          "id": "PT-06",
+          "categoria": "Fatura EDP Entidade Neutra",
+          "esperado": "Legítimo",
+          "veredito": "legitimo",
+          "score": 15,
+          "modelo": "google/gemini-3.8-flash",
+          "origem_decisiva": "IA",
+          "fonte_detalhe": "OpenRouter (google/gemini-3.8-flash)",
+          "fontes_contributos": [
+            "IA"
+          ],
+          "sinais": [
+            "Ausência de links maliciosos ou pedidos de dados confidenciais",
+            "Formato típico de notificação informativa de faturação",
+            "Sem tom de urgência excessivo ou ameaças de corte imediato"
+          ],
+          "timestamp": "2026-10-16T11:26:36.409Z"
+        },
+        {
+          "id": "PT-07",
+          "categoria": "Logística DPD Legítimo",
+          "esperado": "Legítimo",
+          "veredito": "legitimo",
+          "score": 10,
+          "modelo": "google/gemini-3.8-flash",
+          "origem_decisiva": "IA",
+          "fonte_detalhe": "OpenRouter (google/gemini-3.8-flash)",
+          "fontes_contributos": [
+            "IA"
+          ],
+          "sinais": [
+            "O link aponta para o domínio oficial da operadora de entregas (dpd.pt)",
+            "Não solicita pagamentos de taxas alfandegárias nem dados pessoais sensíveis",
+            "Mensagem informativa padrão sobre a janela horária de entrega"
+          ],
+          "timestamp": "2026-10-16T11:26:45.217Z"
+        },
+        {
+          "id": "PT-08",
+          "categoria": "Falso Suporte MEO Smishing",
+          "esperado": "Golpe",
+          "veredito": "golpe",
+          "score": 96,
+          "modelo": "google/gemini-3.8-flash",
+          "origem_decisiva": "Regra",
+          "fonte_detalhe": "Dicionário de Marcas Oficiais (Typosquatting)",
+          "fontes_contributos": [
+            "Regra",
+            "IA"
+          ],
+          "sinais": [
+            "A mensagem faz referência a [MEO], mas o site [meo-faturas-atraso.xyz] NÃO é o domínio oficial verificado (meo.pt).",
+            "Domínio falso (.xyz) a tentar imitar a página oficial da operadora.",
+            "Sentido de urgência com ameaça imediata de corte de serviço e taxas adicionais.",
+            "Envio de link externo não fidedigno para regularização de faturas."
+          ],
+          "timestamp": "2026-10-16T11:26:58.091Z"
+        },
+        {
+          "id": "PT-09",
+          "categoria": "SMS Diário Familiar",
+          "esperado": "Legítimo",
+          "veredito": "legitimo",
+          "score": 8,
+          "modelo": "google/gemini-3.8-flash",
+          "origem_decisiva": "IA",
+          "fonte_detalhe": "OpenRouter (google/gemini-3.8-flash)",
+          "fontes_contributos": [
+            "IA"
+          ],
+          "sinais": [
+            "Ausência de pedidos de dinheiro, transferências ou dados confidenciais",
+            "Não contém links externos nem contactos suspeitos",
+            "Comunicação quotidiana comum sem sinais de risco detetados"
+          ],
+          "timestamp": "2026-10-16T11:27:05.347Z"
+        },
+        {
+          "id": "PT-10",
+          "categoria": "Burla Sinal Imobiliária",
+          "esperado": "Golpe",
+          "veredito": "golpe",
+          "score": 90,
+          "modelo": "google/gemini-3.8-flash",
+          "origem_decisiva": "IA",
+          "fonte_detalhe": "OpenRouter (google/gemini-3.8-flash)",
+          "fontes_contributos": [
+            "IA"
+          ],
+          "sinais": [
+            "Exigência de pagamento adiantado de sinal antes de qualquer visita presencial",
+            "Criação de urgência artificial com alegação de muitos interessados",
+            "Pedido de transferência imediata por MB WAY sem contrato formal ou identificação comprovada"
+          ],
+          "timestamp": "2026-10-16T11:27:13.615Z"
+        },
+        {
+          "id": "PT-11",
+          "categoria": "Saúde Hospital da Luz Legítimo",
+          "esperado": "Legítimo",
+          "veredito": "legitimo",
+          "score": 8,
+          "modelo": "google/gemini-3.8-flash",
+          "origem_decisiva": "IA",
+          "fonte_detalhe": "OpenRouter (google/gemini-3.8-flash)",
+          "fontes_contributos": [
+            "IA"
+          ],
+          "sinais": [
+            "Uso do domínio oficial legítimo (hospitaldaluz.pt)",
+            "Ausência de pedidos de pagamento ou dados bancários",
+            "Mensagem puramente informativa sem linguagem de urgência ou pressão"
+          ],
+          "timestamp": "2026-10-16T11:27:21.698Z"
+        },
+        {
+          "id": "PT-12",
+          "categoria": "Phishing Autoridade Tributária (AT)",
+          "esperado": "Golpe",
+          "veredito": "golpe",
+          "score": 96,
+          "modelo": "google/gemini-3.8-flash",
+          "origem_decisiva": "Regra",
+          "fonte_detalhe": "Dicionário de Marcas Oficiais (Typosquatting)",
+          "fontes_contributos": [
+            "Regra",
+            "IA"
+          ],
+          "sinais": [
+            "A mensagem faz referência a [FINANCAS], mas o site [at-portaldasfinancas-reembolso.live] NÃO é o domínio oficial verificado (portaldasfinancas.gov.pt, at.gov.pt).",
+            "Imitação ilegítima da Autoridade Tributária com link suspeito fora do domínio governamental (.gov.pt).",
+            "Pedido de dados de cartão bancário para recebimento de suposto reembolso.",
+            "Uso de engano financeiro com promessa de valores imediatos a receber."
+          ],
+          "timestamp": "2026-10-16T11:27:32.453Z"
+        },
+        {
+          "id": "PT-13",
+          "categoria": "Institucional Ordem dos Advogados",
+          "esperado": "Legítimo",
+          "veredito": "legitimo",
+          "score": 10,
+          "modelo": "google/gemini-3.8-flash",
+          "origem_decisiva": "IA",
+          "fonte_detalhe": "OpenRouter (google/gemini-3.8-flash)",
+          "fontes_contributos": [
+            "IA"
+          ],
+          "sinais": [
+            "O endereço indicado pertence ao domínio oficial da instituição (oa.pt).",
+            "Comunicação institucional informativa sem pedidos de pagamentos, dados bancários ou códigos de segurança.",
+            "Ausência de táticas de intimidação, urgência artificial ou ameaças."
+          ],
+          "timestamp": "2026-10-16T11:27:40.486Z"
+        },
+        {
+          "id": "PT-14",
+          "categoria": "Smishing Via Verde",
+          "esperado": "Golpe",
+          "veredito": "golpe",
+          "score": 95,
+          "modelo": "google/gemini-3.8-flash",
+          "origem_decisiva": "Regra",
+          "fonte_detalhe": "Dicionário de Marcas Oficiais (Typosquatting)",
+          "fontes_contributos": [
+            "Regra",
+            "IA"
+          ],
+          "sinais": [
+            "A mensagem faz referência a [VIA_VERDE], mas o site [viaverde-portagens-pagamento.online] NÃO é o domínio oficial verificado (viaverde.pt).",
+            "Link falso ('viaverde-portagens-pagamento.online') que não pertence ao domínio oficial viaverde.pt",
+            "Sentido de urgência com ameaça de processo de contraordenação",
+            "Padrão clássico de phishing para roubo de dados bancários ou pagamentos indevidos"
+          ],
+          "timestamp": "2026-10-16T11:27:52.010Z"
+        },
+        {
+          "id": "PT-15",
+          "categoria": "Operadora NOS Legítimo",
+          "esperado": "Legítimo",
+          "veredito": "legitimo",
+          "score": 10,
+          "modelo": "google/gemini-3.8-flash",
+          "origem_decisiva": "IA",
+          "fonte_detalhe": "OpenRouter (google/gemini-3.8-flash)",
+          "fontes_contributos": [
+            "IA"
+          ],
+          "sinais": [
+            "Mensagem puramente informativa sem pedidos de pagamento ou dados pessoais",
+            "Não contém hiperligações suspeitas nem formulários externos",
+            "Remete o utilizador para a aplicação oficial e canal habitual da operadora"
+          ],
+          "timestamp": "2026-10-16T11:28:06.703Z"
+        },
+        {
+          "id": "PT-16",
+          "categoria": "Falso Reembolso Segurança Social",
+          "esperado": "Golpe",
+          "veredito": "golpe",
+          "score": 95,
+          "modelo": "google/gemini-3.8-flash",
+          "origem_decisiva": "IA",
+          "fonte_detalhe": "OpenRouter (google/gemini-3.8-flash)",
+          "fontes_contributos": [
+            "IA"
+          ],
+          "sinais": [
+            "Link falso com extensão suspeita (.click) e alheio ao domínio oficial da Segurança Social",
+            "Urgência artificial ('antes que expire') para induzir o clique rápido",
+            "Oferta de subsídio financeiro inesperado para roubar dados pessoais e bancários"
+          ],
+          "timestamp": "2026-10-16T11:28:14.799Z"
+        },
+        {
+          "id": "PT-17",
+          "categoria": "Água Municipal Multibanco Legítimo",
+          "esperado": "Legítimo",
+          "veredito": "suspeito",
+          "score": 45,
+          "modelo": "google/gemini-3.8-flash",
+          "origem_decisiva": "IA",
+          "fonte_detalhe": "OpenRouter (google/gemini-3.8-flash)",
+          "fontes_contributos": [
+            "IA"
+          ],
+          "sinais": [
+            "Ausência de links externos ou tentativas diretas de phishing",
+            "Disponibilização de dados de pagamento por referência Multibanco (Entidade 10241)",
+            "Mensagem genérica sem indicação do número de cliente ou contrato"
+          ],
+          "timestamp": "2026-10-16T11:28:27.776Z"
+        },
+        {
+          "id": "PT-18",
+          "categoria": "Burla Investimento Crypto WhatsApp",
+          "esperado": "Golpe",
+          "veredito": "golpe",
+          "score": 95,
+          "modelo": "google/gemini-3.8-flash",
+          "origem_decisiva": "IA",
+          "fonte_detalhe": "OpenRouter (google/gemini-3.8-flash)",
+          "fontes_contributos": [
+            "IA"
+          ],
+          "sinais": [
+            "Promessa de lucro irrealista (15% ao dia) e falsa garantia de 'risco zero'",
+            "Pressão para depósito imediato de dinheiro sob promessa de retorno no mesmo dia",
+            "Endereço web suspeito e não regulado por entidades financeiras oficiais"
+          ],
+          "timestamp": "2026-10-16T11:28:39.507Z"
+        },
+        {
+          "id": "PT-19",
+          "categoria": "Saudação Comercial Comum",
+          "esperado": "Legítimo",
+          "veredito": "legitimo",
+          "score": 10,
+          "modelo": "google/gemini-3.8-flash",
+          "origem_decisiva": "IA",
+          "fonte_detalhe": "OpenRouter (google/gemini-3.8-flash)",
+          "fontes_contributos": [
+            "IA"
+          ],
+          "sinais": [
+            "Ausência de links ou pedidos de acesso a páginas externas",
+            "Não solicita pagamentos, transferências ou envio de códigos",
+            "Comunicação contextual e cordial sem senso de urgência falso"
+          ],
+          "timestamp": "2026-10-16T11:28:47.259Z"
+        },
+        {
+          "id": "PT-20",
+          "categoria": "Phishing Galp Energia",
+          "esperado": "Golpe",
+          "veredito": "golpe",
+          "score": 95,
+          "modelo": "google/gemini-3.8-flash",
+          "origem_decisiva": "Regra",
+          "fonte_detalhe": "Dicionário de Marcas Oficiais (Typosquatting)",
+          "fontes_contributos": [
+            "Regra",
+            "IA"
+          ],
+          "sinais": [
+            "A mensagem faz referência a [GALP], mas o site [galp-regularizacao-faturas.site] NÃO é o domínio oficial verificado (galp.pt, galpenergia.com).",
+            "Sentido de urgência com ameaça de suspensão de serviço em 24 horas",
+            "Link suspeito que não corresponde ao domínio oficial da Galp",
+            "Pressão para regularização imediata através de endereço web externo"
+          ],
+          "timestamp": "2026-10-16T11:28:57.087Z"
+        }
+      ]
+    }
+  ]
+}
