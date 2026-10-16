@@ -16,7 +16,29 @@ import qrcode from 'qrcode-terminal';
 import QRCodeImage from 'qrcode';
 import pino from 'pino';
 import { analyzeContent, formatWhatsAppMessage, formatSmsMessage, getEmergencyVictimGuide } from './lib/scanner.js';
+import {
+  buildDataContract,
+  renderWhatsAppResponse,
+  renderHelpResponse,
+  renderDetailsResponse,
+  renderFeedbackResponse,
+  renderNoSessionResponse
+} from './lib/renderer.js';
 import { restoreSessionFromCloud, syncSessionToCloud, clearSessionFromCloud } from './lib/session_store.js';
+
+// Cache de conversação por chat (TTL: 24 horas) para comandos interativos (AJUDA, DETALHES, ÚTIL, ERRO)
+const chatSessions = new Map();
+
+function cleanOldSessions() {
+  const now = Date.now();
+  const ttl = 24 * 60 * 60 * 1000;
+  for (const [jid, session] of chatSessions.entries()) {
+    if (now - session.timestamp > ttl) {
+      chatSessions.delete(jid);
+    }
+  }
+}
+setInterval(cleanOldSessions, 30 * 60 * 1000);
 
 const logger = pino({ level: 'silent' });
 const AUTH_DIR = './auth_info_baileys';
@@ -713,11 +735,42 @@ async function startBot() {
           continue;
         }
 
+        // ---------------------------------------------------------------------
+        // COMANDOS INTERATIVOS PÓS-ANÁLISE (AJUDA, DETALHES, ÚTIL, ERRO)
+        // ---------------------------------------------------------------------
+        const cleanCmd = lower.normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim();
+        if (['ajuda', 'detalhes', 'util', 'erro'].includes(cleanCmd) && !imagemBase64) {
+          cleanOldSessions();
+          const session = chatSessions.get(remoteJid);
+          const isExpired = !session || (Date.now() - session.timestamp > 24 * 60 * 60 * 1000);
+
+          if (cleanCmd === 'ajuda') {
+            await sock.sendMessage(remoteJid, { text: renderHelpResponse() }, { quoted: msg });
+            continue;
+          }
+
+          if (isExpired) {
+            await sock.sendMessage(remoteJid, { text: renderNoSessionResponse() }, { quoted: msg });
+            continue;
+          }
+
+          if (cleanCmd === 'detalhes') {
+            await sock.sendMessage(remoteJid, { text: renderDetailsResponse(session.contract) }, { quoted: msg });
+            continue;
+          }
+
+          if (cleanCmd === 'util' || cleanCmd === 'erro') {
+            console.log(`[Feedback] Remetente: ${remoteJid} | Comando: ${cleanCmd.toUpperCase()} | Análise ID: ${session.analise_id || 'N/A'}`);
+            await sock.sendMessage(remoteJid, { text: renderFeedbackResponse(cleanCmd) }, { quoted: msg });
+            continue;
+          }
+        }
+
         // Boas-vindas / Menu inicial Multilíngue
         const isGreetingEn = ['hi', 'hello', 'hey', 'help'].includes(lower);
         const isGreetingFr = ['bonjour', 'salut', 'aide'].includes(lower);
         const isGreetingIt = ['ciao', 'buongiorno', 'buonasera', 'aiuto'].includes(lower);
-        const isGreetingPt = ['oi', 'olá', 'ola', 'ajuda', 'menu', 'iniciar', 'start', 'bom dia', 'boa tarde', 'boa noite'].includes(lower);
+        const isGreetingPt = ['oi', 'olá', 'ola', 'menu', 'iniciar', 'start', 'bom dia', 'boa tarde', 'boa noite'].includes(lower);
 
         if ((!incomingText && !imagemBase64) || (isGreetingPt || isGreetingEn || isGreetingFr || isGreetingIt) && !imagemBase64) {
           let welcome = '';
@@ -744,15 +797,23 @@ async function startBot() {
           canal: 'whatsapp_baileys'
         });
 
-        const resposta = formatWhatsAppMessage(resultado);
+        const contract = buildDataContract(resultado, incomingText);
+        chatSessions.set(remoteJid, {
+          contract,
+          analise_id: resultado.analise_id,
+          timestamp: Date.now()
+        });
+
+        const resposta = formatWhatsAppMessage(resultado, incomingText);
         await sock.sendMessage(remoteJid, { text: resposta }, { quoted: msg });
         console.log(`✅ Resposta enviada para ${remoteJid} (Veredito: ${resultado.veredito}, Score: ${resultado.risco_score})`);
 
       } catch (err) {
         console.error('❌ Erro ao processar mensagem:', err);
+        const erroMsg = renderWhatsAppResponse({ template: 'error', level: 'error' });
         await sock.sendMessage(
           remoteJid,
-          { text: '⚠️ Tive um problema momentâneo ao analisar essa mensagem. Por favor, tente enviar novamente em instantes.' },
+          { text: erroMsg },
           { quoted: msg }
         );
       }

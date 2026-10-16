@@ -1,5 +1,6 @@
 // api/whatsapp.js — Twilio WhatsApp Webhook
 import { analyzeContent, formatWhatsAppMessage, getEmergencyVictimGuide } from '../lib/scanner.js';
+import { renderWhatsAppResponse } from '../lib/renderer.js';
 
 export default async function handler(req, res) {
   console.log(`[WhatsApp Webhook] ${req.method} request received at ${new Date().toISOString()}`);
@@ -81,12 +82,12 @@ export default async function handler(req, res) {
       canal: 'whatsapp_twilio'
     });
 
-    const respostaFormatada = formatWhatsAppMessage(resultado);
+    const respostaFormatada = formatWhatsAppMessage(resultado, incomingText);
     return sendTwiml(res, respostaFormatada);
 
   } catch (err) {
     console.error('Erro no webhook do WhatsApp:', err);
-    return sendTwiml(res, '⚠️ Tive um problema ao analisar essa mensagem agora. Por favor, tente enviar novamente em alguns instantes.');
+    return sendTwiml(res, renderWhatsAppResponse({ template: 'error', level: 'error' }));
   }
 }
 
