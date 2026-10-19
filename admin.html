@@ -1246,19 +1246,20 @@
       <!-- AVISO DE REGRAS DE TRABALHO E PRIVACIDADE -->
       <div style="background: rgba(16, 185, 129, 0.08); border: 1px solid rgba(16, 185, 129, 0.3); border-radius: 10px; padding: 14px 18px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
         <div>
-          <div style="font-weight: 700; color: #34d399; font-size: 0.9rem;">🛡️ Processo Vivo de Acompanhamento de Golpes Novos — Fases 1 & 2 (Fila, Agrupamento, Alertas Oficiais & Esquemas)</div>
+          <div style="font-weight: 700; color: #34d399; font-size: 0.9rem;">🛡️ Processo Vivo de Acompanhamento de Golpes Novos — Fases 1, 2 & 3 (Fila, Agrupamento, Alertas Oficiais, Esquemas & Dicionário Aprovado)</div>
           <div style="color: var(--text-muted); font-size: 0.78rem; margin-top: 4px;">
-            <strong>Privacidade e conformidade por desenho:</strong> Zero texto bruto guardado. Respeito estrito por <code>robots.txt</code> (guarda apenas título, ligação e data; erros nunca silenciados). Esquemas escritos nas nossas palavras e sem alterar o texto do robô sem decisão separada.
+            <strong>Privacidade e controlo humano por desenho:</strong> Zero texto bruto guardado. Respeito por <code>robots.txt</code>. As propostas de marcas e domínios entram como <code>pendente</code> (não alteram nenhuma análise) e só passam a valer depois de aprovadas por si.
           </div>
         </div>
         <div style="display: flex; gap: 8px; flex-wrap: wrap;">
           <button onclick="executarVerificacaoFontesAlerta()" id="btnVerificarFontes" class="btn-xs btn-xs-primary" style="padding: 8px 12px;">🔄 Verificar Fontes Oficiais Agora</button>
           <button onclick="abrirModalNovoEsquema()" class="btn-xs" style="background: rgba(245, 158, 11, 0.18); border-color: rgba(245, 158, 11, 0.45); color: #fcd34d; padding: 8px 12px;">+ Novo Esquema</button>
+          <button onclick="abrirModalProporDicionario()" class="btn-xs" style="background: rgba(56, 189, 248, 0.18); border-color: rgba(56, 189, 248, 0.45); color: #38bdf8; padding: 8px 12px;">+ Propor ao Dicionário</button>
         </div>
       </div>
 
-      <!-- MINI KPIS DAS FASES 1 E 2 -->
-      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(175px, 1fr)); gap: 14px; margin-bottom: 22px;">
+      <!-- MINI KPIS DAS FASES 1, 2 E 3 -->
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(165px, 1fr)); gap: 14px; margin-bottom: 22px;">
         <div class="kpi-card" style="padding: 16px;">
           <div class="kpi-header"><span>Pendentes na Fila</span><span>📥</span></div>
           <div class="kpi-value" id="gnKpiPendentes" style="color: #f59e0b; font-size: 1.8rem;">0</div>
@@ -1283,6 +1284,11 @@
           <div class="kpi-header"><span>Esquemas Ativos</span><span>📚</span></div>
           <div class="kpi-value" id="gnKpiEsquemasAtivos" style="color: #a855f7; font-size: 1.8rem;">0</div>
           <div class="kpi-sub">Biblioteca interna revista</div>
+        </div>
+        <div class="kpi-card" style="padding: 16px;">
+          <div class="kpi-header"><span>Dicionário Pendentes</span><span>🏷️</span></div>
+          <div class="kpi-value" id="gnKpiDicionarioPendentes" style="color: #38bdf8; font-size: 1.8rem;">0</div>
+          <div class="kpi-sub" id="gnKpiDicionarioSub">0 aprovados · 49 marcas base</div>
         </div>
         <div class="kpi-card" style="padding: 16px;">
           <div class="kpi-header"><span>Casos Resolvidos</span><span>✅</span></div>
@@ -1438,7 +1444,7 @@
       </div>
 
       <!-- SECÇÃO 3.4 (FASE 2): BIBLIOTECA INTERNA DE ESQUEMAS -->
-      <div class="table-container">
+      <div class="table-container" style="margin-bottom: 26px;">
         <div class="table-header" style="flex-wrap: wrap; gap: 12px;">
           <div>
             <h3>📚 Biblioteca Interna de Esquemas (Fase 2)</h3>
@@ -1470,6 +1476,47 @@
           </thead>
           <tbody id="esquemasTableBody">
             <tr><td colspan="6" style="text-align: center; color: var(--text-muted); padding: 24px;">A carregar biblioteca de esquemas...</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- SECÇÃO 3.5 (FASE 3): DICIONÁRIO DE MARCAS E DOMÍNIOS COM APROVAÇÃO -->
+      <div class="table-container">
+        <div class="table-header" style="flex-wrap: wrap; gap: 12px;">
+          <div>
+            <h3>🏷️ Dicionário de Marcas e Domínios com Aprovação (Fase 3)</h3>
+            <p style="color: var(--text-muted); font-size: 0.8rem; margin-top: 2px;">
+              As propostas entram como <strong>pendentes</strong> (não alteram o resultado de nenhuma análise) e só passam a valer no verificador depois de <strong>aprovadas por si</strong>. O histórico apenas acrescenta.
+            </p>
+          </div>
+          <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+            <button id="btnToggleInterruptorDicionario" onclick="alternarInterruptorDicionario()" class="btn-xs" style="background: rgba(16, 185, 129, 0.16); border-color: rgba(16, 185, 129, 0.4); color: #34d399;">
+              ● Leitura do Dicionário Aprovado: ATIVA
+            </button>
+            <select id="gnFilterDicionarioEstado" class="form-select" onchange="renderGolpesNovos()" style="font-size: 0.8rem; padding: 6px 10px;">
+              <option value="todos">Todos os estados (Histórico)</option>
+              <option value="pendente">Pendentes (aguardam aprovação)</option>
+              <option value="aprovado">Aprovados (em vigor)</option>
+              <option value="rejeitado">Rejeitados</option>
+            </select>
+            <button onclick="abrirModalProporDicionario()" class="btn-xs btn-xs-primary">+ Propor Marca / Domínio</button>
+          </div>
+        </div>
+
+        <table>
+          <thead>
+            <tr>
+              <th>Data & Origem</th>
+              <th>Marca</th>
+              <th>Domínio Oficial</th>
+              <th>Ação</th>
+              <th>Estado</th>
+              <th>Aprovado / Revisto Por & Motivo</th>
+              <th>Decisão Humana</th>
+            </tr>
+          </thead>
+          <tbody id="dicionarioAlteracoesTableBody">
+            <tr><td colspan="7" style="text-align: center; color: var(--text-muted); padding: 24px;">A carregar propostas e histórico do dicionário...</td></tr>
           </tbody>
         </table>
       </div>
@@ -1709,6 +1756,53 @@
         <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 16px;">
           <button type="button" class="btn-secondary" onclick="closeModals()">Cancelar</button>
           <button type="submit" class="btn-action">Guardar Esquema</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL FASE 3: PROPOR MARCA E DOMÍNIO OFICIAL AO DICIONÁRIO -->
+  <div id="dicionarioModal" class="modal-overlay">
+    <div class="modal-content" style="max-width: 560px;">
+      <div class="modal-title">
+        <span>🏷️ Propor Alteração ao Dicionário de Marcas e Domínios</span>
+        <button class="close-modal" onclick="closeModals()">×</button>
+      </div>
+      <form onsubmit="submeterPropostaDicionario(event)">
+        <div style="background: rgba(56, 189, 248, 0.08); border: 1px solid rgba(56, 189, 248, 0.3); border-radius: 8px; padding: 10px 12px; margin-bottom: 14px; font-size: 0.78rem; color: #bae6fd;">
+          🔒 Toda a proposta entra no estado <strong>pendente</strong> (não altera o resultado de nenhuma análise) e só entra em vigor após aprovação humana explícita.
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Marca *</label>
+            <input type="text" id="dicModalMarca" class="form-input" required placeholder="Ex: DIGI Portugal / Banco CTT">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Domínio Oficial *</label>
+            <input type="text" id="dicModalDominio" class="form-input" required placeholder="Ex: digi.pt">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Ação *</label>
+            <select id="dicModalAcao" class="form-select">
+              <option value="adicionar">Adicionar domínio oficial</option>
+              <option value="alterar">Alterar / substituir domínio oficial</option>
+              <option value="remover">Remover domínio oficial</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Origem</label>
+            <input type="text" id="dicModalOrigem" class="form-input" value="manual" placeholder="manual / fila_revisao / alerta">
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Motivo / Justificação (nas nossas palavras)</label>
+          <input type="text" id="dicModalMotivo" class="form-input" placeholder="Ex: Operadora oficial lançada em Portugal com campanha ativa de smishing.">
+        </div>
+        <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 16px;">
+          <button type="button" class="btn-secondary" onclick="closeModals()">Cancelar</button>
+          <button type="submit" class="btn-action">Submeter Proposta (Pendente)</button>
         </div>
       </form>
     </div>
@@ -4792,6 +4886,8 @@ Zap, Quem É?`;
       const fontes = Array.isArray(dashboardState.fontes_alerta) ? dashboardState.fontes_alerta : [];
       const alertas = Array.isArray(dashboardState.alertas_oficiais) ? dashboardState.alertas_oficiais : [];
       const esquemas = Array.isArray(dashboardState.esquemas) ? dashboardState.esquemas : [];
+      const dicionario = Array.isArray(dashboardState.dicionario_alteracoes) ? dashboardState.dicionario_alteracoes : [];
+      const dicionarioAtivo = dashboardState.dicionario_ativo || {};
 
       const elAlertasNovos = document.getElementById('gnKpiAlertasNovos');
       if (elAlertasNovos) {
@@ -4804,6 +4900,37 @@ Zap, Quem É?`;
         elEsqAtivos.textContent = typeof resumo.esquemas_ativos === 'number'
           ? resumo.esquemas_ativos
           : esquemas.filter(e => e.estado === 'ativo').length;
+      }
+
+      const elDicPend = document.getElementById('gnKpiDicionarioPendentes');
+      if (elDicPend) {
+        elDicPend.textContent = typeof resumo.dicionario_pendentes === 'number'
+          ? resumo.dicionario_pendentes
+          : dicionario.filter(d => d.estado === 'pendente').length;
+      }
+      const elDicSub = document.getElementById('gnKpiDicionarioSub');
+      if (elDicSub) {
+        const apCount = typeof resumo.dicionario_aprovados === 'number'
+          ? resumo.dicionario_aprovados
+          : dicionario.filter(d => d.estado === 'aprovado').length;
+        const totalMarcas = resumo.dicionario_total_marcas_ativas || Object.keys(dicionarioAtivo).length || 49;
+        elDicSub.textContent = `${apCount} aprovados · ${totalMarcas} marcas ativas`;
+      }
+
+      const btnSwitch = document.getElementById('btnToggleInterruptorDicionario');
+      if (btnSwitch) {
+        const ativo = resumo.dicionario_interruptor_ativo !== false;
+        if (ativo) {
+          btnSwitch.style.background = 'rgba(16, 185, 129, 0.16)';
+          btnSwitch.style.borderColor = 'rgba(16, 185, 129, 0.4)';
+          btnSwitch.style.color = '#34d399';
+          btnSwitch.textContent = '● Leitura do Dicionário Aprovado: ATIVA';
+        } else {
+          btnSwitch.style.background = 'rgba(239, 68, 68, 0.16)';
+          btnSwitch.style.borderColor = 'rgba(239, 68, 68, 0.4)';
+          btnSwitch.style.color = '#f87171';
+          btnSwitch.textContent = '⏸️ Leitura do Dicionário: DESATIVADA (Apenas Lista Base)';
+        }
       }
 
       const badgeSidebar = document.getElementById('badgeFilaPendentes');
@@ -5106,6 +5233,72 @@ Zap, Quem É?`;
                     <button onclick="editarEsquema('${escapeHtml(e.id)}')" class="btn-xs">Editar</button>
                     ${e.estado !== 'arquivado' ? `<button onclick="mudarEstadoEsquemaRapido('${escapeHtml(e.id)}', 'arquivado')" class="btn-xs" style="color:#94a3b8;">Arquivar</button>` : ''}
                   </div>
+                </td>
+              </tr>
+            `;
+          }).join('');
+        }
+      }
+
+      // 6. FASE 3: Renderizar Dicionário de Marcas e Domínios com Aprovação (`dicionario_alteracoes`)
+      const tbodyDic = document.getElementById('dicionarioAlteracoesTableBody');
+      if (tbodyDic) {
+        const filtroDic = document.getElementById('gnFilterDicionarioEstado')?.value || 'todos';
+        const alteracoesFiltradas = dicionario.filter(d => filtroDic === 'todos' || d.estado === filtroDic);
+
+        if (!alteracoesFiltradas.length) {
+          tbodyDic.innerHTML = '<tr><td colspan="7" style="text-align: center; color: var(--text-muted); padding: 24px;">Nenhuma alteração ou proposta registada para o filtro selecionado. Use o botão "+ Propor Marca / Domínio" ou a fila de revisão (decisão "Marca nova") para sugerir adições.</td></tr>';
+        } else {
+          tbodyDic.innerHTML = alteracoesFiltradas.map(d => {
+            const dataStr = d.criado_em ? new Date(d.criado_em).toLocaleString('pt-PT') : '-';
+            const aprovadoStr = d.aprovado_em ? new Date(d.aprovado_em).toLocaleString('pt-PT') : '-';
+
+            const mapEst = {
+              pendente: { label: '⏳ Pendente (Aguarda aprovação)', bg: 'rgba(56,189,248,0.16)', color: '#38bdf8' },
+              aprovado: { label: '✅ Aprovado (Em vigor)', bg: 'rgba(16,185,129,0.16)', color: '#34d399' },
+              rejeitado:{ label: '❌ Rejeitado', bg: 'rgba(239,68,68,0.16)', color: '#f87171' }
+            };
+            const est = mapEst[d.estado] || mapEst.pendente;
+
+            const mapAcao = {
+              adicionar: { label: 'Adicionar', color: '#34d399' },
+              alterar:   { label: 'Alterar', color: '#fcd34d' },
+              remover:   { label: 'Remover', color: '#f87171' }
+            };
+            const acaoInfo = mapAcao[d.acao] || { label: d.acao, color: '#93c5fd' };
+
+            return `
+              <tr>
+                <td style="font-size: 0.76rem; color: var(--text-muted);">
+                  <div>${escapeHtml(dataStr)}</div>
+                  <div style="font-size: 0.7rem; color: #38bdf8; text-transform: uppercase; margin-top: 2px;">Origem: ${escapeHtml(d.origem || 'manual')}</div>
+                </td>
+                <td>
+                  <div style="font-weight: 700; color: #fff; font-size: 0.85rem;">${escapeHtml(d.marca)}</div>
+                </td>
+                <td style="font-family: 'JetBrains Mono', monospace; font-size: 0.8rem; color: #93c5fd;">
+                  ${escapeHtml(d.dominio_oficial)}
+                </td>
+                <td>
+                  <span style="font-size: 0.75rem; font-weight: 700; color: ${acaoInfo.color}; text-transform: uppercase;">${escapeHtml(acaoInfo.label)}</span>
+                </td>
+                <td>
+                  <span style="background:${est.bg}; color:${est.color}; padding:3px 9px; border-radius:999px; font-size:0.73rem; font-weight:700;">${escapeHtml(est.label)}</span>
+                </td>
+                <td style="font-size: 0.78rem;">
+                  <div>${d.aprovado_por ? `<strong>${escapeHtml(d.aprovado_por)}</strong>` : '<span style="color:var(--text-muted);">Aguardando aprovação humana</span>'}</div>
+                  ${d.aprovado_em ? `<div style="font-size:0.7rem; color:var(--text-muted);">${escapeHtml(aprovadoStr)}</div>` : ''}
+                  ${d.motivo ? `<div style="color:var(--text-muted); font-size:0.75rem; margin-top:2px;">${escapeHtml(d.motivo)}</div>` : ''}
+                </td>
+                <td>
+                  ${d.estado === 'pendente' ? `
+                    <div style="display: flex; gap: 6px; flex-wrap: wrap;">
+                      <button onclick="decidirPropostaDicionario('${escapeHtml(d.id)}', 'aprovado')" class="btn-xs btn-xs-primary">✅ Aprovar</button>
+                      <button onclick="decidirPropostaDicionario('${escapeHtml(d.id)}', 'rejeitado')" class="btn-xs" style="color: #f87171;">❌ Rejeitar</button>
+                    </div>
+                  ` : `
+                    <span style="font-size: 0.74rem; color: var(--text-muted);">Histórico registado</span>
+                  `}
                 </td>
               </tr>
             `;
@@ -5474,6 +5667,121 @@ Zap, Quem É?`;
         await loadDashboardData();
       } catch (err) {
         alert('Erro ao atualizar esquema: ' + err.message);
+      }
+    }
+
+    // =========================================================================
+    // HANDLERS FASE 3: DICIONÁRIO DE MARCAS E DOMÍNIOS COM APROVAÇÃO (Secção 3.5)
+    // =========================================================================
+    function abrirModalProporDicionario() {
+      document.getElementById('dicModalMarca').value = '';
+      document.getElementById('dicModalDominio').value = '';
+      document.getElementById('dicModalAcao').value = 'adicionar';
+      document.getElementById('dicModalOrigem').value = 'manual';
+      document.getElementById('dicModalMotivo').value = '';
+      document.getElementById('dicionarioModal').style.display = 'flex';
+    }
+
+    async function submeterPropostaDicionario(event) {
+      if (event) event.preventDefault();
+      const marca = document.getElementById('dicModalMarca').value.trim();
+      const dominio_oficial = document.getElementById('dicModalDominio').value.trim();
+      const acao = document.getElementById('dicModalAcao').value;
+      const origem = document.getElementById('dicModalOrigem').value.trim() || 'manual';
+      const motivo = document.getElementById('dicModalMotivo').value.trim();
+
+      if (!marca || !dominio_oficial) {
+        alert('Indique a marca e o respetivo domínio oficial.');
+        return;
+      }
+
+      try {
+        const res = await fetch('/api/admin', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'x-admin-key': globalAdminSecret },
+          body: JSON.stringify({
+            action: 'propor_dicionario',
+            marca,
+            dominio_oficial,
+            acao,
+            origem,
+            motivo
+          })
+        });
+        if (!res.ok) {
+          const errData = await res.json().catch(() => null);
+          throw new Error(errData?.error || (await res.text()));
+        }
+        closeModals();
+        showToast('Proposta submetida com sucesso como PENDENTE (aguarda aprovação humana)!');
+        await loadDashboardData();
+      } catch (err) {
+        alert('Erro ao submeter proposta para o dicionário: ' + err.message);
+      }
+    }
+
+    async function decidirPropostaDicionario(propostaId, novoEstado) {
+      const verbos = {
+        aprovado: 'APROVAR e colocar em vigor no verificador',
+        rejeitado: 'REJEITAR'
+      };
+      const revisor = prompt(`Confirma ${verbos[novoEstado] || novoEstado} esta proposta do dicionário?\nIndique o seu nome/iniciais de revisor:`, 'Operador Admin');
+      if (!revisor || !revisor.trim()) return;
+
+      const motivo = prompt('Notas / justificação da decisão (opcional):', '') || '';
+
+      try {
+        const res = await fetch('/api/admin', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'x-admin-key': globalAdminSecret },
+          body: JSON.stringify({
+            action: 'decidir_dicionario',
+            proposta_id: propostaId,
+            estado: novoEstado,
+            aprovado_por: revisor.trim(),
+            motivo: motivo.trim()
+          })
+        });
+        if (!res.ok) {
+          const errData = await res.json().catch(() => null);
+          throw new Error(errData?.error || (await res.text()));
+        }
+        showToast(`Proposta do dicionário ${novoEstado === 'aprovado' ? 'APROVADA e em vigor' : 'rejeitada'} com sucesso!`);
+        await loadDashboardData();
+      } catch (err) {
+        alert('Erro ao decidir proposta do dicionário: ' + err.message);
+      }
+    }
+
+    async function alternarInterruptorDicionario() {
+      const atualAtivo = dashboardState?.golpes_novos_resumo?.dicionario_interruptor_ativo !== false;
+      const novoAtivo = !atualAtivo;
+      const msgConfirm = novoAtivo
+        ? 'Deseja ATIVAR a leitura do dicionário de marcas aprovadas pelo verificador?'
+        : 'Deseja DESATIVAR a leitura do dicionário aprovado e manter apenas a lista base inicial de domínios protegidos?';
+      if (!confirm(msgConfirm)) return;
+
+      const revisor = prompt('Indique o seu nome/iniciais de revisor para histórico de auditoria:', 'Operador Admin');
+      if (!revisor || !revisor.trim()) return;
+
+      try {
+        const res = await fetch('/api/admin', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'x-admin-key': globalAdminSecret },
+          body: JSON.stringify({
+            action: 'alternar_interruptor_dicionario',
+            ativo: novoAtivo,
+            revisor: revisor.trim()
+          })
+        });
+        if (!res.ok) {
+          const errData = await res.json().catch(() => null);
+          throw new Error(errData?.error || (await res.text()));
+        }
+        showToast(`Interruptor do dicionário alterado para: ${novoAtivo ? 'ATIVO' : 'DESATIVADO'}.`);
+        await loadDashboardData();
+      } catch (err) {
+        alert('Erro ao alternar interruptor: ' + err.message);
       }
     }
 

@@ -23,7 +23,12 @@ import {
   verificarFonteAlertaOficial,
   criarOuAtualizarEsquema,
   reverAlertaOficial,
-  FONTES_ALERTA_INICIAIS
+  FONTES_ALERTA_INICIAIS,
+  proporAlteracaoDicionario,
+  decidirAlteracaoDicionario,
+  compilarDicionarioAprovado,
+  isApprovedDictionaryEnabled,
+  setApprovedDictionaryEnabled
 } from '../lib/golpes_novos.js';
 
 // Campos de verificação comercial e CRM (migração 20261016, 20261015 e 20261019).
@@ -225,6 +230,7 @@ export default async function handler(req, res) {
     let fontesDb = [];
     let alertasDb = [];
     let esquemasDb = [];
+    let dicionarioDb = [];
     let analisesRevisao = [];
     let isDbOnline = true;
     let dbErrorMessage = null;
@@ -353,7 +359,7 @@ export default async function handler(req, res) {
         if (usoResp.ok) usoSelo = await usoResp.json();
       } catch {}
 
-      // 14. Módulo Golpes Novos (Fases 1 e 2): Buscar clusters, fila_revisao, fontes_alerta, alertas_oficiais, esquemas e análises recentes sem texto bruto
+      // 14. Módulo Golpes Novos (Fases 1, 2 e 3): Buscar clusters, fila_revisao, fontes_alerta, alertas_oficiais, esquemas, dicionario_alteracoes e análises recentes sem texto bruto
       try {
         const clResp = await fetch(`${url}/rest/v1/clusters?select=*&order=ultima_vez.desc&limit=200`, { headers });
         if (clResp.ok) clustersDb = await clResp.json();
@@ -377,6 +383,11 @@ export default async function handler(req, res) {
       try {
         const esqResp = await fetch(`${url}/rest/v1/esquemas?select=*&order=criado_em.desc&limit=200`, { headers });
         if (esqResp.ok) esquemasDb = await esqResp.json();
+      } catch {}
+
+      try {
+        const dicResp = await fetch(`${url}/rest/v1/dicionario_alteracoes?select=*&order=criado_em.desc&limit=300`, { headers });
+        if (dicResp.ok) dicionarioDb = await dicResp.json();
       } catch {}
 
       try {
@@ -426,13 +437,14 @@ export default async function handler(req, res) {
       marcas
     });
 
-    // Compila Estado das Fases 1 e 2 do Módulo de Golpes Novos
+    // Compila Estado das Fases 1, 2 e 3 do Módulo de Golpes Novos
     const estadoFase1 = compilarEstadoFase1({
       clustersDb,
       filaDb,
       fontesDb,
       alertasDb,
       esquemasDb,
+      dicionarioDb,
       analisesRecentes: analisesRevisao.length ? analisesRevisao : [...sinais, ...ocorrencias]
     });
 
@@ -459,7 +471,9 @@ export default async function handler(req, res) {
       totalFilaRevisao: estadoFase1.resumo_modulo.fila_pendentes,
       totalPossiveisCampanhas: estadoFase1.resumo_modulo.possiveis_campanhas,
       totalAlertasOficiaisNovos: estadoFase1.resumo_modulo.alertas_novos,
-      totalEsquemasAtivos: estadoFase1.resumo_modulo.esquemas_ativos
+      totalEsquemasAtivos: estadoFase1.resumo_modulo.esquemas_ativos,
+      totalDicionarioPendentes: estadoFase1.resumo_modulo.dicionario_pendentes,
+      totalDicionarioAprovados: estadoFase1.resumo_modulo.dicionario_aprovados
     };
 
     return res.status(200).json({
@@ -483,6 +497,8 @@ export default async function handler(req, res) {
       fontes_alerta: estadoFase1.fontes_alerta,
       alertas_oficiais: estadoFase1.alertas_oficiais,
       esquemas: estadoFase1.esquemas,
+      dicionario_alteracoes: estadoFase1.dicionario_alteracoes,
+      dicionario_ativo: estadoFase1.dicionario_ativo,
       golpes_novos_resumo: estadoFase1.resumo_modulo,
       database_online: isDbOnline,
       database_warning: isDbOnline ? null : `Supabase inacessível (${dbErrorMessage}). Verifique se o projeto está pausado em supabase.com.`
@@ -1907,6 +1923,26 @@ https://confirmequeme.pt`;
           } catch (_eErr) {}
         }
 
+        // Se a decisão foi 'marca_nova' e o operador indicou marca e domínio oficial, cria proposta 'pendente' no dicionário (Fase 3)
+        let propostaDicionario = null;
+        if (atualizado.decisao === 'marca_nova' && req.body.marca_sugerida && req.body.dominio_sugerido) {
+          propostaDicionario = proporAlteracaoDicionario({
+            marca: req.body.marca_sugerida,
+            dominio_oficial: req.body.dominio_sugerido,
+            acao: 'adicionar',
+            origem: 'fila_revisao',
+            motivo: atualizado.notas || `Proposta criada a partir da fila de revisão (${atualizado.analise_ref})`
+          });
+          mem.dicionario_alteracoes.set(propostaDicionario.id, propostaDicionario);
+          try {
+            await fetch(`${url}/rest/v1/dicionario_alteracoes`, {
+              method: 'POST',
+              headers: { ...headers, Prefer: 'return=minimal' },
+              body: JSON.stringify(propostaDicionario)
+            });
+          } catch (_dErr) {}
+        }
+
         // Regista no histórico de auditoria
         await registrarHistorico(url, headers, {
           empresa_id: null,
@@ -1916,7 +1952,8 @@ https://confirmequeme.pt`;
             analise_ref: atualizado.analise_ref,
             decisao: atualizado.decisao,
             notas: atualizado.notas,
-            esquema_rascunho_id: esquemaCriado?.id || null
+            esquema_rascunho_id: esquemaCriado?.id || null,
+            proposta_dicionario_id: propostaDicionario?.id || null
           },
           por: atualizado.revisor,
           motivo: `Decisão na fila de revisão: ${atualizado.decisao} (${atualizado.notas || 'sem nota'})`
@@ -1925,7 +1962,8 @@ https://confirmequeme.pt`;
         return res.status(200).json({
           success: true,
           item: atualizado,
-          esquema: esquemaCriado
+          esquema: esquemaCriado,
+          proposta_dicionario: propostaDicionario
         });
       } catch (err) {
         return res.status(400).json({ error: err.message });
@@ -2413,6 +2451,191 @@ https://confirmequeme.pt`;
       } catch (err) {
         return res.status(400).json({ error: err.message });
       }
+    }
+
+    // =========================================================================
+    // 2.25 MÓDULO GOLPES NOVOS (FASE 3): PROPOR ALTERAÇÃO AO DICIONÁRIO (Secção 3.5)
+    // =========================================================================
+    if (action === 'propor_dicionario') {
+      const {
+        marca,
+        dominio_oficial,
+        acao = 'adicionar',
+        origem = 'manual',
+        motivo = ''
+      } = req.body || {};
+
+      try {
+        const mem = getMemoriaGolpesNovos();
+        const proposta = proporAlteracaoDicionario({
+          marca,
+          dominio_oficial,
+          acao,
+          origem,
+          motivo
+        });
+
+        mem.dicionario_alteracoes.set(proposta.id, proposta);
+
+        try {
+          await fetch(`${url}/rest/v1/dicionario_alteracoes`, {
+            method: 'POST',
+            headers: { ...headers, Prefer: 'return=minimal' },
+            body: JSON.stringify(proposta)
+          });
+        } catch (_dbErr) {}
+
+        // Proposta 'pendente' NÃO altera o dicionário ativo (Critério 4)
+        const dicionarioAtivo = compilarDicionarioAprovado([...mem.dicionario_alteracoes.values()]);
+
+        await registrarHistorico(url, headers, {
+          empresa_id: null,
+          acao: 'proposta_dicionario',
+          depois: {
+            proposta_id: proposta.id,
+            marca: proposta.marca,
+            dominio_oficial: proposta.dominio_oficial,
+            acao: proposta.acao,
+            estado: proposta.estado
+          },
+          por: 'admin',
+          motivo: `Proposta de dicionário (${proposta.acao}: ${proposta.marca} -> ${proposta.dominio_oficial}) registada como pendente`
+        });
+
+        return res.status(200).json({
+          success: true,
+          proposta,
+          dicionario_ativo: dicionarioAtivo
+        });
+      } catch (err) {
+        return res.status(400).json({ error: err.message });
+      }
+    }
+
+    // =========================================================================
+    // 2.26 MÓDULO GOLPES NOVOS (FASE 3): APROVAR OU REJEITAR PROPOSTA DO DICIONÁRIO (Secção 3.5)
+    // =========================================================================
+    if (action === 'decidir_dicionario') {
+      const {
+        id,
+        proposta_id,
+        estado,
+        aprovado_por = 'Operador Admin',
+        motivo
+      } = req.body || {};
+
+      const targetId = id || proposta_id;
+      if (!targetId) {
+        return res.status(400).json({ error: 'O id da proposta do dicionário é obrigatório.' });
+      }
+
+      try {
+        const mem = getMemoriaGolpesNovos();
+        let propostaBase = mem.dicionario_alteracoes.get(targetId);
+
+        if (!propostaBase) {
+          try {
+            const getRes = await fetch(`${url}/rest/v1/dicionario_alteracoes?id=eq.${encodeURIComponent(targetId)}&select=*`, { headers });
+            const rows = getRes.ok ? await getRes.json() : [];
+            if (rows.length > 0) propostaBase = rows[0];
+          } catch (_e) {}
+        }
+
+        if (!propostaBase) {
+          propostaBase = {
+            id: targetId,
+            marca: req.body.marca || 'Marca',
+            dominio_oficial: req.body.dominio_oficial || 'dominio.pt',
+            acao: req.body.acao || 'adicionar',
+            origem: req.body.origem || 'manual',
+            estado: 'pendente',
+            criado_em: new Date().toISOString()
+          };
+        }
+
+        const decidida = decidirAlteracaoDicionario(propostaBase, {
+          estado,
+          aprovado_por,
+          motivo
+        });
+
+        mem.dicionario_alteracoes.set(decidida.id, decidida);
+
+        try {
+          await fetch(`${url}/rest/v1/dicionario_alteracoes?id=eq.${encodeURIComponent(decidida.id)}`, {
+            method: 'PATCH',
+            headers: { ...headers, Prefer: 'return=minimal' },
+            body: JSON.stringify({
+              estado: decidida.estado,
+              aprovado_por: decidida.aprovado_por,
+              aprovado_em: decidida.aprovado_em,
+              motivo: decidida.motivo
+            })
+          });
+        } catch (_dbErr) {}
+
+        // Atualiza a cache ativa do scanner apenas com as propostas aprovadas
+        let todasAlteracoes = [...mem.dicionario_alteracoes.values()];
+        try {
+          const dicResp = await fetch(`${url}/rest/v1/dicionario_alteracoes?select=*&order=criado_em.asc&limit=500`, { headers });
+          if (dicResp.ok) {
+            const dbRows = await dicResp.json();
+            const mapComb = new Map();
+            for (const r of [...dbRows, ...todasAlteracoes]) {
+              if (r && r.id) mapComb.set(r.id, r);
+            }
+            todasAlteracoes = [...mapComb.values()];
+          }
+        } catch (_e) {}
+
+        const dicionarioAtivo = compilarDicionarioAprovado(todasAlteracoes);
+
+        await registrarHistorico(url, headers, {
+          empresa_id: null,
+          acao: `dicionario_${decidida.estado}`,
+          depois: {
+            proposta_id: decidida.id,
+            marca: decidida.marca,
+            dominio_oficial: decidida.dominio_oficial,
+            acao: decidida.acao,
+            estado: decidida.estado,
+            aprovado_por: decidida.aprovado_por,
+            aprovado_em: decidida.aprovado_em
+          },
+          por: decidida.aprovado_por,
+          motivo: decidida.motivo || `Alteração de dicionário ${decidida.estado} por ${decidida.aprovado_por}`
+        });
+
+        return res.status(200).json({
+          success: true,
+          proposta: decidida,
+          dicionario_ativo: dicionarioAtivo
+        });
+      } catch (err) {
+        return res.status(400).json({ error: err.message });
+      }
+    }
+
+    // =========================================================================
+    // 2.27 MÓDULO GOLPES NOVOS (FASE 3): INTERRUPTOR DE ATIVAÇÃO DO DICIONÁRIO APROVADO
+    // =========================================================================
+    if (action === 'alternar_interruptor_dicionario') {
+      const { ativo, revisor = 'Operador Admin' } = req.body || {};
+      const novoEstado = ativo !== undefined ? Boolean(ativo) : !isApprovedDictionaryEnabled();
+      setApprovedDictionaryEnabled(novoEstado);
+
+      await registrarHistorico(url, headers, {
+        empresa_id: null,
+        acao: 'interruptor_dicionario',
+        depois: { dicionario_interruptor_ativo: isApprovedDictionaryEnabled() },
+        por: revisor,
+        motivo: `Interruptor do dicionário aprovado alterado para ${isApprovedDictionaryEnabled() ? 'ATIVO' : 'DESATIVADO (apenas lista inicial)'}`
+      });
+
+      return res.status(200).json({
+        success: true,
+        dicionario_interruptor_ativo: isApprovedDictionaryEnabled()
+      });
     }
 
     return res.status(400).json({ error: 'Ação não reconhecida.' });
