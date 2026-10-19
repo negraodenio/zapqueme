@@ -19,7 +19,11 @@ import {
   criarItemFilaRevisao,
   agruparEventosEmClusters,
   getMemoriaGolpesNovos,
-  sanitizarCampoAnonimizado
+  sanitizarCampoAnonimizado,
+  verificarFonteAlertaOficial,
+  criarOuAtualizarEsquema,
+  reverAlertaOficial,
+  FONTES_ALERTA_INICIAIS
 } from '../lib/golpes_novos.js';
 
 // Campos de verificação comercial e CRM (migração 20261016, 20261015 e 20261019).
@@ -218,6 +222,9 @@ export default async function handler(req, res) {
     let usoSelo = [];
     let clustersDb = [];
     let filaDb = [];
+    let fontesDb = [];
+    let alertasDb = [];
+    let esquemasDb = [];
     let analisesRevisao = [];
     let isDbOnline = true;
     let dbErrorMessage = null;
@@ -346,7 +353,7 @@ export default async function handler(req, res) {
         if (usoResp.ok) usoSelo = await usoResp.json();
       } catch {}
 
-      // 14. Módulo Golpes Novos (Fase 1): Buscar clusters, fila_revisao e análises recentes sem texto bruto
+      // 14. Módulo Golpes Novos (Fases 1 e 2): Buscar clusters, fila_revisao, fontes_alerta, alertas_oficiais, esquemas e análises recentes sem texto bruto
       try {
         const clResp = await fetch(`${url}/rest/v1/clusters?select=*&order=ultima_vez.desc&limit=200`, { headers });
         if (clResp.ok) clustersDb = await clResp.json();
@@ -355,6 +362,21 @@ export default async function handler(req, res) {
       try {
         const frResp = await fetch(`${url}/rest/v1/fila_revisao?select=*&order=criado_em.desc&limit=300`, { headers });
         if (frResp.ok) filaDb = await frResp.json();
+      } catch {}
+
+      try {
+        const faResp = await fetch(`${url}/rest/v1/fontes_alerta?select=*&order=criado_em.asc&limit=100`, { headers });
+        if (faResp.ok) fontesDb = await faResp.json();
+      } catch {}
+
+      try {
+        const aoResp = await fetch(`${url}/rest/v1/alertas_oficiais?select=*&order=detetado_em.desc&limit=200`, { headers });
+        if (aoResp.ok) alertasDb = await aoResp.json();
+      } catch {}
+
+      try {
+        const esqResp = await fetch(`${url}/rest/v1/esquemas?select=*&order=criado_em.desc&limit=200`, { headers });
+        if (esqResp.ok) esquemasDb = await esqResp.json();
       } catch {}
 
       try {
@@ -404,10 +426,13 @@ export default async function handler(req, res) {
       marcas
     });
 
-    // Compila Estado da Fase 1 do Módulo de Golpes Novos (Fila de Revisão + Clusters de Semelhança)
+    // Compila Estado das Fases 1 e 2 do Módulo de Golpes Novos
     const estadoFase1 = compilarEstadoFase1({
       clustersDb,
       filaDb,
+      fontesDb,
+      alertasDb,
+      esquemasDb,
       analisesRecentes: analisesRevisao.length ? analisesRevisao : [...sinais, ...ocorrencias]
     });
 
@@ -432,7 +457,9 @@ export default async function handler(req, res) {
       totalSurtosAtivos: radarIntel.resumo.total_surtos_criticos,
       totalIocsFinanceiros: radarIntel.resumo.total_iocs_financeiros,
       totalFilaRevisao: estadoFase1.resumo_modulo.fila_pendentes,
-      totalPossiveisCampanhas: estadoFase1.resumo_modulo.possiveis_campanhas
+      totalPossiveisCampanhas: estadoFase1.resumo_modulo.possiveis_campanhas,
+      totalAlertasOficiaisNovos: estadoFase1.resumo_modulo.alertas_novos,
+      totalEsquemasAtivos: estadoFase1.resumo_modulo.esquemas_ativos
     };
 
     return res.status(200).json({
@@ -453,6 +480,9 @@ export default async function handler(req, res) {
       uso_selo: usoSelo || [],
       clusters: estadoFase1.clusters,
       fila_revisao: estadoFase1.fila_revisao,
+      fontes_alerta: estadoFase1.fontes_alerta,
+      alertas_oficiais: estadoFase1.alertas_oficiais,
+      esquemas: estadoFase1.esquemas,
       golpes_novos_resumo: estadoFase1.resumo_modulo,
       database_online: isDbOnline,
       database_warning: isDbOnline ? null : `Supabase inacessível (${dbErrorMessage}). Verifique se o projeto está pausado em supabase.com.`
@@ -1853,6 +1883,30 @@ https://confirmequeme.pt`;
           }
         } catch (_dbErr) {}
 
+        // Se a decisão foi 'esquema_novo' e o operador indicou um nome de esquema, cria rascunho na biblioteca de esquemas (Fase 2)
+        let esquemaCriado = null;
+        if (atualizado.decisao === 'esquema_novo' && req.body.nome_esquema && String(req.body.nome_esquema).trim().length >= 3) {
+          const resItem = atualizado.resumo || {};
+          esquemaCriado = criarOuAtualizarEsquema({
+            nome: req.body.nome_esquema,
+            descricao: atualizado.notas || `Esquema identificado a partir da fila de revisão (${resItem.tipo || 'sinais suspeitos'}).`,
+            canais: resItem.canal ? [resItem.canal] : ['whatsapp'],
+            marcas: (resItem.marca && resItem.marca !== 'Marca não identificada') ? [resItem.marca] : [],
+            sinais: Array.isArray(resItem.sinais) ? resItem.sinais : [],
+            estado: 'rascunho',
+            origem: 'consulta',
+            revisto_por: atualizado.revisor
+          });
+          mem.esquemas.set(esquemaCriado.id, esquemaCriado);
+          try {
+            await fetch(`${url}/rest/v1/esquemas`, {
+              method: 'POST',
+              headers: { ...headers, Prefer: 'return=minimal' },
+              body: JSON.stringify(esquemaCriado)
+            });
+          } catch (_eErr) {}
+        }
+
         // Regista no histórico de auditoria
         await registrarHistorico(url, headers, {
           empresa_id: null,
@@ -1861,7 +1915,8 @@ https://confirmequeme.pt`;
             fila_id: atualizado.id,
             analise_ref: atualizado.analise_ref,
             decisao: atualizado.decisao,
-            notas: atualizado.notas
+            notas: atualizado.notas,
+            esquema_rascunho_id: esquemaCriado?.id || null
           },
           por: atualizado.revisor,
           motivo: `Decisão na fila de revisão: ${atualizado.decisao} (${atualizado.notas || 'sem nota'})`
@@ -1869,7 +1924,8 @@ https://confirmequeme.pt`;
 
         return res.status(200).json({
           success: true,
-          item: atualizado
+          item: atualizado,
+          esquema: esquemaCriado
         });
       } catch (err) {
         return res.status(400).json({ error: err.message });
@@ -2002,6 +2058,357 @@ https://confirmequeme.pt`;
           success: true,
           item,
           clusters: novosClusters
+        });
+      } catch (err) {
+        return res.status(400).json({ error: err.message });
+      }
+    }
+
+    // =========================================================================
+    // 2.21 MÓDULO GOLPES NOVOS (FASE 2): GERIR FONTE DE ALERTA OFICIAL (Secção 3.3)
+    // =========================================================================
+    if (action === 'gerir_fonte_alerta') {
+      const {
+        id,
+        nome,
+        url: fonteUrl,
+        tipo = 'autoridade',
+        estado = 'ativa',
+        notas = ''
+      } = req.body;
+
+      if (!nome || !fonteUrl) {
+        return res.status(400).json({ error: 'Nome e URL da fonte oficial são obrigatórios.' });
+      }
+
+      try {
+        const mem = getMemoriaGolpesNovos();
+        const existente = (id && mem.fontes_alerta.get(id)) ||
+          [...mem.fontes_alerta.values(), ...FONTES_ALERTA_INICIAIS].find(f => f.id === id || f.url === fonteUrl) || {};
+
+        const fonteObj = {
+          id: existente.id || id || (globalThis.crypto?.randomUUID ? globalThis.crypto.randomUUID() : `fonte_${Date.now()}`),
+          nome: sanitizarCampoAnonimizado(nome),
+          url: String(fonteUrl).trim(),
+          tipo: ['autoridade', 'marca', 'imprensa'].includes(tipo) ? tipo : 'autoridade',
+          ultimo_check: existente.ultimo_check || null,
+          ultimo_hash: existente.ultimo_hash || null,
+          estado: ['ativa', 'pausada', 'erro'].includes(estado) ? estado : 'ativa',
+          ultimo_erro: estado === 'ativa' ? null : (existente.ultimo_erro || null),
+          notas: sanitizarCampoAnonimizado(notas),
+          criado_em: existente.criado_em || new Date().toISOString()
+        };
+
+        mem.fontes_alerta.set(fonteObj.id, fonteObj);
+
+        try {
+          const patchRes = await fetch(`${url}/rest/v1/fontes_alerta?id=eq.${encodeURIComponent(fonteObj.id)}`, {
+            method: 'PATCH',
+            headers: { ...headers, Prefer: 'return=representation' },
+            body: JSON.stringify({
+              nome: fonteObj.nome,
+              url: fonteObj.url,
+              tipo: fonteObj.tipo,
+              estado: fonteObj.estado,
+              ultimo_erro: fonteObj.ultimo_erro,
+              notas: fonteObj.notas
+            })
+          });
+          const rows = patchRes.ok ? await patchRes.json() : [];
+          if (!rows.length) {
+            await fetch(`${url}/rest/v1/fontes_alerta`, {
+              method: 'POST',
+              headers: { ...headers, Prefer: 'return=minimal' },
+              body: JSON.stringify(fonteObj)
+            });
+          }
+        } catch (_dbErr) {}
+
+        return res.status(200).json({ success: true, fonte: fonteObj });
+      } catch (err) {
+        return res.status(400).json({ error: err.message });
+      }
+    }
+
+    // =========================================================================
+    // 2.22 MÓDULO GOLPES NOVOS (FASE 2): VERIFICAR FONTES DE ALERTA OFICIAL (Secção 3.3)
+    // Respeita obrigatoriamente robots.txt, guarda só título, ligação e data, e NUNCA silencia erros.
+    // =========================================================================
+    if (action === 'verificar_fontes_alerta') {
+      const { fonte_id } = req.body || {};
+
+      try {
+        const mem = getMemoriaGolpesNovos();
+        // Garante que as fontes iniciais estão carregadas
+        if (mem.fontes_alerta.size === 0) {
+          for (const f of FONTES_ALERTA_INICIAIS) {
+            mem.fontes_alerta.set(f.id, { ...f });
+          }
+        }
+
+        const todasFontes = [...mem.fontes_alerta.values()];
+        const fontesAlvo = fonte_id
+          ? todasFontes.filter(f => f.id === fonte_id)
+          : todasFontes.filter(f => f.estado === 'ativa');
+
+        const resultados = [];
+        const novosAlertasTotais = [];
+
+        for (const fonte of fontesAlvo) {
+          const resCheck = await verificarFonteAlertaOficial(fonte);
+          const fAtu = resCheck.fonteAtualizada;
+          mem.fontes_alerta.set(fAtu.id, fAtu);
+
+          // Persiste estado da fonte no Supabase (incluindo ultimo_erro se falhou ou foi bloqueado por robots.txt)
+          try {
+            const patchRes = await fetch(`${url}/rest/v1/fontes_alerta?id=eq.${encodeURIComponent(fAtu.id)}`, {
+              method: 'PATCH',
+              headers: { ...headers, Prefer: 'return=representation' },
+              body: JSON.stringify({
+                ultimo_check: fAtu.ultimo_check,
+                ultimo_hash: fAtu.ultimo_hash,
+                estado: fAtu.estado,
+                ultimo_erro: fAtu.ultimo_erro,
+                notas: fAtu.notas
+              })
+            });
+            const rows = patchRes.ok ? await patchRes.json() : [];
+            if (!rows.length) {
+              await fetch(`${url}/rest/v1/fontes_alerta`, {
+                method: 'POST',
+                headers: { ...headers, Prefer: 'return=minimal' },
+                body: JSON.stringify(fAtu)
+              });
+            }
+          } catch (_dbErr) {}
+
+          // Guarda apenas título, ligação e data dos novos alertas detetados
+          for (const al of (resCheck.novosAlertas || [])) {
+            // Evita duplicar o mesmo URL de alerta
+            const jaExiste = [...mem.alertas_oficiais.values()].some(x => x.url === al.url);
+            if (!jaExiste) {
+              mem.alertas_oficiais.set(al.id, al);
+              novosAlertasTotais.push(al);
+              try {
+                await fetch(`${url}/rest/v1/alertas_oficiais`, {
+                  method: 'POST',
+                  headers: { ...headers, Prefer: 'return=minimal' },
+                  body: JSON.stringify({
+                    id: al.id,
+                    fonte_id: al.fonte_id,
+                    titulo: al.titulo,
+                    url: al.url,
+                    data_publicacao: al.data_publicacao,
+                    detetado_em: al.detetado_em,
+                    estado: 'novo'
+                  })
+                });
+              } catch (_dbErr) {}
+            }
+          }
+
+          resultados.push({
+            fonte_id: fAtu.id,
+            nome: fAtu.nome,
+            ok: resCheck.ok,
+            bloqueado_robots: resCheck.bloqueado_robots,
+            erro: resCheck.erro || null,
+            novos_alertas: (resCheck.novosAlertas || []).length
+          });
+        }
+
+        return res.status(200).json({
+          success: true,
+          resultados,
+          novos_alertas: novosAlertasTotais
+        });
+      } catch (err) {
+        return res.status(400).json({ error: err.message });
+      }
+    }
+
+    // =========================================================================
+    // 2.23 MÓDULO GOLPES NOVOS (FASE 2): REVER ALERTA OFICIAL E/OU CRIAR ESQUEMA (Secções 3.3 e 3.4)
+    // =========================================================================
+    if (action === 'rever_alerta_oficial') {
+      const {
+        alerta_id,
+        estado = 'processado',
+        revisor = 'Operador Admin',
+        notas = '',
+        criar_esquema = false,
+        nome_esquema = '',
+        descricao_esquema = '',
+        canais_esquema = '',
+        marcas_esquema = '',
+        sinais_esquema = ''
+      } = req.body || {};
+
+      if (!alerta_id) {
+        return res.status(400).json({ error: 'alerta_id é obrigatório.' });
+      }
+
+      try {
+        const mem = getMemoriaGolpesNovos();
+        let alertaBase = mem.alertas_oficiais.get(alerta_id);
+        if (!alertaBase) {
+          alertaBase = {
+            id: alerta_id,
+            titulo: req.body.titulo || 'Alerta Oficial',
+            url: req.body.url || '',
+            detetado_em: new Date().toISOString(),
+            estado: 'novo'
+          };
+        }
+
+        let esquemaCriado = null;
+        if (criar_esquema && nome_esquema && String(nome_esquema).trim().length >= 3) {
+          esquemaCriado = criarOuAtualizarEsquema({
+            nome: nome_esquema,
+            descricao: descricao_esquema || notas || `Esquema registado a partir de alerta oficial (${alertaBase.titulo}).`,
+            canais: canais_esquema,
+            marcas: marcas_esquema,
+            sinais: sinais_esquema,
+            estado: 'rascunho',
+            origem: 'alerta',
+            revisto_por: revisor
+          });
+          mem.esquemas.set(esquemaCriado.id, esquemaCriado);
+          try {
+            await fetch(`${url}/rest/v1/esquemas`, {
+              method: 'POST',
+              headers: { ...headers, Prefer: 'return=minimal' },
+              body: JSON.stringify(esquemaCriado)
+            });
+          } catch (_dbErr) {}
+        }
+
+        const alertaAtualizado = reverAlertaOficial(alertaBase, {
+          estado,
+          revisor,
+          notas,
+          esquema_id: esquemaCriado ? esquemaCriado.id : (req.body.esquema_id || null)
+        });
+
+        mem.alertas_oficiais.set(alertaAtualizado.id, alertaAtualizado);
+
+        try {
+          await fetch(`${url}/rest/v1/alertas_oficiais?id=eq.${encodeURIComponent(alertaAtualizado.id)}`, {
+            method: 'PATCH',
+            headers: { ...headers, Prefer: 'return=minimal' },
+            body: JSON.stringify({
+              estado: alertaAtualizado.estado,
+              esquema_id: alertaAtualizado.esquema_id,
+              notas: alertaAtualizado.notas,
+              revisor: alertaAtualizado.revisor,
+              revisto_em: alertaAtualizado.revisto_em
+            })
+          });
+        } catch (_dbErr) {}
+
+        await registrarHistorico(url, headers, {
+          empresa_id: null,
+          acao: 'revisao_alerta_oficial',
+          depois: {
+            alerta_id: alertaAtualizado.id,
+            estado: alertaAtualizado.estado,
+            esquema_id: alertaAtualizado.esquema_id,
+            notas: alertaAtualizado.notas
+          },
+          por: alertaAtualizado.revisor,
+          motivo: `Alerta oficial revisto como ${alertaAtualizado.estado}`
+        });
+
+        return res.status(200).json({
+          success: true,
+          alerta: alertaAtualizado,
+          esquema: esquemaCriado
+        });
+      } catch (err) {
+        return res.status(400).json({ error: err.message });
+      }
+    }
+
+    // =========================================================================
+    // 2.24 MÓDULO GOLPES NOVOS (FASE 2): GUARDAR / ALTERAR ESTADO DE ESQUEMA (Secção 3.4)
+    // =========================================================================
+    if (action === 'guardar_esquema' || action === 'alterar_estado_esquema') {
+      const {
+        id,
+        esquema_id,
+        nome,
+        descricao,
+        canais,
+        marcas,
+        sinais,
+        estado = 'rascunho',
+        origem = 'manual',
+        revisor = 'Operador Admin'
+      } = req.body || {};
+
+      const targetId = id || esquema_id;
+
+      try {
+        const mem = getMemoriaGolpesNovos();
+        const existente = (targetId && mem.esquemas.get(targetId)) || {};
+
+        const esquemaObj = criarOuAtualizarEsquema({
+          id: targetId || existente.id,
+          nome: nome !== undefined ? nome : existente.nome,
+          descricao: descricao !== undefined ? descricao : existente.descricao,
+          canais: canais !== undefined ? canais : existente.canais,
+          marcas: marcas !== undefined ? marcas : existente.marcas,
+          sinais: sinais !== undefined ? sinais : existente.sinais,
+          estado: estado !== undefined ? estado : existente.estado,
+          origem: origem || existente.origem || 'manual',
+          revisto_por: revisor,
+          criado_em: existente.criado_em
+        });
+
+        mem.esquemas.set(esquemaObj.id, esquemaObj);
+
+        try {
+          const patchRes = await fetch(`${url}/rest/v1/esquemas?id=eq.${encodeURIComponent(esquemaObj.id)}`, {
+            method: 'PATCH',
+            headers: { ...headers, Prefer: 'return=representation' },
+            body: JSON.stringify({
+              nome: esquemaObj.nome,
+              descricao: esquemaObj.descricao,
+              canais: esquemaObj.canais,
+              marcas: esquemaObj.marcas,
+              sinais: esquemaObj.sinais,
+              estado: esquemaObj.estado,
+              origem: esquemaObj.origem,
+              revisto_por: esquemaObj.revisto_por,
+              revisto_em: esquemaObj.revisto_em
+            })
+          });
+          const rows = patchRes.ok ? await patchRes.json() : [];
+          if (!rows.length) {
+            await fetch(`${url}/rest/v1/esquemas`, {
+              method: 'POST',
+              headers: { ...headers, Prefer: 'return=minimal' },
+              body: JSON.stringify(esquemaObj)
+            });
+          }
+        } catch (_dbErr) {}
+
+        await registrarHistorico(url, headers, {
+          empresa_id: null,
+          acao: 'gestao_esquema',
+          depois: {
+            esquema_id: esquemaObj.id,
+            nome: esquemaObj.nome,
+            estado: esquemaObj.estado,
+            origem: esquemaObj.origem
+          },
+          por: esquemaObj.revisto_por || revisor,
+          motivo: `Esquema "${esquemaObj.nome}" guardado com estado ${esquemaObj.estado}`
+        });
+
+        return res.status(200).json({
+          success: true,
+          esquema: esquemaObj
         });
       } catch (err) {
         return res.status(400).json({ error: err.message });

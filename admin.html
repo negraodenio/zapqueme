@@ -1246,15 +1246,19 @@
       <!-- AVISO DE REGRAS DE TRABALHO E PRIVACIDADE -->
       <div style="background: rgba(16, 185, 129, 0.08); border: 1px solid rgba(16, 185, 129, 0.3); border-radius: 10px; padding: 14px 18px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
         <div>
-          <div style="font-weight: 700; color: #34d399; font-size: 0.9rem;">🛡️ Processo Vivo de Acompanhamento de Golpes Novos — Fase 1 (Fila de Revisão & Agrupamento)</div>
+          <div style="font-weight: 700; color: #34d399; font-size: 0.9rem;">🛡️ Processo Vivo de Acompanhamento de Golpes Novos — Fases 1 & 2 (Fila, Agrupamento, Alertas Oficiais & Esquemas)</div>
           <div style="color: var(--text-muted); font-size: 0.78rem; margin-top: 4px;">
-            <strong>Privacidade por desenho:</strong> Zero texto bruto guardado. Apenas resumos anonimizados (sem telefones, e-mails, NIF, IBAN ou números longos), hashes de semelhança e indicadores técnicos. Nada entra em produção nem passa a campanha ativa sem aprovação humana. Retenção configurável: Fila <code>[90 dias]</code> · Clusters <code>[12 meses]</code>.
+            <strong>Privacidade e conformidade por desenho:</strong> Zero texto bruto guardado. Respeito estrito por <code>robots.txt</code> (guarda apenas título, ligação e data; erros nunca silenciados). Esquemas escritos nas nossas palavras e sem alterar o texto do robô sem decisão separada.
           </div>
+        </div>
+        <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+          <button onclick="executarVerificacaoFontesAlerta()" id="btnVerificarFontes" class="btn-xs btn-xs-primary" style="padding: 8px 12px;">🔄 Verificar Fontes Oficiais Agora</button>
+          <button onclick="abrirModalNovoEsquema()" class="btn-xs" style="background: rgba(245, 158, 11, 0.18); border-color: rgba(245, 158, 11, 0.45); color: #fcd34d; padding: 8px 12px;">+ Novo Esquema</button>
         </div>
       </div>
 
-      <!-- MINI KPIS DA FASE 1 -->
-      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px; margin-bottom: 22px;">
+      <!-- MINI KPIS DAS FASES 1 E 2 -->
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(175px, 1fr)); gap: 14px; margin-bottom: 22px;">
         <div class="kpi-card" style="padding: 16px;">
           <div class="kpi-header"><span>Pendentes na Fila</span><span>📥</span></div>
           <div class="kpi-value" id="gnKpiPendentes" style="color: #f59e0b; font-size: 1.8rem;">0</div>
@@ -1263,7 +1267,7 @@
         <div class="kpi-card" style="padding: 16px;">
           <div class="kpi-header"><span>Possíveis Campanhas</span><span>🧩</span></div>
           <div class="kpi-value" id="gnKpiPossiveisCampanhas" style="color: #fbbf24; font-size: 1.8rem;">0</div>
-          <div class="kpi-sub">≥ 3 ocorrências semelhantes em 24 h</div>
+          <div class="kpi-sub">≥ 3 ocorrências semelhantes</div>
         </div>
         <div class="kpi-card" style="padding: 16px;">
           <div class="kpi-header"><span>Campanhas Ativas</span><span>🚨</span></div>
@@ -1271,9 +1275,19 @@
           <div class="kpi-sub">Validadas por decisão humana</div>
         </div>
         <div class="kpi-card" style="padding: 16px;">
+          <div class="kpi-header"><span>Alertas Oficiais Novos</span><span>🏛️</span></div>
+          <div class="kpi-value" id="gnKpiAlertasNovos" style="color: #38bdf8; font-size: 1.8rem;">0</div>
+          <div class="kpi-sub">Detetados nas autoridades</div>
+        </div>
+        <div class="kpi-card" style="padding: 16px;">
+          <div class="kpi-header"><span>Esquemas Ativos</span><span>📚</span></div>
+          <div class="kpi-value" id="gnKpiEsquemasAtivos" style="color: #a855f7; font-size: 1.8rem;">0</div>
+          <div class="kpi-sub">Biblioteca interna revista</div>
+        </div>
+        <div class="kpi-card" style="padding: 16px;">
           <div class="kpi-header"><span>Casos Resolvidos</span><span>✅</span></div>
           <div class="kpi-value" id="gnKpiResolvidos" style="color: #10b981; font-size: 1.8rem;">0</div>
-          <div class="kpi-sub">Esquema novo, marca nova ou falso alarme</div>
+          <div class="kpi-sub">Decisões humanas registadas</div>
         </div>
       </div>
 
@@ -1315,7 +1329,7 @@
       </div>
 
       <!-- SECÇÃO 3.1: FILA DE REVISÃO HUMANA -->
-      <div class="table-container">
+      <div class="table-container" style="margin-bottom: 26px;">
         <div class="table-header" style="flex-wrap: wrap; gap: 12px;">
           <div>
             <h3>Fila de Revisão Humana</h3>
@@ -1356,6 +1370,106 @@
           </thead>
           <tbody id="filaRevisaoTableBody">
             <tr><td colspan="7" style="text-align: center; color: var(--text-muted); padding: 28px;">A carregar fila de revisão...</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- SECÇÃO 3.3 (FASE 2): MONITORIZAÇÃO DE ALERTAS OFICIAIS & FONTES -->
+      <div class="table-container" style="margin-bottom: 26px;">
+        <div class="table-header" style="flex-wrap: wrap; gap: 12px;">
+          <div>
+            <h3>🏛️ Monitorização de Alertas Oficiais (Fase 2)</h3>
+            <p style="color: var(--text-muted); font-size: 0.8rem; margin-top: 2px;">
+              Fontes oficiais de autoridades, marcas e imprensa. Respeita obrigatoriamente <code>robots.txt</code>, guarda apenas <strong>título, ligação e data</strong> (sem copiar conteúdo) e regista qualquer erro de leitura sem o silenciar.
+            </p>
+          </div>
+          <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+            <button onclick="abrirModalNovaFonte()" class="btn-xs">+ Adicionar Fonte Oficial</button>
+            <button onclick="executarVerificacaoFontesAlerta()" class="btn-xs btn-xs-primary">🔄 Ler Fontes Ativas</button>
+          </div>
+        </div>
+
+        <!-- Sub-tabela de Fontes -->
+        <div style="padding: 0 16px 14px 16px;">
+          <div style="font-size: 0.78rem; font-weight: 700; color: #94a3b8; text-transform: uppercase; margin: 12px 0 8px 0;">Fontes Monitorizadas (`fontes_alerta`)</div>
+          <table>
+            <thead>
+              <tr>
+                <th>Fonte & Tipo</th>
+                <th>URL Oficial</th>
+                <th>Último Check & Hash</th>
+                <th>Estado / Erro Registado</th>
+                <th>Ações</th>
+              </tr>
+            </thead>
+            <tbody id="fontesAlertaTableBody">
+              <tr><td colspan="5" style="text-align: center; color: var(--text-muted); padding: 20px;">A carregar fontes oficiais...</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Sub-tabela de Alertas Oficiais Detetados -->
+        <div style="padding: 10px 16px 16px 16px; border-top: 1px solid rgba(148, 163, 184, 0.15);">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; flex-wrap: wrap; gap: 8px;">
+            <div style="font-size: 0.78rem; font-weight: 700; color: #38bdf8; text-transform: uppercase;">Alertas Oficiais Detetados (`alertas_oficiais` — Apenas Título, Ligação e Data)</div>
+            <select id="gnFilterAlertaEstado" class="form-select" onchange="renderGolpesNovos()" style="font-size: 0.78rem; padding: 4px 8px;">
+              <option value="todos">Todos os alertas</option>
+              <option value="novo">Novos (por rever)</option>
+              <option value="processado">Processados / Cobertos</option>
+              <option value="ignorado">Ignorados</option>
+            </select>
+          </div>
+          <table>
+            <thead>
+              <tr>
+                <th>Data Deteção / Publicação</th>
+                <th>Título & Ligação Oficial</th>
+                <th>Estado</th>
+                <th>Esquema Associado / Notas</th>
+                <th>Revisor</th>
+                <th>Ação Humana</th>
+              </tr>
+            </thead>
+            <tbody id="alertasOficiaisTableBody">
+              <tr><td colspan="6" style="text-align: center; color: var(--text-muted); padding: 20px;">Ainda sem alertas detetados. Clique em "🔄 Ler Fontes Ativas" para consultar as páginas.</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- SECÇÃO 3.4 (FASE 2): BIBLIOTECA INTERNA DE ESQUEMAS -->
+      <div class="table-container">
+        <div class="table-header" style="flex-wrap: wrap; gap: 12px;">
+          <div>
+            <h3>📚 Biblioteca Interna de Esquemas (Fase 2)</h3>
+            <p style="color: var(--text-muted); font-size: 0.8rem; margin-top: 2px;">
+              Esquemas descritos nas nossas palavras, com estado e revisão humana (`rascunho` → `ativo` → `arquivado`). Um esquema ativo serve para etiquetar ocorrências e gerar amostras de teste — <strong>não altera o texto do robô</strong>.
+            </p>
+          </div>
+          <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+            <select id="gnFilterEsquemaEstado" class="form-select" onchange="renderGolpesNovos()" style="font-size: 0.8rem; padding: 6px 10px;">
+              <option value="todos">Todos os estados</option>
+              <option value="ativo">Ativos</option>
+              <option value="rascunho">Rascunhos (aguardam ativação)</option>
+              <option value="arquivado">Arquivados</option>
+            </select>
+            <button onclick="abrirModalNovoEsquema()" class="btn-xs btn-xs-primary">+ Criar Esquema</button>
+          </div>
+        </div>
+
+        <table>
+          <thead>
+            <tr>
+              <th>Nome & Origem</th>
+              <th>Descrição (Nas Nossas Palavras)</th>
+              <th>Canais, Marcas & Sinais</th>
+              <th>Estado</th>
+              <th>Revisto Por</th>
+              <th>Ações</th>
+            </tr>
+          </thead>
+          <tbody id="esquemasTableBody">
+            <tr><td colspan="6" style="text-align: center; color: var(--text-muted); padding: 24px;">A carregar biblioteca de esquemas...</td></tr>
           </tbody>
         </table>
       </div>
@@ -1425,6 +1539,176 @@
         <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 18px;">
           <button type="button" class="btn-secondary" onclick="closeModals()">Cancelar</button>
           <button type="submit" class="btn-action">Guardar Decisão Humana</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL FASE 2: ADICIONAR / EDITAR FONTE DE ALERTA OFICIAL -->
+  <div id="fonteAlertaModal" class="modal-overlay">
+    <div class="modal-content" style="max-width: 560px;">
+      <div class="modal-title">
+        <span>🏛️ Configurar Fonte de Alerta Oficial</span>
+        <button class="close-modal" onclick="closeModals()">×</button>
+      </div>
+      <form onsubmit="submeterFonteAlerta(event)">
+        <input type="hidden" id="fonteModalId" value="">
+        <div class="form-group">
+          <label class="form-label">Nome da Fonte *</label>
+          <input type="text" id="fonteModalNome" class="form-input" required placeholder="Ex: CERT.PT — Avisos de Cibersegurança">
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">URL da Página (pública, não-rede social) *</label>
+            <input type="url" id="fonteModalUrl" class="form-input" required placeholder="https://www.cncs.gov.pt/pt/noticias/">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Tipo *</label>
+            <select id="fonteModalTipo" class="form-select">
+              <option value="autoridade">Autoridade</option>
+              <option value="marca">Marca</option>
+              <option value="imprensa">Imprensa</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Estado</label>
+            <select id="fonteModalEstado" class="form-select">
+              <option value="ativa">Ativa</option>
+              <option value="pausada">Pausada</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Notas</label>
+            <input type="text" id="fonteModalNotas" class="form-input" placeholder="Ex: Página confirmada na folha de fontes">
+          </div>
+        </div>
+        <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 16px;">
+          <button type="button" class="btn-secondary" onclick="closeModals()">Cancelar</button>
+          <button type="submit" class="btn-action">Guardar Fonte</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL FASE 2: REVER ALERTA OFICIAL E CRIAR ESQUEMA NAS NOSSAS PALAVRAS -->
+  <div id="reverAlertaModal" class="modal-overlay">
+    <div class="modal-content" style="max-width: 620px;">
+      <div class="modal-title">
+        <span>🏛️ Rever Alerta Oficial</span>
+        <button class="close-modal" onclick="closeModals()">×</button>
+      </div>
+      <form onsubmit="submeterRevisaoAlertaOficial(event)">
+        <input type="hidden" id="reverAlertaId" value="">
+        <div id="reverAlertaResumoBox" style="background: rgba(15, 23, 42, 0.8); border: 1px solid rgba(56, 189, 248, 0.3); border-radius: 8px; padding: 12px; margin-bottom: 14px; font-size: 0.82rem;"></div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Decisão sobre o Alerta *</label>
+            <select id="reverAlertaAcao" class="form-select" onchange="atualizarBoxCriarEsquemaAlerta()">
+              <option value="criar_esquema">🆕 Escrever esquema correspondente (nas nossas palavras)</option>
+              <option value="ja_coberto">✅ Já coberto pelo sistema (marcar como processado)</option>
+              <option value="ignorado">📁 Ignorar (não é sobre golpes/burlas)</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Revisor *</label>
+            <input type="text" id="reverAlertaRevisor" class="form-input" required value="Operador Admin">
+          </div>
+        </div>
+
+        <div id="boxAlertaNovoEsquema" style="background: rgba(245, 158, 11, 0.08); border: 1px solid rgba(245, 158, 11, 0.3); border-radius: 8px; padding: 12px; margin-bottom: 14px;">
+          <div style="font-size: 0.78rem; color: #fcd34d; font-weight: 700; margin-bottom: 8px;">Esquema (escrito nas nossas palavras — nunca copiar o texto da notícia)</div>
+          <div class="form-group">
+            <label class="form-label">Nome do Esquema *</label>
+            <input type="text" id="reverAlertaNomeEsquema" class="form-input" placeholder="Ex: Falso reembolso da Autoridade Tributária por SMS">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Descrição nas nossas palavras *</label>
+            <textarea id="reverAlertaDescEsquema" class="form-input" rows="2" placeholder="Ex: Mensagens SMS que alegam reembolso pendente de IRS e pedem dados bancários num domínio externo."></textarea>
+          </div>
+          <div class="form-row">
+            <div class="form-group" style="margin-bottom:0;">
+              <label class="form-label">Canais (separados por vírgula)</label>
+              <input type="text" id="reverAlertaCanaisEsquema" class="form-input" placeholder="sms, whatsapp, email">
+            </div>
+            <div class="form-group" style="margin-bottom:0;">
+              <label class="form-label">Marcas visadas (separadas por vírgula)</label>
+              <input type="text" id="reverAlertaMarcasEsquema" class="form-input" placeholder="AT, Finanças">
+            </div>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Notas da revisão (nas nossas palavras)</label>
+          <input type="text" id="reverAlertaNotas" class="form-input" placeholder="Ex: Alerta oficial revisto e transformado em rascunho de esquema.">
+        </div>
+
+        <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 16px;">
+          <button type="button" class="btn-secondary" onclick="closeModals()">Cancelar</button>
+          <button type="submit" class="btn-action">Guardar Revisão</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL FASE 2: CRIAR / EDITAR ESQUEMA NA BIBLIOTECA -->
+  <div id="esquemaModal" class="modal-overlay">
+    <div class="modal-content" style="max-width: 600px;">
+      <div class="modal-title">
+        <span>📚 Esquema — Biblioteca Interna</span>
+        <button class="close-modal" onclick="closeModals()">×</button>
+      </div>
+      <form onsubmit="submeterEsquema(event)">
+        <input type="hidden" id="esquemaModalId" value="">
+        <div class="form-group">
+          <label class="form-label">Nome do Esquema *</label>
+          <input type="text" id="esquemaModalNome" class="form-input" required placeholder="Ex: Falsa encomenda retida na alfândega com referência MB">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Descrição (sempre escrita nas nossas palavras) *</label>
+          <textarea id="esquemaModalDescricao" class="form-input" rows="3" required placeholder="Descreva o funcionamento geral do esquema sem copiar textos de vítimas nem de notícias."></textarea>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Canais (separados por vírgula)</label>
+            <input type="text" id="esquemaModalCanais" class="form-input" placeholder="sms, whatsapp">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Marcas (separadas por vírgula)</label>
+            <input type="text" id="esquemaModalMarcas" class="form-input" placeholder="CTT, DHL">
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Sinais Técnicos / Indicadores (separados por vírgula)</label>
+          <input type="text" id="esquemaModalSinais" class="form-input" placeholder="pedido de taxa urgente, domínio não oficial, referência MB">
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Estado *</label>
+            <select id="esquemaModalEstado" class="form-select">
+              <option value="rascunho">Rascunho</option>
+              <option value="ativo">Ativo (revisto por humano)</option>
+              <option value="arquivado">Arquivado</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Origem</label>
+            <select id="esquemaModalOrigem" class="form-select">
+              <option value="manual">Manual</option>
+              <option value="alerta">Alerta Oficial</option>
+              <option value="consulta">Consulta / Fila de Revisão</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Revisto por *</label>
+          <input type="text" id="esquemaModalRevisor" class="form-input" required value="Operador Admin">
+        </div>
+        <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 16px;">
+          <button type="button" class="btn-secondary" onclick="closeModals()">Cancelar</button>
+          <button type="submit" class="btn-action">Guardar Esquema</button>
         </div>
       </form>
     </div>
@@ -4505,6 +4789,23 @@ Zap, Quem É?`;
       const elRes = document.getElementById('gnKpiResolvidos');
       if (elRes) elRes.textContent = resolvidosCount;
 
+      const fontes = Array.isArray(dashboardState.fontes_alerta) ? dashboardState.fontes_alerta : [];
+      const alertas = Array.isArray(dashboardState.alertas_oficiais) ? dashboardState.alertas_oficiais : [];
+      const esquemas = Array.isArray(dashboardState.esquemas) ? dashboardState.esquemas : [];
+
+      const elAlertasNovos = document.getElementById('gnKpiAlertasNovos');
+      if (elAlertasNovos) {
+        elAlertasNovos.textContent = typeof resumo.alertas_novos === 'number'
+          ? resumo.alertas_novos
+          : alertas.filter(a => a.estado === 'novo').length;
+      }
+      const elEsqAtivos = document.getElementById('gnKpiEsquemasAtivos');
+      if (elEsqAtivos) {
+        elEsqAtivos.textContent = typeof resumo.esquemas_ativos === 'number'
+          ? resumo.esquemas_ativos
+          : esquemas.filter(e => e.estado === 'ativo').length;
+      }
+
       const badgeSidebar = document.getElementById('badgeFilaPendentes');
       if (badgeSidebar) {
         if (pendentesCount > 0) {
@@ -4654,6 +4955,163 @@ Zap, Quem É?`;
           }).join('');
         }
       }
+
+      // 3. FASE 2: Renderizar Fontes de Alerta Oficial (`fontes_alerta`)
+      const tbodyFontes = document.getElementById('fontesAlertaTableBody');
+      if (tbodyFontes) {
+        if (!fontes.length) {
+          tbodyFontes.innerHTML = '<tr><td colspan="5" style="text-align: center; color: var(--text-muted); padding: 20px;">Nenhuma fonte registada.</td></tr>';
+        } else {
+          tbodyFontes.innerHTML = fontes.map(f => {
+            const checkStr = f.ultimo_check ? new Date(f.ultimo_check).toLocaleString('pt-PT') : 'Ainda não verificada';
+            let estadoBadge = '';
+            if (f.estado === 'ativa') {
+              estadoBadge = `<span style="background:rgba(16,185,129,0.16); color:#34d399; border:1px solid rgba(16,185,129,0.35); border-radius:999px; padding:2px 9px; font-size:0.73rem; font-weight:700;">● Ativa</span>`;
+            } else if (f.estado === 'erro') {
+              estadoBadge = `<span style="background:rgba(239,68,68,0.18); color:#f87171; border:1px solid rgba(239,68,68,0.45); border-radius:999px; padding:2px 9px; font-size:0.73rem; font-weight:700;">⚠️ Erro registado</span>`;
+            } else {
+              estadoBadge = `<span style="background:rgba(148,163,184,0.15); color:#94a3b8; border:1px solid rgba(148,163,184,0.3); border-radius:999px; padding:2px 9px; font-size:0.73rem; font-weight:700;">⏸️ Pausada</span>`;
+            }
+
+            return `
+              <tr>
+                <td>
+                  <div style="font-weight: 700; color: #fff; font-size: 0.84rem;">${escapeHtml(f.nome)}</div>
+                  <div style="font-size: 0.73rem; color: #38bdf8; text-transform: uppercase; margin-top: 2px;">${escapeHtml(f.tipo || 'autoridade')}</div>
+                  ${f.notas ? `<div style="font-size: 0.72rem; color: var(--text-muted); margin-top: 2px;">${escapeHtml(f.notas)}</div>` : ''}
+                </td>
+                <td style="font-family: 'JetBrains Mono', monospace; font-size: 0.75rem;">
+                  <a href="${escapeHtml(f.url)}" target="_blank" rel="noopener noreferrer" style="color: #93c5fd; text-decoration: none;">${escapeHtml(f.url)} ↗</a>
+                </td>
+                <td style="font-size: 0.76rem; color: var(--text-muted);">
+                  <div><strong>Check:</strong> ${escapeHtml(checkStr)}</div>
+                  <div style="font-family: 'JetBrains Mono', monospace; font-size: 0.7rem; margin-top: 2px;">Hash: ${escapeHtml(f.ultimo_hash || '-')}</div>
+                </td>
+                <td>
+                  <div>${estadoBadge}</div>
+                  ${f.ultimo_erro ? `<div style="color: #fca5a5; font-size: 0.73rem; margin-top: 4px; max-width: 280px;">${escapeHtml(f.ultimo_erro)}</div>` : ''}
+                </td>
+                <td>
+                  <div style="display: flex; gap: 6px; flex-wrap: wrap;">
+                    <button onclick="executarVerificacaoFontesAlerta('${escapeHtml(f.id)}')" class="btn-xs btn-xs-primary">Verificar</button>
+                    <button onclick="editarFonteAlerta('${escapeHtml(f.id)}')" class="btn-xs">Editar</button>
+                  </div>
+                </td>
+              </tr>
+            `;
+          }).join('');
+        }
+      }
+
+      // 4. FASE 2: Renderizar Alertas Oficiais (`alertas_oficiais`)
+      const tbodyAlertas = document.getElementById('alertasOficiaisTableBody');
+      if (tbodyAlertas) {
+        const filtroAlerta = document.getElementById('gnFilterAlertaEstado')?.value || 'todos';
+        const alertasFiltrados = alertas.filter(a => filtroAlerta === 'todos' || a.estado === filtroAlerta);
+
+        if (!alertasFiltrados.length) {
+          tbodyAlertas.innerHTML = '<tr><td colspan="6" style="text-align: center; color: var(--text-muted); padding: 20px;">Nenhum alerta oficial para o filtro selecionado. Clique em "🔄 Ler Fontes Ativas" para consultar novidades.</td></tr>';
+        } else {
+          tbodyAlertas.innerHTML = alertasFiltrados.map(a => {
+            const detStr = a.detetado_em ? new Date(a.detetado_em).toLocaleString('pt-PT') : '-';
+            const pubStr = a.data_publicacao ? new Date(a.data_publicacao).toLocaleDateString('pt-PT') : '-';
+            const esqAssoc = a.esquema_id ? esquemas.find(e => e.id === a.esquema_id) : null;
+
+            const mapEst = {
+              novo:       { label: '● Novo', bg: 'rgba(56,189,248,0.16)', color: '#38bdf8' },
+              em_revisao: { label: '● Em revisão', bg: 'rgba(245,158,11,0.16)', color: '#fbbf24' },
+              processado: { label: '● Processado / Coberto', bg: 'rgba(16,185,129,0.16)', color: '#34d399' },
+              ignorado:   { label: '● Ignorado', bg: 'rgba(148,163,184,0.15)', color: '#94a3b8' }
+            };
+            const est = mapEst[a.estado] || mapEst.novo;
+
+            return `
+              <tr>
+                <td style="font-size: 0.76rem; color: var(--text-muted);">
+                  <div><strong>Detetado:</strong> ${escapeHtml(detStr)}</div>
+                  <div><strong>Publicado:</strong> ${escapeHtml(pubStr)}</div>
+                </td>
+                <td>
+                  <div style="font-weight: 700; color: #fff; font-size: 0.84rem;">${escapeHtml(a.titulo)}</div>
+                  <div style="margin-top: 3px;">
+                    <a href="${escapeHtml(a.url)}" target="_blank" rel="noopener noreferrer" style="color: #38bdf8; font-size: 0.75rem; font-family: 'JetBrains Mono', monospace;">${escapeHtml(a.url)} ↗</a>
+                  </div>
+                </td>
+                <td>
+                  <span style="background:${est.bg}; color:${est.color}; padding:3px 9px; border-radius:999px; font-size:0.73rem; font-weight:700;">${escapeHtml(est.label)}</span>
+                </td>
+                <td style="font-size: 0.78rem;">
+                  ${esqAssoc ? `<div style="color:#fcd34d; font-weight:700;">📚 Esquema: ${escapeHtml(esqAssoc.nome)}</div>` : ''}
+                  ${a.notas ? `<div style="color:var(--text-muted); margin-top:2px;">${escapeHtml(a.notas)}</div>` : '<span style="color:var(--text-muted);">-</span>'}
+                </td>
+                <td style="font-size: 0.76rem; color: var(--text-muted);">
+                  ${a.revisor ? escapeHtml(a.revisor) : '-'}
+                </td>
+                <td>
+                  <button onclick="abrirModalReverAlerta('${escapeHtml(a.id)}')" class="btn-xs btn-xs-primary">
+                    ${a.estado === 'novo' ? '⚖️ Rever / Criar Esquema' : '✏️ Editar'}
+                  </button>
+                </td>
+              </tr>
+            `;
+          }).join('');
+        }
+      }
+
+      // 5. FASE 2: Renderizar Biblioteca Interna de Esquemas (`esquemas`)
+      const tbodyEsquemas = document.getElementById('esquemasTableBody');
+      if (tbodyEsquemas) {
+        const filtroEsq = document.getElementById('gnFilterEsquemaEstado')?.value || 'todos';
+        const esquemasFiltrados = esquemas.filter(e => filtroEsq === 'todos' || e.estado === filtroEsq);
+
+        if (!esquemasFiltrados.length) {
+          tbodyEsquemas.innerHTML = '<tr><td colspan="6" style="text-align: center; color: var(--text-muted); padding: 24px;">Nenhum esquema registado para o filtro selecionado. Crie um esquema a partir de um alerta oficial, da fila de revisão ou manualmente.</td></tr>';
+        } else {
+          tbodyEsquemas.innerHTML = esquemasFiltrados.map(e => {
+            const canais = Array.isArray(e.canais) ? e.canais : [];
+            const marcas = Array.isArray(e.marcas) ? e.marcas : [];
+            const sinais = Array.isArray(e.sinais) ? e.sinais : [];
+
+            const mapEst = {
+              rascunho:  { label: '📝 Rascunho', bg: 'rgba(245,158,11,0.16)', color: '#fbbf24' },
+              ativo:     { label: '✅ Ativo', bg: 'rgba(16,185,129,0.16)', color: '#34d399' },
+              arquivado: { label: '📁 Arquivado', bg: 'rgba(148,163,184,0.15)', color: '#94a3b8' }
+            };
+            const est = mapEst[e.estado] || mapEst.rascunho;
+
+            return `
+              <tr>
+                <td>
+                  <div style="font-weight: 700; color: #fff; font-size: 0.85rem;">${escapeHtml(e.nome)}</div>
+                  <div style="font-size: 0.72rem; color: #38bdf8; text-transform: uppercase; margin-top: 2px;">Origem: ${escapeHtml(e.origem || 'manual')}</div>
+                </td>
+                <td style="font-size: 0.8rem; color: #cbd5e1; max-width: 320px;">
+                  ${escapeHtml(e.descricao)}
+                </td>
+                <td style="font-size: 0.75rem;">
+                  ${canais.length ? `<div><strong>Canais:</strong> ${canais.map(c => escapeHtml(c)).join(', ')}</div>` : ''}
+                  ${marcas.length ? `<div style="color:#93c5fd; margin-top:2px;"><strong>Marcas:</strong> ${marcas.map(m => escapeHtml(m)).join(', ')}</div>` : ''}
+                  ${sinais.length ? `<div style="color:var(--text-muted); margin-top:2px;"><strong>Sinais:</strong> ${sinais.map(s => escapeHtml(s)).join(', ')}</div>` : ''}
+                </td>
+                <td>
+                  <span style="background:${est.bg}; color:${est.color}; padding:3px 9px; border-radius:999px; font-size:0.73rem; font-weight:700;">${escapeHtml(est.label)}</span>
+                </td>
+                <td style="font-size: 0.76rem; color: var(--text-muted);">
+                  <div>${e.revisto_por ? `<strong>${escapeHtml(e.revisto_por)}</strong>` : '<em>Por rever</em>'}</div>
+                  ${e.revisto_em ? `<div style="font-size:0.7rem;">${escapeHtml(new Date(e.revisto_em).toLocaleDateString('pt-PT'))}</div>` : ''}
+                </td>
+                <td>
+                  <div style="display: flex; gap: 6px; flex-wrap: wrap;">
+                    ${e.estado !== 'ativo' ? `<button onclick="mudarEstadoEsquemaRapido('${escapeHtml(e.id)}', 'ativo')" class="btn-xs btn-xs-primary">Ativar</button>` : ''}
+                    <button onclick="editarEsquema('${escapeHtml(e.id)}')" class="btn-xs">Editar</button>
+                    ${e.estado !== 'arquivado' ? `<button onclick="mudarEstadoEsquemaRapido('${escapeHtml(e.id)}', 'arquivado')" class="btn-xs" style="color:#94a3b8;">Arquivar</button>` : ''}
+                  </div>
+                </td>
+              </tr>
+            `;
+          }).join('');
+        }
+      }
     }
 
     function abrirModalDecisaoFila(itemId) {
@@ -4763,6 +5221,259 @@ Zap, Quem É?`;
         await loadDashboardData();
       } catch (err) {
         alert('Erro ao atualizar grupo: ' + err.message);
+      }
+    }
+
+    // =========================================================================
+    // HANDLERS FASE 2: FONTES DE ALERTA, ALERTAS OFICIAIS E ESQUEMAS
+    // =========================================================================
+    function abrirModalNovaFonte() {
+      document.getElementById('fonteModalId').value = '';
+      document.getElementById('fonteModalNome').value = '';
+      document.getElementById('fonteModalUrl').value = '';
+      document.getElementById('fonteModalTipo').value = 'autoridade';
+      document.getElementById('fonteModalEstado').value = 'ativa';
+      document.getElementById('fonteModalNotas').value = '';
+      document.getElementById('fonteAlertaModal').style.display = 'flex';
+    }
+
+    function editarFonteAlerta(fonteId) {
+      const f = (dashboardState?.fontes_alerta || []).find(x => x.id === fonteId);
+      if (!f) return;
+      document.getElementById('fonteModalId').value = f.id;
+      document.getElementById('fonteModalNome').value = f.nome || '';
+      document.getElementById('fonteModalUrl').value = f.url || '';
+      document.getElementById('fonteModalTipo').value = f.tipo || 'autoridade';
+      document.getElementById('fonteModalEstado').value = f.estado === 'pausada' ? 'pausada' : 'ativa';
+      document.getElementById('fonteModalNotas').value = f.notas || '';
+      document.getElementById('fonteAlertaModal').style.display = 'flex';
+    }
+
+    async function submeterFonteAlerta(event) {
+      if (event) event.preventDefault();
+      const id = document.getElementById('fonteModalId').value.trim();
+      const nome = document.getElementById('fonteModalNome').value.trim();
+      const url = document.getElementById('fonteModalUrl').value.trim();
+      const tipo = document.getElementById('fonteModalTipo').value;
+      const estado = document.getElementById('fonteModalEstado').value;
+      const notas = document.getElementById('fonteModalNotas').value.trim();
+
+      try {
+        const res = await fetch('/api/admin', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'x-admin-key': globalAdminSecret },
+          body: JSON.stringify({ action: 'gerir_fonte_alerta', id: id || undefined, nome, url, tipo, estado, notas })
+        });
+        if (!res.ok) {
+          const errData = await res.json().catch(() => null);
+          throw new Error(errData?.error || (await res.text()));
+        }
+        closeModals();
+        showToast('Fonte de alerta oficial guardada!');
+        await loadDashboardData();
+      } catch (err) {
+        alert('Erro ao guardar fonte: ' + err.message);
+      }
+    }
+
+    async function executarVerificacaoFontesAlerta(fonte_id = null) {
+      const btn = document.getElementById('btnVerificarFontes');
+      if (btn) {
+        btn.disabled = true;
+        btn.textContent = '⏳ A verificar fontes (respeitando robots.txt)...';
+      }
+      try {
+        const res = await fetch('/api/admin', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'x-admin-key': globalAdminSecret },
+          body: JSON.stringify({ action: 'verificar_fontes_alerta', fonte_id: fonte_id || undefined })
+        });
+        if (!res.ok) {
+          const errData = await res.json().catch(() => null);
+          throw new Error(errData?.error || (await res.text()));
+        }
+        const data = await res.json();
+        const novosCount = (data.novos_alertas || []).length;
+        const errosCount = (data.resultados || []).filter(r => !r.ok).length;
+        showToast(`Verificação concluída: ${novosCount} alerta(s) novo(s) detetado(s)${errosCount ? ` · ${errosCount} fonte(s) com aviso/erro registado` : ''}.`);
+        await loadDashboardData();
+      } catch (err) {
+        alert('Erro ao verificar fontes: ' + err.message);
+      } finally {
+        if (btn) {
+          btn.disabled = false;
+          btn.textContent = '🔄 Verificar Fontes Oficiais Agora';
+        }
+      }
+    }
+
+    function abrirModalReverAlerta(alertaId) {
+      const a = (dashboardState?.alertas_oficiais || []).find(x => x.id === alertaId);
+      if (!a) return;
+      document.getElementById('reverAlertaId').value = a.id;
+      document.getElementById('reverAlertaAcao').value = 'criar_esquema';
+      document.getElementById('reverAlertaNomeEsquema').value = '';
+      document.getElementById('reverAlertaDescEsquema').value = '';
+      document.getElementById('reverAlertaCanaisEsquema').value = 'sms, whatsapp';
+      document.getElementById('reverAlertaMarcasEsquema').value = '';
+      document.getElementById('reverAlertaNotas').value = a.notas || '';
+
+      const box = document.getElementById('reverAlertaResumoBox');
+      if (box) {
+        box.innerHTML = `
+          <div style="font-weight:700; color:#fff;">${escapeHtml(a.titulo)}</div>
+          <div style="margin-top:4px;"><a href="${escapeHtml(a.url)}" target="_blank" rel="noopener noreferrer" style="color:#38bdf8; font-family:'JetBrains Mono',monospace; font-size:0.76rem;">${escapeHtml(a.url)} ↗</a></div>
+        `;
+      }
+      atualizarBoxCriarEsquemaAlerta();
+      document.getElementById('reverAlertaModal').style.display = 'flex';
+    }
+
+    function atualizarBoxCriarEsquemaAlerta() {
+      const acao = document.getElementById('reverAlertaAcao')?.value || 'criar_esquema';
+      const box = document.getElementById('boxAlertaNovoEsquema');
+      if (box) box.style.display = acao === 'criar_esquema' ? 'block' : 'none';
+    }
+
+    async function submeterRevisaoAlertaOficial(event) {
+      if (event) event.preventDefault();
+      const alerta_id = document.getElementById('reverAlertaId').value;
+      const acao = document.getElementById('reverAlertaAcao').value;
+      const revisor = document.getElementById('reverAlertaRevisor').value.trim();
+      const notas = document.getElementById('reverAlertaNotas').value.trim();
+
+      const criar_esquema = acao === 'criar_esquema';
+      const estado = acao === 'ignorado' ? 'ignorado' : 'processado';
+      const nome_esquema = document.getElementById('reverAlertaNomeEsquema').value.trim();
+      const descricao_esquema = document.getElementById('reverAlertaDescEsquema').value.trim();
+      const canais_esquema = document.getElementById('reverAlertaCanaisEsquema').value.trim();
+      const marcas_esquema = document.getElementById('reverAlertaMarcasEsquema').value.trim();
+
+      if (criar_esquema && (!nome_esquema || !descricao_esquema)) {
+        alert('Para criar o esquema correspondente, preencha o nome e a descrição nas nossas palavras.');
+        return;
+      }
+
+      try {
+        const res = await fetch('/api/admin', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'x-admin-key': globalAdminSecret },
+          body: JSON.stringify({
+            action: 'rever_alerta_oficial',
+            alerta_id,
+            estado,
+            revisor,
+            notas: notas || (acao === 'ja_coberto' ? 'Já coberto pelo sistema' : ''),
+            criar_esquema,
+            nome_esquema,
+            descricao_esquema,
+            canais_esquema,
+            marcas_esquema
+          })
+        });
+        if (!res.ok) {
+          const errData = await res.json().catch(() => null);
+          throw new Error(errData?.error || (await res.text()));
+        }
+        closeModals();
+        showToast('Alerta oficial revisto com sucesso!');
+        await loadDashboardData();
+      } catch (err) {
+        alert('Erro ao rever alerta oficial: ' + err.message);
+      }
+    }
+
+    function abrirModalNovoEsquema() {
+      document.getElementById('esquemaModalId').value = '';
+      document.getElementById('esquemaModalNome').value = '';
+      document.getElementById('esquemaModalDescricao').value = '';
+      document.getElementById('esquemaModalCanais').value = 'sms, whatsapp';
+      document.getElementById('esquemaModalMarcas').value = '';
+      document.getElementById('esquemaModalSinais').value = '';
+      document.getElementById('esquemaModalEstado').value = 'rascunho';
+      document.getElementById('esquemaModalOrigem').value = 'manual';
+      document.getElementById('esquemaModal').style.display = 'flex';
+    }
+
+    function editarEsquema(esquemaId) {
+      const e = (dashboardState?.esquemas || []).find(x => x.id === esquemaId);
+      if (!e) return;
+      document.getElementById('esquemaModalId').value = e.id;
+      document.getElementById('esquemaModalNome').value = e.nome || '';
+      document.getElementById('esquemaModalDescricao').value = e.descricao || '';
+      document.getElementById('esquemaModalCanais').value = Array.isArray(e.canais) ? e.canais.join(', ') : '';
+      document.getElementById('esquemaModalMarcas').value = Array.isArray(e.marcas) ? e.marcas.join(', ') : '';
+      document.getElementById('esquemaModalSinais').value = Array.isArray(e.sinais) ? e.sinais.join(', ') : '';
+      document.getElementById('esquemaModalEstado').value = e.estado || 'rascunho';
+      document.getElementById('esquemaModalOrigem').value = e.origem || 'manual';
+      if (e.revisto_por) document.getElementById('esquemaModalRevisor').value = e.revisto_por;
+      document.getElementById('esquemaModal').style.display = 'flex';
+    }
+
+    async function submeterEsquema(event) {
+      if (event) event.preventDefault();
+      const id = document.getElementById('esquemaModalId').value.trim();
+      const nome = document.getElementById('esquemaModalNome').value.trim();
+      const descricao = document.getElementById('esquemaModalDescricao').value.trim();
+      const canais = document.getElementById('esquemaModalCanais').value.trim();
+      const marcas = document.getElementById('esquemaModalMarcas').value.trim();
+      const sinais = document.getElementById('esquemaModalSinais').value.trim();
+      const estado = document.getElementById('esquemaModalEstado').value;
+      const origem = document.getElementById('esquemaModalOrigem').value;
+      const revisor = document.getElementById('esquemaModalRevisor').value.trim();
+
+      try {
+        const res = await fetch('/api/admin', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'x-admin-key': globalAdminSecret },
+          body: JSON.stringify({
+            action: 'guardar_esquema',
+            id: id || undefined,
+            nome,
+            descricao,
+            canais,
+            marcas,
+            sinais,
+            estado,
+            origem,
+            revisor
+          })
+        });
+        if (!res.ok) {
+          const errData = await res.json().catch(() => null);
+          throw new Error(errData?.error || (await res.text()));
+        }
+        closeModals();
+        showToast('Esquema guardado na biblioteca interna!');
+        await loadDashboardData();
+      } catch (err) {
+        alert('Erro ao guardar esquema: ' + err.message);
+      }
+    }
+
+    async function mudarEstadoEsquemaRapido(esquemaId, novoEstado) {
+      const revisor = prompt(`Alterar estado do esquema para "${novoEstado}".\nIndique o nome/iniciais do revisor:`, 'Operador Admin');
+      if (!revisor || !revisor.trim()) return;
+
+      try {
+        const res = await fetch('/api/admin', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'x-admin-key': globalAdminSecret },
+          body: JSON.stringify({
+            action: 'alterar_estado_esquema',
+            id: esquemaId,
+            estado: novoEstado,
+            revisor: revisor.trim()
+          })
+        });
+        if (!res.ok) {
+          const errData = await res.json().catch(() => null);
+          throw new Error(errData?.error || (await res.text()));
+        }
+        showToast(`Esquema atualizado para "${novoEstado}"!`);
+        await loadDashboardData();
+      } catch (err) {
+        alert('Erro ao atualizar esquema: ' + err.message);
       }
     }
 
