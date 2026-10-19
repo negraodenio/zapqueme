@@ -16,13 +16,14 @@ function escapeXml(str) {
  * Gera SVG para o Badge Horizontal (Formato para Websites, Rodapés e Assinatura de Email)
  */
 export function generateHorizontalBadge({ codigo, empresaNome, status, statusTexto }) {
-  const isAtivo = status === 'ativo';
+  const isTeste = status === 'teste';
+  const isAtivo = status === 'ativo' && !isTeste;
   const isSuspenso = status === 'suspenso';
   const isExpirado = status === 'expirado';
 
   const primaryColor = isAtivo ? '#10b981' : (isSuspenso ? '#ef4444' : '#f59e0b');
   const glowColor = isAtivo ? 'rgba(16, 185, 129, 0.25)' : (isSuspenso ? 'rgba(239, 68, 68, 0.25)' : 'rgba(245, 158, 11, 0.25)');
-  const statusLabel = isAtivo ? 'CANAIS CONFIRMADOS' : (isSuspenso ? 'VERIFICAÇÃO SUSPENSA' : 'VERIFICAÇÃO EXPIRADA');
+  const statusLabel = isTeste ? 'PÁGINA DE TESTE' : (isAtivo ? 'CANAIS CONFIRMADOS' : (isSuspenso ? 'VERIFICAÇÃO SUSPENSA' : 'VERIFICAÇÃO EXPIRADA'));
   const safeCodigo = escapeXml(codigo || 'ZAP VERIFIED');
 
   return `<svg xmlns="http://www.w3.org/2000/svg" width="310" height="64" viewBox="0 0 310 64" fill="none">
@@ -66,7 +67,7 @@ export function generateHorizontalBadge({ codigo, empresaNome, status, statusTex
   <!-- Verification Pill -->
   <rect x="236" y="16" width="60" height="20" rx="10" fill="${primaryColor}" fill-opacity="0.15" stroke="${primaryColor}" stroke-opacity="0.4" stroke-width="1" />
   <circle cx="246" cy="26" r="3" fill="${primaryColor}" />
-  <text x="254" y="29.5" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="9" font-weight="700" fill="${primaryColor}">${isAtivo ? 'OFICIAL' : (isSuspenso ? 'SUSP' : 'EXP')}</text>
+  <text x="254" y="29.5" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="9" font-weight="700" fill="${primaryColor}">${isTeste ? 'TESTE' : (isAtivo ? 'OFICIAL' : (isSuspenso ? 'SUSP' : 'EXP'))}</text>
 </svg>`;
 }
 
@@ -74,13 +75,14 @@ export function generateHorizontalBadge({ codigo, empresaNome, status, statusTex
  * Gera SVG para o Badge Principal (Emblema Vertical / Selo Institucional)
  */
 export function generatePrincipalBadge({ codigo, empresaNome, status, statusTexto }) {
-  const isAtivo = status === 'ativo';
+  const isTeste = status === 'teste';
+  const isAtivo = status === 'ativo' && !isTeste;
   const isSuspenso = status === 'suspenso';
 
   const primaryColor = isAtivo ? '#10b981' : (isSuspenso ? '#ef4444' : '#f59e0b');
   const safeEmpresa = escapeXml(empresaNome || 'Empresa Certificada');
   const safeCodigo = escapeXml(codigo || 'ZAP VERIFIED');
-  const statusLabel = isAtivo ? 'VERIFICAÇÃO ATIVA' : (isSuspenso ? 'VERIFICAÇÃO SUSPENSA' : 'VERIFICAÇÃO EXPIRADA');
+  const statusLabel = isTeste ? 'PÁGINA DE TESTE' : (isAtivo ? 'VERIFICAÇÃO ATIVA' : (isSuspenso ? 'VERIFICAÇÃO SUSPENSA' : 'VERIFICAÇÃO EXPIRADA'));
 
   return `<svg xmlns="http://www.w3.org/2000/svg" width="220" height="250" viewBox="0 0 220 250" fill="none">
   <defs>
@@ -191,7 +193,10 @@ export default async function handler(req, res) {
           const agora = new Date();
           const expirado = selo.valido_ate ? new Date(selo.valido_ate) < agora : false;
 
-          if (selo.ativo === false) {
+          if (selo.is_teste || emp.is_teste) {
+            status = 'teste';
+            statusTexto = 'Página de teste';
+          } else if (selo.ativo === false) {
             status = 'inativo';
             statusTexto = 'Verificação inativa';
           } else if (emp.status === 'suspenso') {

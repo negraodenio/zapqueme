@@ -25,6 +25,7 @@ import {
   renderNoSessionResponse
 } from './lib/renderer.js';
 import { restoreSessionFromCloud, syncSessionToCloud, clearSessionFromCloud } from './lib/session_store.js';
+import { registarFeedbackErroUtilizador } from './lib/golpes_novos.js';
 
 // Cache de conversação por chat (TTL: 24 horas) para comandos interativos (AJUDA, DETALHES, ÚTIL, ERRO)
 const chatSessions = new Map();
@@ -761,6 +762,9 @@ async function startBot() {
 
           if (cleanCmd === 'util' || cleanCmd === 'erro') {
             console.log(`[Feedback] Remetente: ${remoteJid} | Comando: ${cleanCmd.toUpperCase()} | Análise ID: ${session.analise_id || 'N/A'}`);
+            if (cleanCmd === 'erro') {
+              registarFeedbackErroUtilizador(session).catch(() => {});
+            }
             await sock.sendMessage(remoteJid, { text: renderFeedbackResponse(cleanCmd) }, { quoted: msg });
             continue;
           }

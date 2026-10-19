@@ -713,6 +713,12 @@
         Ocorrências
       </button>
 
+      <button class="nav-btn" onclick="switchTab('tab-golpes-novos')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/><line x1="11" y1="8" x2="11" y2="14"/><line x1="8" y1="11" x2="14" y2="11"/></svg>
+        <span>Golpes Novos</span>
+        <span id="badgeFilaPendentes" style="margin-left: auto; background: rgba(245, 158, 11, 0.2); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.4); border-radius: 999px; padding: 1px 7px; font-size: 0.7rem; font-weight: 700; display: none;">0</span>
+      </button>
+
       <button class="nav-btn" onclick="switchTab('tab-monetizacao')">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
         Monetização B2B
@@ -814,7 +820,11 @@
               <h3>Empresas & Funil Comercial B2B</h3>
               <p style="color: var(--text-muted); font-size: 0.8rem; margin-top: 2px;">Gestão de pipeline comercial, checklist dos 4 pilares, pagamentos e relatórios periciais</p>
             </div>
-            <div style="display: flex; gap: 8px;">
+            <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+              <label style="display: inline-flex; align-items: center; gap: 8px; font-size: 0.82rem; color: #cbd5e1; cursor: pointer; background: rgba(255,255,255,0.06); padding: 6px 12px; border-radius: 8px; border: 1px solid var(--card-border);">
+                <input type="checkbox" id="chkMostrarTestes" onchange="toggleMostrarTestes(this.checked)" style="cursor: pointer; accent-color: var(--warning);">
+                <span>🧪 Mostrar dados de teste</span>
+              </label>
               <button onclick="openNewEmpresaModal()" class="btn-action">+ Criar Empresa</button>
             </div>
           </div>
@@ -876,26 +886,128 @@
       </div>
     </div>
 
-    <!-- TAB 3: THREAT RADAR (Seção 8) -->
+    <!-- TAB 3: THREAT RADAR ENTERPRISE (SIBS / MB WAY / DECO / SEGURADORAS) -->
     <div id="tab-radar" class="tab-pane" style="display: none;">
-      <div class="table-container">
-        <div class="table-header">
-          <h3>Threat Radar — Atividade Observada</h3>
+      <!-- KPIs Executivos do Threat Radar -->
+      <div class="kpi-grid" style="margin-bottom: 20px;">
+        <div class="kpi-card" style="border-color: rgba(239, 68, 68, 0.35);">
+          <div class="kpi-header"><span class="kpi-title">🚨 Surtos / Campanhas Ativas</span></div>
+          <div class="kpi-value danger" id="radarKpiSurtos">0</div>
+          <div class="kpi-sub">Clusters de ataque com mesmo IOC ou vetor</div>
+        </div>
+        <div class="kpi-card" style="border-color: rgba(245, 158, 11, 0.35);">
+          <div class="kpi-header"><span class="kpi-title">💳 IOCs Financeiros (SIBS / MB WAY)</span></div>
+          <div class="kpi-value warning" id="radarKpiIocsFin">0</div>
+          <div class="kpi-sub">Entidades MB, Referências, IBANs e Números de Burla</div>
+        </div>
+        <div class="kpi-card" style="border-color: rgba(56, 189, 248, 0.35);">
+          <div class="kpi-header"><span class="kpi-title">🌐 Domínios & Phishing</span></div>
+          <div class="kpi-value highlight" id="radarKpiDominios">0</div>
+          <div class="kpi-sub">URLs e domínios maliciosos para takedown CERT.PT</div>
+        </div>
+        <div class="kpi-card" style="border-color: rgba(16, 185, 129, 0.35);">
+          <div class="kpi-header"><span class="kpi-title">🎯 Marcas em Shadow Radar</span></div>
+          <div class="kpi-value primary" id="radarKpiShadow">0</div>
+          <div class="kpi-sub">Marcas atacadas ainda não clientes (Oportunidade B2B)</div>
+        </div>
+      </div>
+
+      <!-- 1. DETETOR DE SURTOS & ONDAS DE ATAQUE (OUTBREAK ENGINE) -->
+      <div class="table-container" style="margin-bottom: 24px; border-color: rgba(239, 68, 68, 0.3);">
+        <div class="table-header" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
+          <div>
+            <h3 style="color: #fca5a5;">🚨 Detetor de Surtos & Campanhas Coordenadas (Early-Warning Engine)</h3>
+            <p style="font-size: 0.8rem; color: var(--text-muted); margin-top: 2px;">Agrupamento automático por Entidade Multibanco, Referência, IBAN, Telefone de Burla ou Domínio de Phishing</p>
+          </div>
+          <button class="btn-xs btn-xs-primary" onclick="exportarIocsFinanceirosCSV()">⬇ Exportar Feed IOCs (CSV SIBS / CERT.PT)</button>
         </div>
         <table>
           <thead>
             <tr>
-              <th>Empresa</th>
-              <th>Ocorrências Detectadas</th>
-              <th>Canais Distintos</th>
-              <th>Primeira Detecção</th>
-              <th>Última Detecção</th>
-              <th>Severidade (Filtro Preliminar)</th>
-              <th>Detalhe</th>
+              <th>Marca / Alvo</th>
+              <th>Setor</th>
+              <th>Vetor / Modus Operandi</th>
+              <th>Indicador Técnico (IOC)</th>
+              <th>Volume</th>
+              <th>Última Deteção</th>
+              <th>Estado</th>
+              <th>Ação Rápida</th>
+            </tr>
+          </thead>
+          <tbody id="surtosTableBody">
+            <tr><td colspan="8" style="text-align: center; color: var(--text-muted); padding: 24px;">A analisar padrões de campanha em tempo real...</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- 2. FEED DE IOCs FINANCEIROS & TELECOM (SIBS / MB WAY / BANCOS / SEGURADORAS) -->
+      <div class="table-container" style="margin-bottom: 24px; border-color: rgba(245, 158, 11, 0.3);">
+        <div class="table-header" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
+          <div>
+            <h3 style="color: #fde68a;">💳 Feed de Inteligência Financeira & Telecom (IOCs Extraídos)</h3>
+            <p style="font-size: 0.8rem; color: var(--text-muted); margin-top: 2px;">Entidades Multibanco, Referências, IBANs de contas mula, telemóveis MB WAY e domínios fraudulentos intercetados antes do pagamento</p>
+          </div>
+          <select id="filtroTipoIocRadar" class="form-select" style="width: auto; padding: 6px 12px; font-size: 0.8rem;" onchange="renderRadar(dashboardState.radar || [])">
+            <option value="todos">Todos os IOCs</option>
+            <option value="ENTIDADE_MB">Entidade Multibanco</option>
+            <option value="REFERENCIA_MB">Referência Multibanco</option>
+            <option value="IBAN">IBAN (Conta Mula)</option>
+            <option value="TELEFONE_BURLA">Telefone / MB WAY</option>
+            <option value="DOMINIO_PHISHING">Domínio Phishing</option>
+          </select>
+        </div>
+        <table>
+          <thead>
+            <tr>
+              <th>Tipo de IOC</th>
+              <th>Valor do Indicador</th>
+              <th>Marca Impersonada</th>
+              <th>Setor</th>
+              <th>Tática Detetada</th>
+              <th>Repetições</th>
+              <th>Última Vez Visto</th>
+              <th>Ação Forense</th>
+            </tr>
+          </thead>
+          <tbody id="iocsFinanceirosTableBody">
+            <tr><td colspan="8" style="text-align: center; color: var(--text-muted); padding: 24px;">Nenhum IOC financeiro ou domínio técnico catalogado.</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- 3. SHADOW RADAR & ATIVIDADE POR MARCA (CLIENTES + PIPELINE + NÃO-CLIENTES) -->
+      <div class="table-container">
+        <div class="table-header" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
+          <div>
+            <h3>📡 Threat Radar & Shadow Radar — Marcas Sob Ataque</h3>
+            <p style="font-size: 0.8rem; color: var(--text-muted); margin-top: 2px;">Visão unificada de clientes verificados, marcas no funil comercial e marcas externas vigiadas passivamente</p>
+          </div>
+          <select id="filtroSetorRadar" class="form-select" style="width: auto; padding: 6px 12px; font-size: 0.8rem;" onchange="renderRadar(dashboardState.radar || [])">
+            <option value="todos">Todos os Setores</option>
+            <option value="SIBS / Pagamentos">SIBS / Pagamentos</option>
+            <option value="Banca & Financeiro">Banca & Financeiro</option>
+            <option value="Seguradoras">Seguradoras</option>
+            <option value="Energia, Telecom & Via Verde">Energia, Telecom & Via Verde</option>
+            <option value="Logística & Entregas">Logística & Entregas</option>
+            <option value="DECO / Retalho & E-Commerce">DECO / Retalho & E-Commerce</option>
+            <option value="Estado & Saúde">Estado & Saúde</option>
+          </select>
+        </div>
+        <table>
+          <thead>
+            <tr>
+              <th>Empresa / Marca</th>
+              <th>Setor</th>
+              <th>Relação Comercial</th>
+              <th>Ocorrências</th>
+              <th>Canais / IOCs</th>
+              <th>Última Deteção</th>
+              <th>Severidade</th>
+              <th>Ações Executivas & Comerciais</th>
             </tr>
           </thead>
           <tbody id="radarTableBody">
-            <tr><td colspan="7" style="text-align: center; color: var(--text-muted); padding: 30px;">Nenhuma ocorrência observada no Radar.</td></tr>
+            <tr><td colspan="8" style="text-align: center; color: var(--text-muted); padding: 30px;">Nenhuma ocorrência observada no Radar.</td></tr>
           </tbody>
         </table>
       </div>
@@ -1128,20 +1240,214 @@
         </table>
       </div>
     </div>
+
+    <!-- TAB 7: MÓDULO DE ACOMPANHAMENTO DE GOLPES NOVOS — FASE 1 (Fila de Revisão e Agrupamento) -->
+    <div id="tab-golpes-novos" class="tab-pane" style="display: none;">
+      <!-- AVISO DE REGRAS DE TRABALHO E PRIVACIDADE -->
+      <div style="background: rgba(16, 185, 129, 0.08); border: 1px solid rgba(16, 185, 129, 0.3); border-radius: 10px; padding: 14px 18px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
+        <div>
+          <div style="font-weight: 700; color: #34d399; font-size: 0.9rem;">🛡️ Processo Vivo de Acompanhamento de Golpes Novos — Fase 1 (Fila de Revisão & Agrupamento)</div>
+          <div style="color: var(--text-muted); font-size: 0.78rem; margin-top: 4px;">
+            <strong>Privacidade por desenho:</strong> Zero texto bruto guardado. Apenas resumos anonimizados (sem telefones, e-mails, NIF, IBAN ou números longos), hashes de semelhança e indicadores técnicos. Nada entra em produção nem passa a campanha ativa sem aprovação humana. Retenção configurável: Fila <code>[90 dias]</code> · Clusters <code>[12 meses]</code>.
+          </div>
+        </div>
+      </div>
+
+      <!-- MINI KPIS DA FASE 1 -->
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px; margin-bottom: 22px;">
+        <div class="kpi-card" style="padding: 16px;">
+          <div class="kpi-header"><span>Pendentes na Fila</span><span>📥</span></div>
+          <div class="kpi-value" id="gnKpiPendentes" style="color: #f59e0b; font-size: 1.8rem;">0</div>
+          <div class="kpi-sub">Casos a aguardar revisão humana</div>
+        </div>
+        <div class="kpi-card" style="padding: 16px;">
+          <div class="kpi-header"><span>Possíveis Campanhas</span><span>🧩</span></div>
+          <div class="kpi-value" id="gnKpiPossiveisCampanhas" style="color: #fbbf24; font-size: 1.8rem;">0</div>
+          <div class="kpi-sub">≥ 3 ocorrências semelhantes em 24 h</div>
+        </div>
+        <div class="kpi-card" style="padding: 16px;">
+          <div class="kpi-header"><span>Campanhas Ativas</span><span>🚨</span></div>
+          <div class="kpi-value" id="gnKpiCampanhasAtivas" style="color: #ef4444; font-size: 1.8rem;">0</div>
+          <div class="kpi-sub">Validadas por decisão humana</div>
+        </div>
+        <div class="kpi-card" style="padding: 16px;">
+          <div class="kpi-header"><span>Casos Resolvidos</span><span>✅</span></div>
+          <div class="kpi-value" id="gnKpiResolvidos" style="color: #10b981; font-size: 1.8rem;">0</div>
+          <div class="kpi-sub">Esquema novo, marca nova ou falso alarme</div>
+        </div>
+      </div>
+
+      <!-- SECÇÃO 3.2: AGRUPAMENTO DE MENSAGENS SEMELHANTES (CLUSTERS / POSSÍVEIS CAMPANHAS) -->
+      <div class="table-container" style="margin-bottom: 26px;">
+        <div class="table-header" style="flex-wrap: wrap; gap: 12px;">
+          <div>
+            <h3>Agrupamento de Mensagens Semelhantes (Possíveis Campanhas)</h3>
+            <p style="color: var(--text-muted); font-size: 0.8rem; margin-top: 2px;">
+              Agrupamento automático por hash de semelhança e indicadores técnicos (sem guardar texto das mensagens). ≥ 3 ocorrências em 24 horas formam uma <strong>possível campanha</strong> — só passa a <strong>ativa</strong> por decisão sua.
+            </p>
+          </div>
+          <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+            <select id="gnFilterClusterEstado" class="form-select" onchange="renderGolpesNovos()" style="font-size: 0.8rem; padding: 6px 10px;">
+              <option value="todos">Todos os estados</option>
+              <option value="possivel_campanha">Possível campanha (aguarda revisão)</option>
+              <option value="ativa">Ativa (validada)</option>
+              <option value="encerrada">Encerrada</option>
+              <option value="descartada">Descartada</option>
+            </select>
+          </div>
+        </div>
+
+        <table>
+          <thead>
+            <tr>
+              <th>Fingerprint & Indicadores</th>
+              <th>Primeira / Última Ocorrência</th>
+              <th>Contagem & Velocidade</th>
+              <th>Estado do Grupo</th>
+              <th>Revisor</th>
+              <th>Decisão Humana</th>
+            </tr>
+          </thead>
+          <tbody id="clustersTableBody">
+            <tr><td colspan="6" style="text-align: center; color: var(--text-muted); padding: 28px;">A carregar grupos de mensagens semelhantes...</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- SECÇÃO 3.1: FILA DE REVISÃO HUMANA -->
+      <div class="table-container">
+        <div class="table-header" style="flex-wrap: wrap; gap: 12px;">
+          <div>
+            <h3>Fila de Revisão Humana</h3>
+            <p style="color: var(--text-muted); font-size: 0.8rem; margin-top: 2px;">
+              Entram sozinhos: vereditos "suspeito", confiança baixa (&lt; 75), divergência entre IA e regras, todas as respostas "ERRO" dos utilizadores e membros de possíveis campanhas.
+            </p>
+          </div>
+          <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+            <select id="gnFilterFilaEstado" class="form-select" onchange="renderGolpesNovos()" style="font-size: 0.8rem; padding: 6px 10px;">
+              <option value="pendentes">Pendentes (Novo + Em revisão)</option>
+              <option value="todos">Todos os estados</option>
+              <option value="novo">Apenas Novos</option>
+              <option value="em_revisao">Em revisão</option>
+              <option value="resolvido">Resolvidos</option>
+            </select>
+            <select id="gnFilterFilaMotivo" class="form-select" onchange="renderGolpesNovos()" style="font-size: 0.8rem; padding: 6px 10px;">
+              <option value="todos">Todos os motivos</option>
+              <option value="possivel_campanha">Possível campanha (≥3 / 24h)</option>
+              <option value="feedback_erro">Feedback "ERRO" do utilizador</option>
+              <option value="ia_vs_regra">Discordância IA vs. Regra</option>
+              <option value="suspeito">Veredito "Suspeito"</option>
+              <option value="confianca_baixa">Confiança baixa (&lt; 75)</option>
+            </select>
+          </div>
+        </div>
+
+        <table>
+          <thead>
+            <tr>
+              <th>Ref. Análise (Hash) & Data</th>
+              <th>Motivo de Entrada</th>
+              <th>Resumo Anonimizado (Sinais & Indicadores)</th>
+              <th>Veredito & Pontuação</th>
+              <th>Grupo (Cluster)</th>
+              <th>Estado & Decisão</th>
+              <th>Ação Humana</th>
+            </tr>
+          </thead>
+          <tbody id="filaRevisaoTableBody">
+            <tr><td colspan="7" style="text-align: center; color: var(--text-muted); padding: 28px;">A carregar fila de revisão...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
   </main>
+
+  <!-- MODAL DE DECISÃO HUMANA NA FILA DE REVISÃO (Fase 1) -->
+  <div id="decidirFilaModal" class="modal-overlay">
+    <div class="modal-content" style="max-width: 600px;">
+      <div class="modal-title">
+        <span>⚖️ Decisão Humana — Fila de Revisão</span>
+        <button class="close-modal" onclick="closeModals()">×</button>
+      </div>
+
+      <form id="formDecidirFila" onsubmit="submeterDecisaoFila(event)">
+        <input type="hidden" id="decidirFilaItemId" value="">
+
+        <div id="decidirFilaResumoBox" style="background: rgba(15, 23, 42, 0.8); border: 1px solid rgba(148, 163, 184, 0.25); border-radius: 8px; padding: 12px 14px; margin-bottom: 16px; font-size: 0.82rem; line-height: 1.5;">
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Decisão *</label>
+            <select id="decidirFilaDecisao" class="form-select" required onchange="atualizarCamposExtrasDecisaoFila()">
+              <option value="">Selecione a decisão...</option>
+              <option value="esquema_novo">🆕 Esquema novo (registar rascunho de esquema)</option>
+              <option value="marca_nova">🏷️ Marca / domínio novo (enviar proposta pendente ao dicionário)</option>
+              <option value="falso_alarme">✅ Falso alarme (mensagem legítima / alarme indevido)</option>
+              <option value="sem_acao">📁 Sem ação adicional (já coberto)</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Revisor (Nome / Iniciais) *</label>
+            <input type="text" id="decidirFilaRevisor" class="form-input" required placeholder="Ex: Denio" value="Operador Admin">
+          </div>
+        </div>
+
+        <!-- Campos opcionais quando "marca_nova" é selecionada -->
+        <div id="boxExtrasMarcaNova" style="display: none; background: rgba(59, 130, 246, 0.08); border: 1px solid rgba(59, 130, 246, 0.3); border-radius: 8px; padding: 12px; margin-bottom: 14px;">
+          <div style="font-size: 0.78rem; color: #93c5fd; font-weight: 700; margin-bottom: 8px;">Proposta para o Dicionário (fica no estado Pendente até aprovação)</div>
+          <div class="form-row">
+            <div class="form-group" style="margin-bottom: 0;">
+              <label class="form-label">Marca</label>
+              <input type="text" id="decidirFilaMarcaSugerida" class="form-input" placeholder="Ex: CTT Expresso">
+            </div>
+            <div class="form-group" style="margin-bottom: 0;">
+              <label class="form-label">Domínio Oficial</label>
+              <input type="text" id="decidirFilaDominioSugerido" class="form-input" placeholder="Ex: ctt.pt">
+            </div>
+          </div>
+        </div>
+
+        <!-- Campos opcionais quando "esquema_novo" é selecionado -->
+        <div id="boxExtrasEsquemaNovo" style="display: none; background: rgba(245, 158, 11, 0.08); border: 1px solid rgba(245, 158, 11, 0.3); border-radius: 8px; padding: 12px; margin-bottom: 14px;">
+          <div style="font-size: 0.78rem; color: #fcd34d; font-weight: 700; margin-bottom: 8px;">Rascunho de Esquema Novo (escrito nas nossas palavras, sem texto da vítima)</div>
+          <div class="form-group" style="margin-bottom: 0;">
+            <label class="form-label">Nome do Esquema</label>
+            <input type="text" id="decidirFilaNomeEsquema" class="form-input" placeholder="Ex: Falsa taxa alfandegária via SMS com referência MB">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Notas da revisão (nas nossas palavras — nunca colar texto bruto da mensagem)</label>
+          <textarea id="decidirFilaNotas" class="form-input" rows="3" placeholder="Ex: Padrão de possível campanha com entidade MB e domínio recém-registado."></textarea>
+        </div>
+
+        <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 18px;">
+          <button type="button" class="btn-secondary" onclick="closeModals()">Cancelar</button>
+          <button type="submit" class="btn-action">Guardar Decisão Humana</button>
+        </div>
+      </form>
+    </div>
+  </div>
 
   <!-- MODAL 1: CRIAR EMPRESA (Seção 6.1) -->
   <div id="newEmpresaModal" class="modal-overlay">
     <div class="modal-content">
       <div class="modal-title">
-        <span>Criar Empresa</span>
+        <span>Criar Empresa / Lead Comercial</span>
         <button class="close-modal" onclick="closeModals()">×</button>
       </div>
 
       <form id="formNewEmpresa" onsubmit="handleCreateEmpresa(event)">
-        <div class="form-group">
-          <label class="form-label">Nome da empresa *</label>
-          <input type="text" id="modalNome" class="form-input" required placeholder="Ex: Banco XPTO">
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Nome comercial da marca *</label>
+            <input type="text" id="modalNome" class="form-input" required placeholder="Ex: Banco XPTO">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Denominação Social (Nome Legal)</label>
+            <input type="text" id="modalNomeLegal" class="form-input" placeholder="Ex: Banco XPTO, S.A.">
+          </div>
         </div>
 
         <div class="form-row">
@@ -1170,18 +1476,37 @@
             </label>
           </div>
           <div class="form-group">
-            <label class="form-label">Plano</label>
+            <label class="form-label">Plano Comercial</label>
             <select id="modalPlano" class="form-select">
-              <option value="business" selected>Business</option>
-              <option value="pro">Pro</option>
-              <option value="enterprise">Enterprise</option>
+              <option value="selo" selected>Selo Verificado (€49/mês)</option>
+              <option value="radar">Radar de Marca (€290/mês)</option>
+              <option value="enterprise">Enterprise / SIBS / Seguradoras</option>
+              <option value="business">Business (Legado)</option>
+              <option value="pro">Pro (Legado)</option>
             </select>
           </div>
         </div>
 
-        <div class="form-group">
-          <label class="form-label">Apelidos da marca (separados por vírgula)</label>
-          <input type="text" id="modalApelidos" class="form-input" placeholder="Ex: XPTO, Banco XPTO Portugal">
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Representante Legal / CISO</label>
+            <input type="text" id="modalRepNome" class="form-input" placeholder="Ex: Dr. João Silva">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Cargo do Representante</label>
+            <input type="text" id="modalRepCargo" class="form-input" placeholder="Ex: CISO / Administrador">
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Apelidos da marca (separados por vírgula)</label>
+            <input type="text" id="modalApelidos" class="form-input" placeholder="Ex: XPTO, Banco XPTO Portugal">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Preço Acordado (€ / mês)</label>
+            <input type="number" step="0.01" id="modalPrecoAcordado" class="form-input" placeholder="Ex: 49.00 ou 290.00">
+          </div>
         </div>
 
         <div class="form-row">
@@ -1208,11 +1533,13 @@
 
         <div class="form-row">
           <div class="form-group">
-            <label class="form-label">Status</label>
+            <label class="form-label">Estado Inicial (Trava 4 Pilares + Pagamento)</label>
             <select id="modalStatus" class="form-select">
-              <option value="ativo" selected>Ativo</option>
+              <option value="lead" selected>Lead Comercial</option>
+              <option value="em_verificacao">Em Verificação (Onboarding)</option>
+              <option value="proposta_enviada">Proposta Enviada</option>
               <option value="suspenso">Suspenso</option>
-              <option value="expirado">Expirado</option>
+              <option value="ativo">Ativo (Requer 4 Pilares + Pagamento/Isenção)</option>
             </select>
           </div>
           <div class="form-group" style="display: flex; flex-direction: column; justify-content: center;">
@@ -1220,7 +1547,10 @@
               <input type="checkbox" id="modalMonitorizacao" checked> Monitorização de impersonation
             </label>
             <label class="checkbox-group">
-              <input type="checkbox" id="modalCriarSelo" checked> Emitir selo inicial imediatamente
+              <input type="checkbox" id="modalCriarSelo"> Emitir selo inicial imediatamente
+            </label>
+            <label class="checkbox-group" style="margin-top: 4px; color: #fbbf24;">
+              <input type="checkbox" id="modalIsTeste"> 🧪 Marcar como entidade de teste
             </label>
           </div>
         </div>
@@ -1244,9 +1574,15 @@
       <form id="formEditEmpresa" onsubmit="handleUpdateEmpresa(event)">
         <input type="hidden" id="editEmpresaId">
 
-        <div class="form-group">
-          <label class="form-label">Nome da empresa *</label>
-          <input type="text" id="editNome" class="form-input" required>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Nome comercial da marca *</label>
+            <input type="text" id="editNome" class="form-input" required>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Denominação Social (Nome Legal)</label>
+            <input type="text" id="editNomeLegal" class="form-input">
+          </div>
         </div>
 
         <div class="form-row">
@@ -1275,18 +1611,37 @@
             </label>
           </div>
           <div class="form-group">
-            <label class="form-label">Plano</label>
+            <label class="form-label">Plano Comercial</label>
             <select id="editPlano" class="form-select">
-              <option value="business">Business</option>
-              <option value="pro">Pro</option>
-              <option value="enterprise">Enterprise</option>
+              <option value="selo">Selo Verificado (€49/mês)</option>
+              <option value="radar">Radar de Marca (€290/mês)</option>
+              <option value="enterprise">Enterprise / SIBS / Seguradoras</option>
+              <option value="business">Business (Legado)</option>
+              <option value="pro">Pro (Legado)</option>
             </select>
           </div>
         </div>
 
-        <div class="form-group">
-          <label class="form-label">Apelidos da marca (separados por vírgula)</label>
-          <input type="text" id="editApelidos" class="form-input">
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Representante Legal / CISO</label>
+            <input type="text" id="editRepNome" class="form-input">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Cargo do Representante</label>
+            <input type="text" id="editRepCargo" class="form-input">
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Apelidos da marca (separados por vírgula)</label>
+            <input type="text" id="editApelidos" class="form-input">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Preço Acordado (€ / mês)</label>
+            <input type="number" step="0.01" id="editPrecoAcordado" class="form-input">
+          </div>
         </div>
 
         <div class="form-row">
@@ -1312,12 +1667,21 @@
         </div>
 
         <div class="form-group">
-          <label class="form-label">Status</label>
+          <label class="form-label">Estado / Status</label>
           <select id="editStatus" class="form-select">
-            <option value="ativo">Ativo</option>
+            <option value="lead">Lead Comercial</option>
+            <option value="contactado">Contactado</option>
+            <option value="reuniao_agendada">Reunião Agendada</option>
+            <option value="proposta_enviada">Proposta Enviada</option>
+            <option value="em_verificacao">Em Verificação</option>
+            <option value="ativo">Ativo (Requer 4 Pilares + Pagamento/Isenção)</option>
             <option value="suspenso">Suspenso</option>
+            <option value="revogado">Revogado</option>
             <option value="expirado">Expirado</option>
           </select>
+          <label class="checkbox-group" style="margin-top: 8px; color: #fbbf24;">
+            <input type="checkbox" id="editIsTeste"> 🧪 Entidade de teste (ambiente de demonstração)
+          </label>
         </div>
 
         <div style="display: flex; justify-content: flex-end; gap: 12px; margin-top: 24px;">
@@ -1671,6 +2035,44 @@
     </div>
   </div>
 
+  <!-- MODAL: PACOTE FORENSE DE TAKEDOWN & NOTIFICAÇÃO (SIBS / CERT.PT / SEGURADORAS / DECO) -->
+  <div id="pacoteTakedownModal" class="modal-overlay">
+    <div class="modal-content" style="max-width: 760px;">
+      <div class="modal-title">
+        <div>
+          <span style="font-size: 1.15rem; font-weight: 800; color: #fff;">⚡ Pacote Forense de Takedown & Notificação de Abuso</span>
+          <div style="font-size: 0.75rem; color: var(--text-muted);" id="takedownDestinatariosSub">Pronto para SIBS / MB WAY Fraud Desk, CERT.PT / DNS.PT, CISO e DECO Proteste</div>
+        </div>
+        <button class="close-modal" onclick="document.getElementById('pacoteTakedownModal').style.display='none'">×</button>
+      </div>
+
+      <div style="background: rgba(56, 189, 248, 0.08); border: 1px solid rgba(56, 189, 248, 0.28); border-radius: 8px; padding: 12px; margin-bottom: 14px; font-size: 0.8rem; color: #7dd3fc; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
+        <span>🔒 <strong>Integridade Pericial (RGPD Safe):</strong> Inclui IOCs técnicos e Hash SHA-256 sem expor dados pessoais de cidadãos.</span>
+        <span style="font-family: 'JetBrains Mono', monospace; font-size: 0.72rem; color: #38bdf8;" id="takedownHashBadge">SHA-256: -</span>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Assunto Oficial da Notificação</label>
+        <div style="display: flex; gap: 8px;">
+          <input type="text" id="takedownAssuntoInput" class="form-input" readonly>
+          <button class="btn-xs btn-xs-primary" onclick="copiarTakedownAssunto()">Copiar Assunto</button>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+          <label class="form-label" style="margin: 0;">Relatório Técnico Forense (SIBS / CERT.PT / CISO)</label>
+          <button class="btn-xs btn-xs-primary" onclick="copiarTakedownCorpo()">📋 Copiar Pacote Completo</button>
+        </div>
+        <textarea id="takedownCorpoTextarea" class="form-input" rows="14" readonly style="font-family: 'JetBrains Mono', monospace; font-size: 0.8rem; line-height: 1.45;"></textarea>
+      </div>
+
+      <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 18px;">
+        <button type="button" class="btn-secondary" onclick="document.getElementById('pacoteTakedownModal').style.display='none'">Fechar</button>
+      </div>
+    </div>
+  </div>
+
   <!-- MODAL: PRÉ-VISUALIZAÇÃO DE RELATÓRIO MENSAL PERICIAL (CRITÉRIOS 5 & 6) -->
   <div id="verRelatorioModal" class="modal-overlay">
     <div class="modal-content" style="max-width: 900px; height: 90vh; display: flex; flex-direction: column;">
@@ -1755,6 +2157,9 @@
         <div class="form-group">
           <label class="checkbox-group">
             <input type="checkbox" id="seloMonitorizacao" checked> Monitorização de impersonation
+          </label>
+          <label class="checkbox-group" style="margin-top: 6px; color: #fbbf24;">
+            <input type="checkbox" id="seloIsTeste"> 🧪 Marcar como selo de teste
           </label>
         </div>
 
@@ -1943,6 +2348,7 @@
         'tab-selos': 'Selos & Empresas',
         'tab-radar': 'Threat Radar',
         'tab-ocorrencias': 'Ocorrências de Impersonation',
+        'tab-golpes-novos': 'Acompanhamento de Golpes Novos — Fila de Revisão & Agrupamento',
         'tab-monetizacao': 'Roadmap de Monetização B2B & Simulador de Receita',
         'tab-dossie': 'Gerador de Dossiê Técnico para CISOs & Leads'
       };
@@ -1952,6 +2358,8 @@
         atualizarSimulador();
       } else if (tabId === 'tab-dossie') {
         popularSelectMarcasDossie();
+      } else if (tabId === 'tab-golpes-novos') {
+        renderGolpesNovos();
       }
     }
 
@@ -2228,15 +2636,65 @@ Zap, Quem É?`;
       }
     }
 
+    function toggleMostrarTestes(checked) {
+      if (!dashboardState) return;
+      renderEmpresas(dashboardState.empresas || []);
+      renderSelos(dashboardState.selos || []);
+      atualizarContadoresPipeline(dashboardState.empresas || []);
+    }
+
+    function atualizarContadoresPipeline(empresasList) {
+      const mostrarTestes = !!document.getElementById('chkMostrarTestes')?.checked;
+      const validas = empresasList.filter(e => {
+        if (e.status === 'arquivado' || e.estado === 'arquivado' || e.arquivado_em) return false;
+        if (!mostrarTestes && (e.is_teste || (e.nome && /xpto/i.test(e.nome)))) return false;
+        return true;
+      });
+
+      const countTodos = validas.length;
+      const countLead = validas.filter(e => (e.estado === 'lead' || (!e.estado && e.status !== 'ativo'))).length;
+      const countContactado = validas.filter(e => e.estado === 'contactado' || e.estado === 'proposta').length;
+      const countEmVerif = validas.filter(e => e.estado === 'em_verificacao').length;
+      const countAtivo = validas.filter(e => e.estado === 'ativo' || e.status === 'ativo').length;
+      const countSuspenso = validas.filter(e => e.estado === 'suspenso' || e.estado === 'revogado' || e.estado === 'expirado' || e.status === 'suspenso').length;
+
+      if (document.getElementById('countPipelineTodos')) document.getElementById('countPipelineTodos').textContent = countTodos;
+      if (document.getElementById('countPipelineLead')) document.getElementById('countPipelineLead').textContent = countLead;
+      if (document.getElementById('countPipelineContactado')) document.getElementById('countPipelineContactado').textContent = countContactado;
+      if (document.getElementById('countPipelineEmVerificacao')) document.getElementById('countPipelineEmVerificacao').textContent = countEmVerif;
+      if (document.getElementById('countPipelineAtivo')) document.getElementById('countPipelineAtivo').textContent = countAtivo;
+      if (document.getElementById('countPipelineSuspenso')) document.getElementById('countPipelineSuspenso').textContent = countSuspenso;
+    }
+
+    let isCarregandoDashboard = false;
+
     async function loadDashboardData() {
+      if (isCarregandoDashboard) return;
+      isCarregandoDashboard = true;
+
+      const tbodyEmp = document.getElementById('empresasTableBody');
+      const tbodySel = document.getElementById('selosTableBody');
+      if (tbodyEmp && (!dashboardState || !dashboardState.empresas)) {
+        tbodyEmp.innerHTML = '<tr><td colspan="8" style="text-align: center; color: var(--text-muted); padding: 30px;">Carregando empresas...</td></tr>';
+      }
+      if (tbodySel && (!dashboardState || !dashboardState.selos)) {
+        tbodySel.innerHTML = '<tr><td colspan="7" style="text-align: center; color: var(--text-muted); padding: 30px;">Carregando selos...</td></tr>';
+      }
+
       try {
         const res = await fetch('/api/admin', {
           headers: { 'x-admin-key': globalAdminSecret }
         });
 
         if (res.status === 401) {
+          isCarregandoDashboard = false;
           logout();
           return;
+        }
+
+        if (!res.ok) {
+          const errText = await res.text();
+          throw new Error(`Falha HTTP ${res.status}: ${errText || 'Serviço temporariamente indisponível'}`);
         }
 
         const data = await res.json();
@@ -2249,21 +2707,7 @@ Zap, Quem É?`;
         document.getElementById('kpiThreatRadar').textContent = kpis.totalThreatRadar || 0;
         document.getElementById('kpiOcorrencias').textContent = kpis.totalOcorrencias || 0;
 
-        // Atualizar contadores do Pipeline B2B
-        const empresasList = data.empresas || [];
-        const countTodos = empresasList.length;
-        const countLead = empresasList.filter(e => (e.estado === 'lead' || (!e.estado && e.status !== 'ativo'))).length;
-        const countContactado = empresasList.filter(e => e.estado === 'contactado' || e.estado === 'proposta').length;
-        const countEmVerif = empresasList.filter(e => e.estado === 'em_verificacao').length;
-        const countAtivo = empresasList.filter(e => e.estado === 'ativo' || e.status === 'ativo').length;
-        const countSuspenso = empresasList.filter(e => e.estado === 'suspenso' || e.estado === 'revogado' || e.estado === 'expirado' || e.status === 'suspenso').length;
-
-        if (document.getElementById('countPipelineTodos')) document.getElementById('countPipelineTodos').textContent = countTodos;
-        if (document.getElementById('countPipelineLead')) document.getElementById('countPipelineLead').textContent = countLead;
-        if (document.getElementById('countPipelineContactado')) document.getElementById('countPipelineContactado').textContent = countContactado;
-        if (document.getElementById('countPipelineEmVerificacao')) document.getElementById('countPipelineEmVerificacao').textContent = countEmVerif;
-        if (document.getElementById('countPipelineAtivo')) document.getElementById('countPipelineAtivo').textContent = countAtivo;
-        if (document.getElementById('countPipelineSuspenso')) document.getElementById('countPipelineSuspenso').textContent = countSuspenso;
+        atualizarContadoresPipeline(data.empresas || []);
 
         // Banner de banco de dados
         const banner = document.getElementById('dbWarningBanner');
@@ -2284,11 +2728,26 @@ Zap, Quem É?`;
         renderRadar(data.radar || []);
         renderOcorrencias(data.ocorrencias || []);
         renderLeads(data.leads || []);
+        renderGolpesNovos();
         popularSelectMarcasDossie();
         atualizarSimulador();
 
       } catch (err) {
         console.error('Erro ao buscar dados:', err);
+        const errMsg = escapeHtml(err.message || 'Falha na ligação com o servidor.');
+        const retryHtml = (colunas) => `
+          <tr>
+            <td colspan="${colunas}" style="text-align: center; padding: 36px 20px; color: #f87171;">
+              <div style="font-weight: 700; font-size: 1rem; margin-bottom: 6px;">⚠️ Não foi possível carregar os dados</div>
+              <div style="font-size: 0.85rem; color: #94a3b8; margin-bottom: 16px;">${errMsg}</div>
+              <button onclick="loadDashboardData()" class="btn-xs btn-xs-primary" style="padding: 8px 18px; font-size: 0.85rem; cursor: pointer;">Tentar de novo ↻</button>
+            </td>
+          </tr>
+        `;
+        if (tbodyEmp) tbodyEmp.innerHTML = retryHtml(8);
+        if (tbodySel) tbodySel.innerHTML = retryHtml(7);
+      } finally {
+        isCarregandoDashboard = false;
       }
     }
 
@@ -2370,7 +2829,13 @@ Zap, Quem É?`;
       const tbody = document.getElementById('empresasTableBody');
       if (!tbody) return;
 
-      let filtradas = empresas || [];
+      const mostrarTestes = !!document.getElementById('chkMostrarTestes')?.checked;
+      let filtradas = (empresas || []).filter(e => {
+        if (e.status === 'arquivado' || e.estado === 'arquivado' || e.arquivado_em) return false;
+        if (!mostrarTestes && (e.is_teste || (e.nome && /xpto/i.test(e.nome)))) return false;
+        return true;
+      });
+
       if (currentPipelineFilter === 'lead') {
         filtradas = filtradas.filter(e => e.estado === 'lead' || (!e.estado && e.status !== 'ativo'));
       } else if (currentPipelineFilter === 'contactado') {
@@ -2389,7 +2854,8 @@ Zap, Quem É?`;
       }
 
       tbody.innerHTML = filtradas.map(emp => {
-        const selosEmp = (dashboardState.selos || []).filter(s => s.empresa_id === emp.id);
+        const isTeste = !!(emp.is_teste || (emp.nome && /xpto/i.test(emp.nome)));
+        const selosEmp = (dashboardState.selos || []).filter(s => s.empresa_id === emp.id && !s.arquivado_em);
         const seloInfo = selosEmp.length
           ? `<span style="font-family: 'JetBrains Mono', monospace; font-size: 0.8rem; color: var(--primary); font-weight: 700;">${selosEmp[0].codigo}</span>`
           : (emp.codigo_selo ? `<span style="font-family: 'JetBrains Mono', monospace; font-size: 0.8rem; color: var(--primary); font-weight: 700;">${emp.codigo_selo}</span>` : '<span style="color: var(--text-muted);">Sem selo</span>');
@@ -2408,7 +2874,10 @@ Zap, Quem É?`;
         return `
           <tr>
             <td>
-              <div style="font-weight: 700; color: #fff;">${escapeHtml(emp.nome_comercial || emp.nome)}</div>
+              <div style="font-weight: 700; color: #fff; display: flex; align-items: center; gap: 6px;">
+                ${escapeHtml(emp.nome_comercial || emp.nome)}
+                ${isTeste ? '<span class="badge" style="background: rgba(245, 158, 11, 0.15); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.4); font-size: 0.68rem; padding: 2px 6px;">🧪 Teste</span>' : ''}
+              </div>
               ${emp.nome_legal && emp.nome_legal !== emp.nome ? `<div style="font-size: 0.75rem; color: var(--text-muted);">${escapeHtml(emp.nome_legal)}</div>` : ''}
               <div style="font-size: 0.75rem; color: #94a3b8; font-family: 'JetBrains Mono', monospace;">NIF: ${escapeHtml(emp.nif || 'Não informado')}</div>
             </td>
@@ -2426,6 +2895,7 @@ Zap, Quem É?`;
                   ? `<button class="btn-xs btn-xs-danger" onclick="toggleStatusEmpresa('${emp.id}', 'suspenso')">Suspender</button>`
                   : `<button class="btn-xs btn-xs-primary" onclick="toggleStatusEmpresa('${emp.id}', 'ativo')">Ativar</button>`
                 }
+                <button class="btn-xs btn-xs-danger" onclick="excluirEmpresa('${emp.id}')" title="Arquivar Empresa">✕</button>
               </div>
             </td>
           </tr>
@@ -2436,24 +2906,45 @@ Zap, Quem É?`;
     // TAB 2: RENDER SELOS (Seções 7 e 12)
     function renderSelos(selos) {
       const tbody = document.getElementById('selosTableBody');
-      if (!selos.length) {
+      if (!tbody) return;
+
+      const mostrarTestes = !!document.getElementById('chkMostrarTestes')?.checked;
+      const filtrados = (selos || []).filter(s => {
+        if (s.arquivado_em) return false;
+        const emp = (dashboardState.empresas || []).find(e => e.id === s.empresa_id);
+        const isTeste = !!(s.is_teste || emp?.is_teste || (s.empresa_nome && /xpto/i.test(s.empresa_nome)));
+        if (!mostrarTestes && isTeste) return false;
+        return true;
+      });
+
+      if (!filtrados.length) {
         tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; color: var(--text-muted); padding: 30px;">Nenhum selo cadastrado.</td></tr>';
         return;
       }
 
-      tbody.innerHTML = selos.map(s => {
+      tbody.innerHTML = filtrados.map(s => {
         const emp = (dashboardState.empresas || []).find(e => e.id === s.empresa_id);
         const agora = new Date();
         const expirado = s.valido_ate ? new Date(s.valido_ate) < agora : false;
-        const statusTexto = emp?.status === 'suspenso' ? 'Suspenso' : (emp?.status !== 'ativo' ? 'Inativo' : (expirado ? 'Expirado' : 'Ativo'));
-        const statusBadge = (emp?.status === 'ativo' && !expirado) ? 'badge-ativo' : (emp?.status === 'suspenso' ? 'badge-suspenso' : 'badge-expirado');
+        const isTeste = !!(s.is_teste || emp?.is_teste || (s.empresa_nome && /xpto/i.test(s.empresa_nome)));
+
+        let statusTexto = emp?.status === 'suspenso' ? 'Suspenso' : (emp?.status !== 'ativo' ? 'Inativo' : (expirado ? 'Expirado' : 'Ativo'));
+        let statusBadge = (emp?.status === 'ativo' && !expirado) ? 'badge-ativo' : (emp?.status === 'suspenso' ? 'badge-suspenso' : 'badge-expirado');
+        if (isTeste) {
+          statusTexto = '🧪 Teste';
+          statusBadge = 'badge-suspenso';
+        }
+
         const validade = s.valido_ate ? new Date(s.valido_ate).toLocaleDateString('pt-PT') : 'Indeterminada';
         const radar = s.monitorizacao_impersonation ? '🟢 Ativo' : '⚪ Inativo';
         const urlPublica = `/verify/${s.codigo}`;
 
         return `
           <tr>
-            <td style="font-weight: 700; color: #fff;">${escapeHtml(s.empresa_nome || emp?.nome || 'Empresa')}</td>
+            <td style="font-weight: 700; color: #fff;">
+              ${escapeHtml(s.empresa_nome || emp?.nome || 'Empresa')}
+              ${isTeste ? '<span class="badge" style="background: rgba(245, 158, 11, 0.15); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.4); font-size: 0.68rem; margin-left: 6px;">🧪 Teste</span>' : ''}
+            </td>
             <td><strong style="font-family: 'JetBrains Mono', monospace; color: var(--primary); font-size: 0.95rem;">${escapeHtml(s.codigo)}</strong></td>
             <td><span class="badge ${statusBadge}">${statusTexto}</span></td>
             <td style="font-size: 0.85rem; color: var(--text-muted);">${validade}</td>
@@ -2468,7 +2959,7 @@ Zap, Quem É?`;
                   ? `<button class="btn-xs btn-xs-danger" onclick="toggleStatusEmpresa('${emp.id}', 'suspenso')">Suspender</button>`
                   : `<button class="btn-xs btn-xs-primary" onclick="toggleStatusEmpresa('${emp.id}', 'ativo')">Ativar</button>`
                 }
-                <button class="btn-xs btn-xs-danger" onclick="excluirSelo('${s.id}')" title="Excluir">✕</button>
+                <button class="btn-xs btn-xs-danger" onclick="excluirSelo('${s.id}')" title="Arquivar Selo (Soft-Delete)">✕</button>
               </div>
             </td>
           </tr>
@@ -2476,30 +2967,138 @@ Zap, Quem É?`;
       }).join('');
     }
 
-    // TAB 3: RENDER THREAT RADAR (Seção 8)
+    // TAB 3: RENDER THREAT RADAR ENTERPRISE (Seção 8 + SIBS / MB WAY / DECO / Seguradoras)
     function renderRadar(radar) {
+      const intel = dashboardState.radar_intel || {};
+      const resumo = intel.resumo || {};
+      const surtos = intel.surtos_ativos || [];
+      const iocs = intel.iocs_financeiros || [];
+      const shadowRadar = (intel.shadow_radar && intel.shadow_radar.length) ? intel.shadow_radar : (radar || []);
+
+      // 1. Atualizar KPIs do Radar
+      const elSurtos = document.getElementById('radarKpiSurtos');
+      const elIocsFin = document.getElementById('radarKpiIocsFin');
+      const elDominios = document.getElementById('radarKpiDominios');
+      const elShadow = document.getElementById('radarKpiShadow');
+      if (elSurtos) elSurtos.textContent = resumo.total_surtos_ativos ?? surtos.length;
+      if (elIocsFin) elIocsFin.textContent = (resumo.entidades_mb_detetadas || 0) + (resumo.ibans_detetados || 0) + (resumo.telefones_burla_detetados || 0);
+      if (elDominios) elDominios.textContent = resumo.dominios_phishing_detetados ?? iocs.filter(i => i.tipo === 'DOMINIO_PHISHING').length;
+      if (elShadow) elShadow.textContent = resumo.marcas_shadow_nao_clientes ?? shadowRadar.filter(r => r.relacao_comercial === 'oportunidade_shadow').length;
+
+      // 2. Renderizar Detetor de Surtos / Campanhas Coordenadas
+      const surtosTbody = document.getElementById('surtosTableBody');
+      if (surtosTbody) {
+        if (!surtos.length) {
+          surtosTbody.innerHTML = '<tr><td colspan="8" style="text-align: center; color: var(--text-muted); padding: 24px;">Nenhum surto coordenado detetado no momento.</td></tr>';
+        } else {
+          surtosTbody.innerHTML = surtos.map(s => {
+            const ultima = s.ultima_deteccao ? new Date(s.ultima_deteccao).toLocaleString('pt-PT') : '-';
+            const badgeEstado = s.status_surto === 'SURTO_CRITICO'
+              ? '<span class="badge badge-suspenso">🔥 SURTO CRÍTICO</span>'
+              : (s.status_surto === 'CAMPANHA_ATIVA'
+                ? '<span class="badge badge-severidade-suspeita">⚠️ CAMPANHA ATIVA</span>'
+                : '<span class="badge badge-severidade-monitorar">SINAL ISOLADO</span>');
+            return `
+              <tr>
+                <td style="font-weight: 800; color: #fff;">${escapeHtml(s.marca)}</td>
+                <td><span class="badge" style="background: rgba(56, 189, 248, 0.12); color: #7dd3fc; border: 1px solid rgba(56, 189, 248, 0.28); font-size: 0.7rem;">${escapeHtml(s.setor || 'Geral')}</span></td>
+                <td style="font-size: 0.82rem; color: #fde68a; font-weight: 600;">${escapeHtml(s.tatica_nome || 'Impersonation')}</td>
+                <td style="font-family: 'JetBrains Mono', monospace; font-size: 0.82rem; color: #fca5a5;">${escapeHtml(s.ioc_principal || '-')}</td>
+                <td style="font-weight: 900; font-family: 'JetBrains Mono', monospace; color: #ef4444; font-size: 1.05rem;">${s.ocorrencias}</td>
+                <td style="font-size: 0.8rem; color: var(--text-muted);">${ultima}</td>
+                <td>${badgeEstado}</td>
+                <td>
+                  <div style="display: flex; gap: 6px; flex-wrap: wrap;">
+                    <button class="btn-xs" style="color: #38bdf8; background: rgba(56, 189, 248, 0.15); border-color: rgba(56, 189, 248, 0.35);" onclick="abrirPacoteTakedown('${escapeHtml(s.marca)}', '${s.empresa_id || ''}')">⚡ Kit Takedown / SIBS</button>
+                    <button class="btn-xs" style="color: #fbbf24; background: rgba(245, 158, 11, 0.15); border-color: rgba(245, 158, 11, 0.3);" onclick="prepararAlertaGratuito('${escapeHtml(s.marca)}', '${s.empresa_id || ''}')">✉️ Alerta</button>
+                  </div>
+                </td>
+              </tr>
+            `;
+          }).join('');
+        }
+      }
+
+      // 3. Renderizar Feed de IOCs Financeiros & Telecom (SIBS / MB WAY / CERT.PT)
+      const iocsTbody = document.getElementById('iocsFinanceirosTableBody');
+      if (iocsTbody) {
+        const filtroTipo = document.getElementById('filtroTipoIocRadar')?.value || 'todos';
+        const iocsFiltrados = filtroTipo === 'todos' ? iocs : iocs.filter(i => i.tipo === filtroTipo);
+        if (!iocsFiltrados.length) {
+          iocsTbody.innerHTML = '<tr><td colspan="8" style="text-align: center; color: var(--text-muted); padding: 24px;">Nenhum IOC encontrado para este filtro.</td></tr>';
+        } else {
+          const labelTipo = {
+            ENTIDADE_MB: '🏦 Entidade MB',
+            REFERENCIA_MB: '🔢 Referência MB',
+            IBAN: '💳 IBAN (Mula)',
+            TELEFONE_BURLA: '📱 Tel / MB WAY',
+            DOMINIO_PHISHING: '🌐 Domínio Phishing'
+          };
+          iocsTbody.innerHTML = iocsFiltrados.map(item => {
+            const ultima = item.ultima_deteccao ? new Date(item.ultima_deteccao).toLocaleString('pt-PT') : '-';
+            return `
+              <tr>
+                <td><span class="badge" style="background: rgba(245, 158, 11, 0.15); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.35);">${labelTipo[item.tipo] || escapeHtml(item.tipo)}</span></td>
+                <td style="font-family: 'JetBrains Mono', monospace; font-weight: 800; color: #fff;">${escapeHtml(item.valor)}</td>
+                <td style="font-weight: 700; color: #e2e8f0;">${escapeHtml(item.marca || 'Desconhecida')}</td>
+                <td style="font-size: 0.78rem; color: var(--text-muted);">${escapeHtml(item.setor || '-')}</td>
+                <td style="font-size: 0.8rem; color: #93c5fd;">${escapeHtml(item.tatica_nome || '-')}</td>
+                <td style="font-family: 'JetBrains Mono', monospace; font-weight: 800; color: #ef4444;">${item.ocorrencias}x</td>
+                <td style="font-size: 0.8rem; color: var(--text-muted);">${ultima}</td>
+                <td>
+                  <div style="display: flex; gap: 6px;">
+                    <button class="btn-xs" onclick="navigator.clipboard.writeText('${escapeHtml(item.valor)}'); showToast('IOC copiado para a área de transferência!');">📋 Copiar IOC</button>
+                    <button class="btn-xs" style="color: #38bdf8; border-color: rgba(56, 189, 248, 0.35);" onclick="abrirPacoteTakedown('${escapeHtml(item.marca)}', '${item.empresa_id || ''}')">⚡ Takedown</button>
+                  </div>
+                </td>
+              </tr>
+            `;
+          }).join('');
+        }
+      }
+
+      // 4. Renderizar Shadow Radar & Marcas Sob Ataque
       const tbody = document.getElementById('radarTableBody');
-      if (!radar.length) {
-        tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; color: var(--text-muted); padding: 30px;">Nenhuma ocorrência observada no Radar.</td></tr>';
+      if (!tbody) return;
+      const filtroSetor = document.getElementById('filtroSetorRadar')?.value || 'todos';
+      const listaMarcas = filtroSetor === 'todos'
+        ? shadowRadar
+        : shadowRadar.filter(r => (r.setor || '') === filtroSetor);
+
+      if (!listaMarcas.length) {
+        tbody.innerHTML = '<tr><td colspan="8" style="text-align: center; color: var(--text-muted); padding: 30px;">Nenhuma ocorrência observada no Radar para este filtro.</td></tr>';
         return;
       }
 
-      tbody.innerHTML = radar.map(r => {
-        const primeira = r.primeira_deteccao ? new Date(r.primeira_deteccao).toLocaleDateString('pt-PT') : '-';
+      tbody.innerHTML = listaMarcas.map(r => {
         const ultima = r.ultima_deteccao ? new Date(r.ultima_deteccao).toLocaleDateString('pt-PT') : '-';
         const severidade = r.severidade || 'monitorar';
+        const relacao = r.relacao_comercial || (r.empresa_id ? 'pipeline_lead' : 'oportunidade_shadow');
+        let badgeRelacao = '<span class="badge" style="background: rgba(245, 158, 11, 0.15); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.35);">🎯 Shadow (Não-Cliente)</span>';
+        if (relacao === 'cliente_ativo') {
+          badgeRelacao = '<span class="badge badge-ativo">🛡️ Cliente Ativo</span>';
+        } else if (relacao === 'pipeline_lead') {
+          badgeRelacao = '<span class="badge" style="background: rgba(59, 130, 246, 0.15); color: #93c5fd; border: 1px solid rgba(59, 130, 246, 0.35);">📈 No Funil CRM</span>';
+        }
+
+        const btnConverterLead = !r.empresa_id
+          ? `<button class="btn-xs" style="color: #34d399; background: rgba(16, 185, 129, 0.15); border-color: rgba(16, 185, 129, 0.35);" onclick="converterMarcaRadarEmLead('${escapeHtml(r.empresa)}')">➕ Converter em Lead</button>`
+          : '';
 
         return `
           <tr>
             <td style="font-weight: 700; color: #fff;">${escapeHtml(r.empresa)}</td>
+            <td><span class="badge" style="background: rgba(255,255,255,0.06); color: #cbd5e1; font-size: 0.7rem;">${escapeHtml(r.setor || 'Outros Setores')}</span></td>
+            <td>${badgeRelacao}</td>
             <td style="font-weight: 800; font-family: 'JetBrains Mono', monospace; font-size: 1.1rem; color: #ef4444;">${r.ocorrencias}</td>
-            <td>${r.canais_distintos || 1}</td>
-            <td style="font-size: 0.85rem; color: var(--text-muted);">${primeira}</td>
+            <td style="font-family: 'JetBrains Mono', monospace;">${r.canais_distintos || 1}</td>
             <td style="font-size: 0.85rem; color: var(--text-muted);">${ultima}</td>
             <td><span class="badge badge-severidade-${severidade}">${severidade.toUpperCase()}</span></td>
             <td>
               <div style="display: flex; gap: 6px; flex-wrap: wrap;">
-                <button class="btn-xs btn-xs-primary" onclick="abrirDetalheRadar('${r.empresa_id}')">Ver Detalhe</button>
+                ${btnConverterLead}
+                <button class="btn-xs btn-xs-primary" onclick="abrirDetalheRadar('${r.empresa_id || ''}', '${escapeHtml(r.empresa)}')">Ver Detalhe</button>
+                <button class="btn-xs" style="color: #38bdf8; background: rgba(56, 189, 248, 0.15); border-color: rgba(56, 189, 248, 0.35);" onclick="abrirPacoteTakedown('${escapeHtml(r.empresa)}', '${r.empresa_id || ''}')">⚡ Kit Takedown</button>
                 <button class="btn-xs" style="color: #fbbf24; background: rgba(245, 158, 11, 0.15); border-color: rgba(245, 158, 11, 0.3);" onclick="prepararAlertaGratuito('${escapeHtml(r.empresa)}', '${r.empresa_id || ''}')">✉️ Alerta Gratuito</button>
                 <button class="btn-xs" style="color: #93c5fd; background: rgba(59, 130, 246, 0.15); border-color: rgba(59, 130, 246, 0.3);" onclick="gerarDossieParaEmpresa('${escapeHtml(r.empresa)}')">📄 Dossiê CISO</button>
               </div>
@@ -2822,15 +3421,21 @@ Zap, Quem É?`;
     function openNewEmpresaModal() {
       document.getElementById('formNewEmpresa').reset();
       document.getElementById('modalMonitorizacao').checked = true;
-      document.getElementById('modalCriarSelo').checked = true;
+      document.getElementById('modalCriarSelo').checked = false;
+      document.getElementById('modalStatus').value = 'lead';
       document.getElementById('newEmpresaModal').style.display = 'flex';
     }
 
     async function handleCreateEmpresa(e) {
       e.preventDefault();
+      const precoRaw = document.getElementById('modalPrecoAcordado')?.value;
       const payload = {
         action: 'create_empresa',
         nome: document.getElementById('modalNome').value.trim(),
+        nome_legal: document.getElementById('modalNomeLegal')?.value.trim() || undefined,
+        representante_nome: document.getElementById('modalRepNome')?.value.trim() || undefined,
+        representante_cargo: document.getElementById('modalRepCargo')?.value.trim() || undefined,
+        preco_acordado: precoRaw !== '' && precoRaw !== undefined ? Number(precoRaw) : undefined,
         dominio_oficial: document.getElementById('modalDominio').value.trim(),
         email_oficial: document.getElementById('modalEmail').value.trim(),
         telefone_oficial: document.getElementById('modalTelefone').value.trim(),
@@ -2840,13 +3445,15 @@ Zap, Quem É?`;
         telefone_verificado: document.getElementById('modalTelefoneVerificado').checked,
         plano: document.getElementById('modalPlano').value,
         status: document.getElementById('modalStatus').value,
+        estado: document.getElementById('modalStatus').value,
         monitorizacao_impersonation: document.getElementById('modalMonitorizacao').checked,
         criar_selo: document.getElementById('modalCriarSelo').checked,
         nif: document.getElementById('modalNif').value.trim(),
         nif_verificado: document.getElementById('modalNifVerificado').checked,
         iban: document.getElementById('modalIban').value.trim(),
         iban_verificado: document.getElementById('modalIbanVerificado').checked,
-        verificacao_notas: document.getElementById('modalNotasVerificacao').value.trim()
+        verificacao_notas: document.getElementById('modalNotasVerificacao').value.trim(),
+        is_teste: !!document.getElementById('modalIsTeste')?.checked
       };
 
       try {
@@ -2855,7 +3462,10 @@ Zap, Quem É?`;
           headers: { 'Content-Type': 'application/json', 'x-admin-key': globalAdminSecret },
           body: JSON.stringify(payload)
         });
-        if (!res.ok) throw new Error(await res.text());
+        if (!res.ok) {
+          const errData = await res.json().catch(() => null);
+          throw new Error(errData?.error || (await res.text()));
+        }
         const data = await res.json();
         closeModals();
         await loadDashboardData();
@@ -2877,7 +3487,11 @@ Zap, Quem É?`;
       if (!emp) return;
 
       document.getElementById('editEmpresaId').value = emp.id;
-      document.getElementById('editNome').value = emp.nome || '';
+      document.getElementById('editNome').value = emp.nome_comercial || emp.nome || '';
+      if (document.getElementById('editNomeLegal')) document.getElementById('editNomeLegal').value = emp.nome_legal || '';
+      if (document.getElementById('editRepNome')) document.getElementById('editRepNome').value = emp.representante_nome || '';
+      if (document.getElementById('editRepCargo')) document.getElementById('editRepCargo').value = emp.representante_cargo || '';
+      if (document.getElementById('editPrecoAcordado')) document.getElementById('editPrecoAcordado').value = emp.preco_acordado ?? '';
       document.getElementById('editDominio').value = emp.dominio_oficial || '';
       document.getElementById('editEmail').value = emp.email_oficial || '';
       document.getElementById('editTelefone').value = emp.telefone_oficial || '';
@@ -2885,13 +3499,16 @@ Zap, Quem É?`;
       document.getElementById('editDominioVerificado').checked = !!emp.dominio_verificado;
       document.getElementById('editEmailVerificado').checked = !!emp.email_verificado;
       document.getElementById('editTelefoneVerificado').checked = !!emp.telefone_verificado;
-      document.getElementById('editPlano').value = emp.plano || 'business';
-      document.getElementById('editStatus').value = emp.status || 'ativo';
+      document.getElementById('editPlano').value = emp.plano || 'selo';
+      document.getElementById('editStatus').value = emp.estado || emp.status || 'lead';
       document.getElementById('editNif').value = emp.nif || '';
       document.getElementById('editNifVerificado').checked = !!emp.nif_verificado;
       document.getElementById('editIban').value = emp.iban || '';
       document.getElementById('editIbanVerificado').checked = !!emp.iban_verificado;
       document.getElementById('editNotasVerificacao').value = emp.verificacao_notas || '';
+      if (document.getElementById('editIsTeste')) {
+        document.getElementById('editIsTeste').checked = !!emp.is_teste;
+      }
 
       document.getElementById('editEmpresaModal').style.display = 'flex';
     }
@@ -2899,10 +3516,15 @@ Zap, Quem É?`;
     async function handleUpdateEmpresa(e) {
       e.preventDefault();
       const id = document.getElementById('editEmpresaId').value;
+      const precoRaw = document.getElementById('editPrecoAcordado')?.value;
       const payload = {
         action: 'update_empresa',
         id,
         nome: document.getElementById('editNome').value.trim(),
+        nome_legal: document.getElementById('editNomeLegal')?.value.trim() || '',
+        representante_nome: document.getElementById('editRepNome')?.value.trim() || '',
+        representante_cargo: document.getElementById('editRepCargo')?.value.trim() || '',
+        preco_acordado: precoRaw !== '' && precoRaw !== undefined ? Number(precoRaw) : null,
         dominio_oficial: document.getElementById('editDominio').value.trim(),
         email_oficial: document.getElementById('editEmail').value.trim(),
         telefone_oficial: document.getElementById('editTelefone').value.trim(),
@@ -2912,11 +3534,13 @@ Zap, Quem É?`;
         telefone_verificado: document.getElementById('editTelefoneVerificado').checked,
         plano: document.getElementById('editPlano').value,
         status: document.getElementById('editStatus').value,
+        estado: document.getElementById('editStatus').value,
         nif: document.getElementById('editNif').value.trim(),
         nif_verificado: document.getElementById('editNifVerificado').checked,
         iban: document.getElementById('editIban').value.trim(),
         iban_verificado: document.getElementById('editIbanVerificado').checked,
-        verificacao_notas: document.getElementById('editNotasVerificacao').value.trim()
+        verificacao_notas: document.getElementById('editNotasVerificacao').value.trim(),
+        is_teste: !!document.getElementById('editIsTeste')?.checked
       };
 
       try {
@@ -2925,7 +3549,10 @@ Zap, Quem É?`;
           headers: { 'Content-Type': 'application/json', 'x-admin-key': globalAdminSecret },
           body: JSON.stringify(payload)
         });
-        if (!res.ok) throw new Error(await res.text());
+        if (!res.ok) {
+          const errData = await res.json().catch(() => null);
+          throw new Error(errData?.error || (await res.text()));
+        }
         const upd = await res.json().catch(() => ({}));
         if (upd.migracao_pendente) {
           alert('Alterações gravadas, mas SEM NIF/IBAN: execute a migração supabase/migrations/20261015_verificacao_marcas.sql no Supabase.');
@@ -2938,17 +3565,54 @@ Zap, Quem É?`;
     }
 
     async function toggleStatusEmpresa(id, novoStatus) {
-      if (!confirm(`Deseja alterar o status desta empresa para "${novoStatus}"?`)) return;
+      let motivo = null;
+      if (novoStatus === 'suspenso') {
+        motivo = prompt('A suspensão de uma empresa exige obrigatoriamente um motivo escrito para arquivo no histórico de auditoria.\n\nIndique o motivo da suspensão:');
+        if (!motivo || motivo.trim().length < 4) {
+          if (motivo !== null) alert('É obrigatório indicar um motivo com pelo menos 4 caracteres para suspender a empresa.');
+          return;
+        }
+      } else {
+        if (!confirm(`Deseja alterar o status desta empresa para "${novoStatus}"?`)) return;
+      }
+
       try {
         const res = await fetch('/api/admin', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', 'x-admin-key': globalAdminSecret },
-          body: JSON.stringify({ action: 'set_empresa_status', id, status: novoStatus })
+          body: JSON.stringify({ action: 'set_empresa_status', id, status: novoStatus, motivo: motivo ? motivo.trim() : null })
         });
-        if (!res.ok) throw new Error(await res.text());
+        if (!res.ok) {
+          const errData = await res.json().catch(() => null);
+          throw new Error(errData?.error || (await res.text()));
+        }
+        showToast(`Status da empresa alterado para ${novoStatus}.`);
         loadDashboardData();
       } catch (err) {
         alert('Erro ao alterar status: ' + err.message);
+      }
+    }
+
+    async function excluirEmpresa(empresa_id) {
+      const motivo = prompt('ATENÇÃO: Esta ação arquiva a empresa (soft delete), desativa os seus selos e regista a alteração no histórico de auditoria.\n\nIndique o motivo do arquivamento da empresa:');
+      if (!motivo || motivo.trim().length < 3) {
+        if (motivo !== null) alert('É obrigatório indicar o motivo por escrito.');
+        return;
+      }
+      try {
+        const res = await fetch('/api/admin', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'x-admin-key': globalAdminSecret },
+          body: JSON.stringify({ action: 'archive_empresa', empresa_id, motivo: motivo.trim() })
+        });
+        if (!res.ok) {
+          const errData = await res.json().catch(() => null);
+          throw new Error(errData?.error || (await res.text()));
+        }
+        showToast('Empresa arquivada com sucesso (soft-delete).');
+        loadDashboardData();
+      } catch (err) {
+        alert('Erro ao arquivar empresa: ' + err.message);
       }
     }
 
@@ -3113,11 +3777,12 @@ Zap, Quem É?`;
                       ${(r.hash_sha256 || '').slice(0, 10)}...
                       <button class="btn-xs" style="padding: 1px 4px; font-size: 0.65rem;" onclick="navigator.clipboard.writeText('${r.hash_sha256}'); showToast('Hash SHA-256 copiada!');">Copiar</button>
                     </td>
-                    <td><span class="badge badge-${r.estado === 'aprovado' ? 'ok' : 'pendente'}">${escapeHtml(r.estado || 'rascunho')}</span></td>
+                    <td><span class="badge badge-${r.estado === 'aprovado' || r.estado === 'enviado' ? 'ok' : 'pendente'}">${escapeHtml(r.estado || 'rascunho')}</span></td>
                     <td>
-                      <div style="display: flex; gap: 4px;">
+                      <div style="display: flex; gap: 4px; flex-wrap: wrap;">
                         <button class="btn-xs btn-xs-primary" onclick="visualizarRelatorio('${r.id}')">🖨️ Ver / Imprimir</button>
-                        ${r.estado !== 'aprovado' ? `<button class="btn-xs" style="color: #34d399; border-color: rgba(16,185,129,0.3);" onclick="aprovarRelatorioExecutivo('${r.id}')">✓ Aprovar</button>` : ''}
+                        ${r.estado === 'rascunho' || !r.estado ? `<button class="btn-xs" style="color: #34d399; border-color: rgba(16,185,129,0.3);" onclick="aprovarRelatorioExecutivo('${r.id}')">✓ Aprovar</button>` : ''}
+                        ${r.estado === 'aprovado' ? `<button class="btn-xs" style="color: #38bdf8; border-color: rgba(56,189,248,0.35);" onclick="marcarRelatorioEnviado('${r.id}')">📤 Marcar Enviado</button>` : ''}
                       </div>
                     </td>
                   </tr>
@@ -3402,16 +4067,56 @@ Zap, Quem É?`;
       }
     }
 
+    async function marcarRelatorioEnviado(relatorioId) {
+      if (!confirm('Confirmar que este relatório pericial aprovado foi enviado ao cliente?')) return;
+      try {
+        const res = await fetch('/api/admin', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'x-admin-key': globalAdminSecret },
+          body: JSON.stringify({
+            action: 'marcar_relatorio_enviado',
+            relatorio_id: relatorioId
+          })
+        });
+        if (!res.ok) {
+          const errData = await res.json().catch(() => ({}));
+          throw new Error(errData.error || await res.text());
+        }
+        showToast('Relatório registado como enviado ao cliente!');
+        await loadDashboardData();
+        if (currentEmpresaDetalheId) verEmpresa(currentEmpresaDetalheId);
+      } catch (err) {
+        alert('Erro ao marcar relatório como enviado: ' + err.message);
+      }
+    }
+
     let relatorioVisualizadoHtml = '';
 
-    function visualizarRelatorio(relatorioId) {
+    async function visualizarRelatorio(relatorioId) {
       const rel = (dashboardState.relatorios || []).find(r => r.id === relatorioId);
       if (!rel) return;
 
       const emp = (dashboardState.empresas || []).find(e => e.id === rel.empresa_id);
       document.getElementById('verRelatorioTitulo').textContent = `${emp ? emp.nome : 'Empresa'} — ${rel.mes}/${rel.ano}`;
       document.getElementById('verRelatorioHash').textContent = `SHA-256: ${rel.hash_sha256}`;
-      relatorioVisualizadoHtml = rel.html || '<div style="color: #000; padding: 20px;">Relatório sem conteúdo HTML.</div>';
+
+      let htmlDoc = rel.html;
+      if (!htmlDoc) {
+        try {
+          const res = await fetch('/api/admin', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'x-admin-key': globalAdminSecret },
+            body: JSON.stringify({ action: 'obter_relatorio_html', relatorio_id: relatorioId })
+          });
+          if (res.ok) {
+            const data = await res.json();
+            htmlDoc = data.html;
+            rel.html = htmlDoc;
+          }
+        } catch (_e) {}
+      }
+
+      relatorioVisualizadoHtml = htmlDoc || '<div style="color: #000; padding: 20px;">Relatório sem conteúdo HTML.</div>';
       document.getElementById('verRelatorioConteudo').innerHTML = relatorioVisualizadoHtml;
       document.getElementById('verRelatorioModal').style.display = 'flex';
     }
@@ -3462,9 +4167,109 @@ Zap, Quem É?`;
       showToast('Texto do alerta copiado com sucesso!');
     }
 
-    // MODAL DETALHE DO RADAR (Seção 21)
-    function abrirDetalheRadar(empresaId) {
-      const radarRow = (dashboardState.radar || []).find(r => r.empresa_id === empresaId);
+    // PACOTE FORENSE DE TAKEDOWN & NOTIFICAÇÃO (SIBS / CERT.PT / SEGURADORAS / DECO)
+    async function abrirPacoteTakedown(marca, empresaId) {
+      try {
+        const res = await fetch('/api/admin', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'x-admin-key': globalAdminSecret },
+          body: JSON.stringify({
+            action: 'gerar_pacote_takedown',
+            marca,
+            empresa_id: empresaId || undefined
+          })
+        });
+        if (!res.ok) {
+          const errData = await res.json().catch(() => ({}));
+          throw new Error(errData.error || await res.text());
+        }
+        const data = await res.json();
+        const pct = data.pacote || {};
+        document.getElementById('takedownAssuntoInput').value = pct.assunto || '';
+        document.getElementById('takedownCorpoTextarea').value = pct.corpo_forense || '';
+        document.getElementById('takedownHashBadge').textContent = `SHA-256: ${(pct.hash_evidencia || '').slice(0, 16)}...`;
+        if (Array.isArray(pct.destinatarios_sugeridos) && pct.destinatarios_sugeridos.length) {
+          document.getElementById('takedownDestinatariosSub').textContent = `Destinatários sugeridos: ${pct.destinatarios_sugeridos.join(' • ')}`;
+        }
+        document.getElementById('pacoteTakedownModal').style.display = 'flex';
+      } catch (err) {
+        alert('Erro ao gerar pacote forense de takedown: ' + err.message);
+      }
+    }
+
+    function copiarTakedownAssunto() {
+      const val = document.getElementById('takedownAssuntoInput').value;
+      navigator.clipboard.writeText(val);
+      showToast('Assunto do Takedown copiado!');
+    }
+
+    function copiarTakedownCorpo() {
+      const val = document.getElementById('takedownCorpoTextarea').value;
+      navigator.clipboard.writeText(val);
+      showToast('Pacote forense de Takedown copiado com sucesso!');
+    }
+
+    async function converterMarcaRadarEmLead(marca) {
+      if (!confirm(`Deseja converter a marca "${marca}" detetada no Shadow Radar numa Lead Comercial do funil B2B?`)) return;
+      try {
+        const res = await fetch('/api/admin', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'x-admin-key': globalAdminSecret },
+          body: JSON.stringify({
+            action: 'converter_marca_lead',
+            marca
+          })
+        });
+        if (!res.ok) {
+          const errData = await res.json().catch(() => ({}));
+          throw new Error(errData.error || await res.text());
+        }
+        const data = await res.json();
+        showToast(data.ja_existia ? `A marca "${marca}" já se encontra no funil.` : `Lead "${marca}" criada com sucesso no funil comercial!`);
+        await loadDashboardData();
+      } catch (err) {
+        alert('Erro ao converter marca em lead: ' + err.message);
+      }
+    }
+
+    function exportarIocsFinanceirosCSV() {
+      const iocs = dashboardState.radar_intel?.iocs_financeiros || [];
+      if (!iocs.length) {
+        alert('Não existem IOCs financeiros ou domínios catalogados para exportar no momento.');
+        return;
+      }
+      const headers = ['Tipo_IOC', 'Valor', 'Marca_Alvo', 'Setor', 'Tatica_Detetada', 'Ocorrencias', 'Primeira_Deteccao', 'Ultima_Deteccao'];
+      const linhas = [headers.join(',')];
+      iocs.forEach(i => {
+        const row = [
+          `"${(i.tipo || '').replace(/"/g, '""')}"`,
+          `"${(i.valor || '').replace(/"/g, '""')}"`,
+          `"${(i.marca || '').replace(/"/g, '""')}"`,
+          `"${(i.setor || '').replace(/"/g, '""')}"`,
+          `"${(i.tatica_nome || '').replace(/"/g, '""')}"`,
+          i.ocorrencias || 1,
+          `"${i.primeira_deteccao || ''}"`,
+          `"${i.ultima_deteccao || ''}"`
+        ];
+        linhas.push(row.join(','));
+      });
+      const blob = new Blob([linhas.join('\n')], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `zapcamoes-feed-iocs-sibs-certpt-${new Date().toISOString().slice(0, 10)}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      showToast('Feed CSV de IOCs exportado com sucesso!');
+    }
+
+    // MODAL DETALHE DO RADAR (Seção 21 + Shadow Radar)
+    function abrirDetalheRadar(empresaId, marcaNome) {
+      const shadowList = dashboardState.radar_intel?.shadow_radar || [];
+      const radarRow = (empresaId && (dashboardState.radar || []).find(r => r.empresa_id === empresaId))
+        || shadowList.find(r => (empresaId && r.empresa_id === empresaId) || (marcaNome && r.empresa === marcaNome));
       if (!radarRow) return;
 
       document.getElementById('radarEmpresaNome').textContent = radarRow.empresa;
@@ -3473,13 +4278,26 @@ Zap, Quem É?`;
       document.getElementById('radarPrimeira').textContent = radarRow.primeira_deteccao ? new Date(radarRow.primeira_deteccao).toLocaleString('pt-PT') : '-';
       document.getElementById('radarUltima').textContent = radarRow.ultima_deteccao ? new Date(radarRow.ultima_deteccao).toLocaleString('pt-PT') : '-';
 
-      const empOcorrencias = (dashboardState.ocorrencias || []).filter(o => o.empresa_id === empresaId);
+      const empOcorrencias = (dashboardState.ocorrencias || []).filter(o =>
+        (empresaId && o.empresa_id === empresaId) ||
+        (marcaNome && (o.empresa === marcaNome || o.marca === marcaNome))
+      );
+      const sinaisExternos = !empOcorrencias.length && marcaNome
+        ? (dashboardState.sinais_impersonation || []).filter(s => (s.marca || '').toLowerCase() === marcaNome.toLowerCase())
+        : [];
+      const lista = empOcorrencias.length ? empOcorrencias : sinaisExternos.map(s => ({
+        criado_em: s.data,
+        canal_mencionado: s.canal,
+        veredito: 'suspeita',
+        confianca: 80
+      }));
+
       const tbody = document.getElementById('radarOcorrenciasTable');
 
-      if (!empOcorrencias.length) {
+      if (!lista.length) {
         tbody.innerHTML = '<tr><td colspan="4" style="text-align: center; color: var(--text-muted); padding: 15px;">Nenhuma ocorrência detalhada encontrada.</td></tr>';
       } else {
-        tbody.innerHTML = empOcorrencias.map(o => `
+        tbody.innerHTML = lista.map(o => `
           <tr>
             <td style="font-size: 0.85rem; color: var(--text-muted);">${o.criado_em ? new Date(o.criado_em).toLocaleDateString('pt-PT') : '-'}</td>
             <td style="font-family: 'JetBrains Mono', monospace; font-size: 0.85rem;">${escapeHtml(o.canal_mencionado || '–')}</td>
@@ -3501,24 +4319,46 @@ Zap, Quem É?`;
       document.getElementById('newSeloModal').style.display = 'flex';
     }
 
-    async function handleCreateSelo(e) {
-      e.preventDefault();
+    async function handleCreateSelo(e, forcarDuplicado = false, motivoDup = null) {
+      if (e && e.preventDefault) e.preventDefault();
       const empresa_id = document.getElementById('seloEmpresaSelect').value;
       const validadeVal = document.getElementById('seloValidade').value;
       const monitorizacao = document.getElementById('seloMonitorizacao').checked;
+      const is_teste = document.getElementById('seloIsTeste')?.checked || false;
 
       try {
+        const payload = {
+          action: 'create_selo',
+          empresa_id,
+          valido_ate: validadeVal ? new Date(validadeVal).toISOString() : null,
+          monitorizacao_impersonation: monitorizacao,
+          is_teste
+        };
+        if (forcarDuplicado) {
+          payload.forcar_duplicado = true;
+          payload.motivo = motivoDup;
+        }
+
         const res = await fetch('/api/admin', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', 'x-admin-key': globalAdminSecret },
-          body: JSON.stringify({
-            action: 'create_selo',
-            empresa_id,
-            valido_ate: validadeVal ? new Date(validadeVal).toISOString() : null,
-            monitorizacao_impersonation: monitorizacao
-          })
+          body: JSON.stringify(payload)
         });
-        if (!res.ok) throw new Error(await res.text());
+
+        if (!res.ok) {
+          const errData = await res.json().catch(() => null);
+          if (errData && errData.requer_confirmacao) {
+            const motivo = prompt('⚠️ ' + errData.error + '\n\nIndique a justificação/motivo para criar este selo ativo adicional:');
+            if (motivo && motivo.trim().length >= 4) {
+              return handleCreateSelo(null, true, motivo.trim());
+            } else {
+              alert('Criação cancelada. É necessária uma justificação escrita com pelo menos 4 caracteres.');
+              return;
+            }
+          }
+          throw new Error(errData?.error || (await res.text()));
+        }
+
         const data = await res.json();
         closeModals();
         await loadDashboardData();
@@ -3552,15 +4392,23 @@ Zap, Quem É?`;
     }
 
     async function regenerarSelo(selo_id) {
-      if (!confirm('Deseja gerar um novo código aleatório para este selo? O código anterior deixará de funcionar.')) return;
+      const motivo = prompt('ATENÇÃO: Ao regenerar este selo, o código anterior DEIXA DE FUNCIONAR imediatamente e passará a ser exibido como inválido na página pública.\n\nIndique o motivo da regeneração (para registo no histórico de auditoria):');
+      if (!motivo || motivo.trim().length < 3) {
+        if (motivo !== null) alert('É obrigatório indicar o motivo por escrito para regenerar o selo.');
+        return;
+      }
+
       try {
         const res = await fetch('/api/admin', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', 'x-admin-key': globalAdminSecret },
-          body: JSON.stringify({ action: 'regenerar_selo', selo_id })
+          body: JSON.stringify({ action: 'regenerar_selo', selo_id, motivo: motivo.trim() })
         });
-        if (!res.ok) throw new Error(await res.text());
-        showToast('Selo regenerado com novo código de alta entropia!');
+        if (!res.ok) {
+          const errData = await res.json().catch(() => null);
+          throw new Error(errData?.error || (await res.text()));
+        }
+        showToast('Selo regenerado com novo código de alta entropia! O código anterior foi desativado.');
         loadDashboardData();
       } catch (err) {
         alert('Erro ao regenerar selo: ' + err.message);
@@ -3568,18 +4416,353 @@ Zap, Quem É?`;
     }
 
     async function excluirSelo(selo_id) {
-      if (!confirm('Tem a certeza que deseja remover este selo?')) return;
+      const motivo = prompt('ATENÇÃO: A remoção de um selo realiza um arquivamento seguro (soft delete) com registo no histórico de auditoria.\n\nIndique o motivo do arquivamento deste selo:');
+      if (!motivo || motivo.trim().length < 3) {
+        if (motivo !== null) alert('É obrigatório indicar o motivo por escrito para arquivar o selo.');
+        return;
+      }
+
       try {
         const res = await fetch('/api/admin', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json', 'x-admin-key': globalAdminSecret },
-          body: JSON.stringify({ action: 'delete_selo', selo_id })
+          body: JSON.stringify({ action: 'archive_selo', selo_id, motivo: motivo.trim() })
         });
-        if (!res.ok) throw new Error(await res.text());
-        showToast('Selo removido com sucesso.');
+        if (!res.ok) {
+          const errData = await res.json().catch(() => null);
+          throw new Error(errData?.error || (await res.text()));
+        }
+        showToast('Selo arquivado com sucesso (soft-delete registado no histórico).');
         loadDashboardData();
       } catch (err) {
-        alert('Erro ao remover selo: ' + err.message);
+        alert('Erro ao arquivar selo: ' + err.message);
+      }
+    }
+
+    // =========================================================================
+    // TAB 7: MÓDULO DE ACOMPANHAMENTO DE GOLPES NOVOS — FASE 1 (Fila & Grupos)
+    // =========================================================================
+    function formatMotivoFilaBadge(motivo) {
+      const map = {
+        possivel_campanha: { label: '🧩 Possível campanha (≥3 / 24h)', bg: 'rgba(245, 158, 11, 0.18)', color: '#fbbf24', border: 'rgba(245, 158, 11, 0.45)' },
+        feedback_erro:     { label: '🚨 Resposta "ERRO" do utilizador', bg: 'rgba(239, 68, 68, 0.18)', color: '#f87171', border: 'rgba(239, 68, 68, 0.45)' },
+        ia_vs_regra:       { label: '⚖️ Discordância IA vs. Regra', bg: 'rgba(168, 85, 247, 0.18)', color: '#c084fc', border: 'rgba(168, 85, 247, 0.45)' },
+        suspeito:          { label: '⚠️ Veredito "Suspeito"', bg: 'rgba(251, 191, 36, 0.15)', color: '#fde047', border: 'rgba(251, 191, 36, 0.35)' },
+        confianca_baixa:   { label: '📉 Confiança baixa (< 75)', bg: 'rgba(56, 189, 248, 0.15)', color: '#38bdf8', border: 'rgba(56, 189, 248, 0.35)' }
+      };
+      const m = map[motivo] || { label: motivo || 'Revisão', bg: 'rgba(148,163,184,0.15)', color: '#cbd5e1', border: 'rgba(148,163,184,0.3)' };
+      return `<span style="display:inline-block; background:${m.bg}; color:${m.color}; border:1px solid ${m.border}; border-radius:6px; padding:3px 8px; font-size:0.74rem; font-weight:700;">${escapeHtml(m.label)}</span>`;
+    }
+
+    function formatEstadoClusterBadge(estado) {
+      const map = {
+        possivel_campanha: { label: '● Possível campanha', bg: 'rgba(245, 158, 11, 0.16)', color: '#fbbf24', border: 'rgba(245, 158, 11, 0.4)' },
+        ativa:             { label: '● Campanha ativa (revista)', bg: 'rgba(239, 68, 68, 0.16)', color: '#f87171', border: 'rgba(239, 68, 68, 0.4)' },
+        encerrada:         { label: '● Encerrada', bg: 'rgba(148, 163, 184, 0.15)', color: '#94a3b8', border: 'rgba(148, 163, 184, 0.3)' },
+        descartada:        { label: '● Descartada (falso alarme)', bg: 'rgba(16, 185, 129, 0.14)', color: '#34d399', border: 'rgba(16, 185, 129, 0.3)' }
+      };
+      const e = map[estado] || map.possivel_campanha;
+      return `<span style="display:inline-block; background:${e.bg}; color:${e.color}; border:1px solid ${e.border}; border-radius:999px; padding:3px 10px; font-size:0.74rem; font-weight:700;">${escapeHtml(e.label)}</span>`;
+    }
+
+    function formatDecisaoFilaBadge(decisao) {
+      if (!decisao) return '<span style="color: var(--text-muted); font-size: 0.78rem;">Aguarda decisão</span>';
+      const map = {
+        esquema_novo: { label: '🆕 Esquema novo', color: '#fbbf24' },
+        marca_nova:   { label: '🏷️ Marca nova', color: '#38bdf8' },
+        falso_alarme: { label: '✅ Falso alarme', color: '#34d399' },
+        sem_acao:     { label: '📁 Sem ação', color: '#94a3b8' }
+      };
+      const d = map[decisao] || { label: decisao, color: '#cbd5e1' };
+      return `<span style="color:${d.color}; font-weight:700; font-size:0.8rem;">${escapeHtml(d.label)}</span>`;
+    }
+
+    function renderGolpesNovos() {
+      if (!dashboardState) return;
+      const clusters = Array.isArray(dashboardState.clusters) ? dashboardState.clusters : [];
+      const fila = Array.isArray(dashboardState.fila_revisao) ? dashboardState.fila_revisao : [];
+      const resumo = dashboardState.golpes_novos_resumo || {};
+
+      const pendentesCount = typeof resumo.fila_pendentes === 'number'
+        ? resumo.fila_pendentes
+        : fila.filter(f => f.estado === 'novo' || f.estado === 'em_revisao').length;
+      const possiveisCampanhasCount = typeof resumo.clusters_possivel_campanha === 'number'
+        ? resumo.clusters_possivel_campanha
+        : clusters.filter(c => c.estado === 'possivel_campanha' && (c.contagem_24h >= 3 || c.contagem >= 3)).length;
+      const ativasCount = typeof resumo.clusters_ativos === 'number'
+        ? resumo.clusters_ativos
+        : clusters.filter(c => c.estado === 'ativa').length;
+      const resolvidosCount = typeof resumo.fila_resolvidos === 'number'
+        ? resumo.fila_resolvidos
+        : fila.filter(f => f.estado === 'resolvido').length;
+
+      const elPend = document.getElementById('gnKpiPendentes');
+      if (elPend) elPend.textContent = pendentesCount;
+      const elPoss = document.getElementById('gnKpiPossiveisCampanhas');
+      if (elPoss) elPoss.textContent = possiveisCampanhasCount;
+      const elAtiv = document.getElementById('gnKpiCampanhasAtivas');
+      if (elAtiv) elAtiv.textContent = ativasCount;
+      const elRes = document.getElementById('gnKpiResolvidos');
+      if (elRes) elRes.textContent = resolvidosCount;
+
+      const badgeSidebar = document.getElementById('badgeFilaPendentes');
+      if (badgeSidebar) {
+        if (pendentesCount > 0) {
+          badgeSidebar.style.display = 'inline-block';
+          badgeSidebar.textContent = pendentesCount;
+        } else {
+          badgeSidebar.style.display = 'none';
+        }
+      }
+
+      // 1. Renderizar tabela de Clusters (Agrupamento de Mensagens Semelhantes)
+      const tbodyClusters = document.getElementById('clustersTableBody');
+      if (tbodyClusters) {
+        const filtroCluster = document.getElementById('gnFilterClusterEstado')?.value || 'todos';
+        // Mostra possíveis campanhas (>= 3 em 24h ou >= 2 ocorrências agrupadas)
+        const clustersFiltrados = clusters.filter(c => {
+          if (filtroCluster !== 'todos' && c.estado !== filtroCluster) return false;
+          return true;
+        });
+
+        if (!clustersFiltrados.length) {
+          tbodyClusters.innerHTML = '<tr><td colspan="6" style="text-align: center; color: var(--text-muted); padding: 28px;">Nenhum grupo encontrado para o filtro selecionado.</td></tr>';
+        } else {
+          tbodyClusters.innerHTML = clustersFiltrados.map(c => {
+            const ind = c.indicadores || {};
+            const indBadges = [];
+            if (ind.marca) indBadges.push(`<span style="background:rgba(59,130,246,0.18); color:#93c5fd; padding:2px 7px; border-radius:4px; font-size:0.73rem; font-weight:700;">Marca: ${escapeHtml(ind.marca)}</span>`);
+            if (ind.dominio) indBadges.push(`<span style="background:rgba(239,68,68,0.16); color:#fca5a5; padding:2px 7px; border-radius:4px; font-size:0.73rem; font-family:'JetBrains Mono',monospace;">Domínio: ${escapeHtml(ind.dominio)}</span>`);
+            if (ind.entidade_mb) indBadges.push(`<span style="background:rgba(245,158,11,0.16); color:#fcd34d; padding:2px 7px; border-radius:4px; font-size:0.73rem; font-family:'JetBrains Mono',monospace;">Entidade MB: ${escapeHtml(ind.entidade_mb)}</span>`);
+            if (ind.tatica) indBadges.push(`<span style="background:rgba(148,163,184,0.16); color:#cbd5e1; padding:2px 7px; border-radius:4px; font-size:0.73rem;">Sinal: ${escapeHtml(ind.tatica)}</span>`);
+
+            const primStr = c.primeira_vez ? new Date(c.primeira_vez).toLocaleString('pt-PT') : '-';
+            const ultStr = c.ultima_vez ? new Date(c.ultima_vez).toLocaleString('pt-PT') : '-';
+            const vel = typeof c.velocidade_por_hora === 'number' ? c.velocidade_por_hora.toFixed(2) : '0.00';
+            const isPossivelCampanha24h = (c.contagem_24h || 0) >= 3;
+
+            return `
+              <tr>
+                <td>
+                  <div style="font-family: 'JetBrains Mono', monospace; font-size: 0.78rem; color: #38bdf8; font-weight: 700;">${escapeHtml(c.fingerprint)}</div>
+                  <div style="display: flex; gap: 6px; flex-wrap: wrap; margin-top: 6px;">
+                    ${indBadges.length ? indBadges.join('') : '<span style="color:var(--text-muted); font-size:0.75rem;">Sem indicadores adicionais</span>'}
+                  </div>
+                </td>
+                <td style="font-size: 0.78rem; color: var(--text-muted);">
+                  <div><strong>1.ª:</strong> ${escapeHtml(primStr)}</div>
+                  <div style="margin-top: 2px;"><strong>Últ.:</strong> ${escapeHtml(ultStr)}</div>
+                </td>
+                <td>
+                  <div style="font-weight: 700; color: #fff; font-size: 0.9rem;">
+                    ${c.contagem || 1} ocorrências <span style="font-size: 0.76rem; color: ${isPossivelCampanha24h ? '#fbbf24' : 'var(--text-muted)'};">(${c.contagem_24h || 0} nas últimas 24 h)</span>
+                  </div>
+                  <div style="font-size: 0.75rem; color: #94a3b8; margin-top: 2px;">
+                    Velocidade: <strong>${vel} ocorr./hora</strong>
+                  </div>
+                </td>
+                <td>${formatEstadoClusterBadge(c.estado)}</td>
+                <td style="font-size: 0.78rem; color: var(--text-muted);">
+                  ${c.revisor ? `<strong>${escapeHtml(c.revisor)}</strong>` : '<em>Automático (sem decisão humana)</em>'}
+                </td>
+                <td>
+                  <div style="display: flex; gap: 6px; flex-wrap: wrap;">
+                    ${c.estado !== 'ativa' ? `<button onclick="decidirEstadoCluster('${escapeHtml(c.id)}', 'ativa')" class="btn-xs" style="background: rgba(239, 68, 68, 0.2); border-color: rgba(239, 68, 68, 0.45); color: #fca5a5;">Ativar Campanha</button>` : ''}
+                    ${c.estado !== 'encerrada' ? `<button onclick="decidirEstadoCluster('${escapeHtml(c.id)}', 'encerrada')" class="btn-xs">Encerrar</button>` : ''}
+                    ${c.estado !== 'descartada' ? `<button onclick="decidirEstadoCluster('${escapeHtml(c.id)}', 'descartada')" class="btn-xs" style="color: #94a3b8;">Descartar</button>` : ''}
+                  </div>
+                </td>
+              </tr>
+            `;
+          }).join('');
+        }
+      }
+
+      // 2. Renderizar tabela da Fila de Revisão Humana
+      const tbodyFila = document.getElementById('filaRevisaoTableBody');
+      if (tbodyFila) {
+        const filtroEstado = document.getElementById('gnFilterFilaEstado')?.value || 'pendentes';
+        const filtroMotivo = document.getElementById('gnFilterFilaMotivo')?.value || 'todos';
+
+        const filaFiltrada = fila.filter(item => {
+          if (filtroEstado === 'pendentes' && item.estado === 'resolvido') return false;
+          if (filtroEstado !== 'pendentes' && filtroEstado !== 'todos' && item.estado !== filtroEstado) return false;
+          if (filtroMotivo !== 'todos' && item.motivo !== filtroMotivo) return false;
+          return true;
+        });
+
+        if (!filaFiltrada.length) {
+          tbodyFila.innerHTML = '<tr><td colspan="7" style="text-align: center; color: var(--text-muted); padding: 28px;">Nenhum caso na fila de revisão para os filtros selecionados.</td></tr>';
+        } else {
+          tbodyFila.innerHTML = filaFiltrada.map(item => {
+            const res = item.resumo || {};
+            const dataStr = item.criado_em ? new Date(item.criado_em).toLocaleString('pt-PT') : '-';
+            const sinaisList = Array.isArray(res.sinais) ? res.sinais : [];
+            const ind = res.indicadores || {};
+            const todosMotivos = Array.isArray(res.todos_motivos) && res.todos_motivos.length > 1
+              ? `<div style="margin-top:4px; font-size:0.7rem; color:var(--text-muted);">Outros sinais: ${res.todos_motivos.map(m => escapeHtml(m)).join(', ')}</div>`
+              : '';
+
+            return `
+              <tr>
+                <td>
+                  <div style="font-family: 'JetBrains Mono', monospace; font-size: 0.76rem; color: #cbd5e1; font-weight: 700;">${escapeHtml(item.analise_ref)}</div>
+                  <div style="font-size: 0.74rem; color: var(--text-muted); margin-top: 2px;">${escapeHtml(dataStr)}</div>
+                </td>
+                <td>
+                  ${formatMotivoFilaBadge(item.motivo)}
+                  ${todosMotivos}
+                </td>
+                <td style="font-size: 0.8rem;">
+                  <div>
+                    <strong style="color: #fff;">Marca:</strong> ${escapeHtml(res.marca || 'Não identificada')}
+                    · <strong style="color: #fff;">Tipo:</strong> ${escapeHtml(res.tipo || 'indefinido')}
+                    · <strong style="color: #fff;">Canal:</strong> ${escapeHtml(res.canal || 'whatsapp')}
+                  </div>
+                  ${(ind.dominio || ind.entidade_mb) ? `
+                    <div style="margin-top: 4px; font-family: 'JetBrains Mono', monospace; font-size: 0.74rem; color: #93c5fd;">
+                      ${ind.dominio ? `Domínio: ${escapeHtml(ind.dominio)} ` : ''}
+                      ${ind.entidade_mb ? `| Entidade MB: ${escapeHtml(ind.entidade_mb)}` : ''}
+                    </div>
+                  ` : ''}
+                  ${sinaisList.length ? `
+                    <div style="margin-top: 4px; color: var(--text-muted); font-size: 0.74rem;">
+                      Sinais: ${sinaisList.map(s => `<code style="background:rgba(255,255,255,0.06); padding:1px 5px; border-radius:4px;">${escapeHtml(s)}</code>`).join(' ')}
+                    </div>
+                  ` : ''}
+                  ${item.notas ? `<div style="margin-top: 5px; font-size: 0.75rem; color: #fcd34d;">📝 Nota: ${escapeHtml(item.notas)}</div>` : ''}
+                </td>
+                <td>
+                  <div style="font-weight: 700; color: #fff; font-size: 0.82rem; text-transform: uppercase;">${escapeHtml(res.veredito || 'suspeito')}</div>
+                  <div style="font-size: 0.75rem; color: var(--text-muted);">Pontuação: <strong>${res.pontuacao ?? '-'}</strong>/100</div>
+                  <div style="font-size: 0.72rem; color: #94a3b8;">Origem: ${escapeHtml(res.origem_veredito || 'motor')}</div>
+                </td>
+                <td style="font-family: 'JetBrains Mono', monospace; font-size: 0.74rem; color: #38bdf8;">
+                  ${item.cluster_id ? escapeHtml(item.cluster_id) : '<span style="color:var(--text-muted);">-</span>'}
+                </td>
+                <td>
+                  <div>${formatDecisaoFilaBadge(item.decisao)}</div>
+                  ${item.revisor ? `<div style="font-size: 0.72rem; color: var(--text-muted); margin-top: 2px;">por ${escapeHtml(item.revisor)}</div>` : ''}
+                </td>
+                <td>
+                  <button onclick="abrirModalDecisaoFila('${escapeHtml(item.id)}')" class="btn-xs btn-xs-primary">
+                    ${item.estado === 'resolvido' ? '✏️ Alterar Decisão' : '⚖️ Decidir'}
+                  </button>
+                </td>
+              </tr>
+            `;
+          }).join('');
+        }
+      }
+    }
+
+    function abrirModalDecisaoFila(itemId) {
+      if (!dashboardState || !Array.isArray(dashboardState.fila_revisao)) return;
+      const item = dashboardState.fila_revisao.find(x => x.id === itemId);
+      if (!item) return;
+
+      document.getElementById('decidirFilaItemId').value = item.id;
+      document.getElementById('decidirFilaDecisao').value = item.decisao || '';
+      document.getElementById('decidirFilaNotas').value = item.notas || '';
+
+      const res = item.resumo || {};
+      const ind = res.indicadores || {};
+      document.getElementById('decidirFilaMarcaSugerida').value = (res.marca && res.marca !== 'Marca não identificada') ? res.marca : '';
+      document.getElementById('decidirFilaDominioSugerido').value = ind.dominio || '';
+      document.getElementById('decidirFilaNomeEsquema').value = '';
+
+      const boxResumo = document.getElementById('decidirFilaResumoBox');
+      if (boxResumo) {
+        boxResumo.innerHTML = `
+          <div><strong>Ref. Anonimizada:</strong> <code>${escapeHtml(item.analise_ref)}</code> · <strong>Motivo:</strong> ${escapeHtml(item.motivo)}</div>
+          <div style="margin-top:4px;"><strong>Marca observada:</strong> ${escapeHtml(res.marca || 'Não identificada')} · <strong>Tipo:</strong> ${escapeHtml(res.tipo || '-')} · <strong>Pontuação:</strong> ${res.pontuacao ?? '-'}/100</div>
+          ${ind.dominio ? `<div style="margin-top:2px;"><strong>Domínio técnico:</strong> <code>${escapeHtml(ind.dominio)}</code></div>` : ''}
+          <div style="margin-top:4px; color: #34d399; font-size: 0.74rem;">🔒 Nenhum texto bruto da mensagem foi guardado (cumprimento integral de privacidade).</div>
+        `;
+      }
+
+      atualizarCamposExtrasDecisaoFila();
+      document.getElementById('decidirFilaModal').style.display = 'flex';
+    }
+
+    function atualizarCamposExtrasDecisaoFila() {
+      const dec = document.getElementById('decidirFilaDecisao')?.value || '';
+      const boxMarca = document.getElementById('boxExtrasMarcaNova');
+      const boxEsquema = document.getElementById('boxExtrasEsquemaNovo');
+      if (boxMarca) boxMarca.style.display = dec === 'marca_nova' ? 'block' : 'none';
+      if (boxEsquema) boxEsquema.style.display = dec === 'esquema_novo' ? 'block' : 'none';
+    }
+
+    async function submeterDecisaoFila(event) {
+      if (event) event.preventDefault();
+      const item_id = document.getElementById('decidirFilaItemId').value;
+      const decisao = document.getElementById('decidirFilaDecisao').value;
+      const revisor = document.getElementById('decidirFilaRevisor').value.trim();
+      const notas = document.getElementById('decidirFilaNotas').value.trim();
+      const marca_sugerida = document.getElementById('decidirFilaMarcaSugerida').value.trim();
+      const dominio_sugerido = document.getElementById('decidirFilaDominioSugerido').value.trim();
+      const nome_esquema = document.getElementById('decidirFilaNomeEsquema').value.trim();
+
+      if (!item_id || !decisao || !revisor) {
+        alert('Selecione uma decisão e indique o nome do revisor.');
+        return;
+      }
+
+      try {
+        const res = await fetch('/api/admin', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'x-admin-key': globalAdminSecret },
+          body: JSON.stringify({
+            action: 'decidir_fila_revisao',
+            item_id,
+            decisao,
+            revisor,
+            notas,
+            marca_sugerida,
+            dominio_sugerido,
+            nome_esquema
+          })
+        });
+        if (!res.ok) {
+          const errData = await res.json().catch(() => null);
+          throw new Error(errData?.error || (await res.text()));
+        }
+        closeModals();
+        showToast('Decisão humana registada com sucesso!');
+        await loadDashboardData();
+      } catch (err) {
+        alert('Erro ao guardar decisão: ' + err.message);
+      }
+    }
+
+    async function decidirEstadoCluster(cluster_id, novo_estado) {
+      const labels = {
+        ativa: 'ATIVAR esta possível campanha (confirmando que os sinais justificam acompanhamento ativo)',
+        encerrada: 'ENCERRAR este agrupamento',
+        descartada: 'DESCARTAR este agrupamento como falso alarme'
+      };
+      const revisor = prompt(`Decisão humana sobre o grupo ${cluster_id}:\nVai ${labels[novo_estado] || novo_estado}.\n\nIndique o seu nome/iniciais de revisor:`, 'Operador Admin');
+      if (!revisor || !revisor.trim()) return;
+
+      try {
+        const res = await fetch('/api/admin', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'x-admin-key': globalAdminSecret },
+          body: JSON.stringify({
+            action: 'alterar_estado_cluster',
+            cluster_id,
+            estado: novo_estado,
+            revisor: revisor.trim()
+          })
+        });
+        if (!res.ok) {
+          const errData = await res.json().catch(() => null);
+          throw new Error(errData?.error || (await res.text()));
+        }
+        showToast(`Estado do grupo atualizado para "${novo_estado}" por ${revisor.trim()}.`);
+        await loadDashboardData();
+      } catch (err) {
+        alert('Erro ao atualizar grupo: ' + err.message);
       }
     }
 

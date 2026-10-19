@@ -24,6 +24,8 @@ export function escapeHtml(str) {
  * - Empresa inativa: "⚠️ Verificação inativa"
  */
 export function calcularStatusPublico({ selo, empresa, agora = new Date() }) {
+  const isTeste = !!(selo?.is_teste || empresa?.is_teste);
+  const arquivado = !!(selo?.arquivado_em || empresa?.arquivado_em);
   const dataValidade = empresa?.data_validade || selo?.valido_ate;
   const expirado = dataValidade ? new Date(dataValidade) < agora : false;
   const est = (empresa?.estado || empresa?.status || 'ativo').toLowerCase();
@@ -32,7 +34,11 @@ export function calcularStatusPublico({ selo, empresa, agora = new Date() }) {
   let statusClasse = 'status-valido';
   let statusRaw = 'valido';
 
-  if (selo?.ativo === false) {
+  if (isTeste) {
+    statusPublico = '🧪 Página de teste';
+    statusClasse = 'status-teste';
+    statusRaw = 'teste';
+  } else if (arquivado || selo?.ativo === false) {
     statusPublico = '⚠️ Verificação inativa';
     statusClasse = 'status-inativo';
     statusRaw = 'inativo';
@@ -54,7 +60,7 @@ export function calcularStatusPublico({ selo, empresa, agora = new Date() }) {
     statusRaw = 'inativo';
   }
 
-  return { statusPublico, statusClasse, statusRaw, expirado };
+  return { statusPublico, statusClasse, statusRaw, expirado, isTeste, arquivado };
 }
 
 export default async function handler(req, res) {
@@ -134,12 +140,14 @@ export default async function handler(req, res) {
 
     // Se solicitado formato JSON
     if (req.headers.accept?.includes('application/json') || req.query.format === 'json') {
+      const isTeste = !!(selo.is_teste || empresa.is_teste);
       return res.status(200).json({
         selo: {
           codigo: selo.codigo,
           tipo: selo.tipo,
           valido_ate: selo.valido_ate,
-          criado_em: selo.criado_em
+          criado_em: selo.criado_em,
+          is_teste: isTeste
         },
         empresa: {
           nome: empresa.nome,
@@ -153,11 +161,13 @@ export default async function handler(req, res) {
           nif: empresa.nif || null,
           nif_verificado: !!empresa.nif_verificado,
           iban: empresa.iban_verificado ? (empresa.iban || null) : null,
-          iban_verificado: !!empresa.iban_verificado
+          iban_verificado: !!empresa.iban_verificado,
+          is_teste: isTeste
         },
         status_publico: statusPublico,
         status_raw: statusRaw,
-        valido: statusRaw === 'valido'
+        valido: !isTeste && statusRaw === 'valido',
+        is_teste: isTeste
       });
     }
 
@@ -417,6 +427,12 @@ export function renderVerifyHtml({ selo, empresa, statusPublico, statusClasse })
       color: #fbbf24;
       border: 1px solid rgba(245, 158, 11, 0.4);
     }
+    .status-teste {
+      background: rgba(245, 158, 11, 0.2);
+      color: #fbbf24;
+      border: 1px solid #f59e0b;
+      box-shadow: 0 0 12px rgba(245, 158, 11, 0.2);
+    }
     .section-title {
       font-size: 0.8rem;
       font-weight: 800;
@@ -549,6 +565,10 @@ export function renderVerifyHtml({ selo, empresa, statusPublico, statusClasse })
     </div>
 
     <article class="cert-card">
+      ${(selo.is_teste || empresa.is_teste) ? `
+      <div style="background: rgba(245, 158, 11, 0.15); border: 1px solid #f59e0b; color: #fbbf24; padding: 12px 16px; border-radius: 10px; margin-bottom: 24px; text-align: center; font-weight: 700; font-size: 0.9rem;">
+        🧪 PÁGINA DE TESTE — Esta entidade é fictícia e destina-se estritamente a demonstração interna.
+      </div>` : ''}
       <div class="cert-header">
         <div style="display: flex; justify-content: center; margin-bottom: 16px;">
           <img src="/badges/badge-principal.png" alt="ZAP VERIFIED Selo Oficial" style="width: 140px; height: auto; filter: drop-shadow(0 10px 20px rgba(0, 0, 0, 0.5)); border-radius: 8px;" />

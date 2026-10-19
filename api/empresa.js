@@ -1,6 +1,8 @@
 // api/empresa.js — API Pública de Consulta de Empresas e Selos ZAP VERIFIED
 // Suporta consultas por ?codigo= (ZQV-...), ?dominio= ou ?slug=
 
+import crypto from 'node:crypto';
+
 export default async function handler(req, res) {
   // CORS para permitir widgets em websites e e-commerces clientes
   res.setHeader('Access-Control-Allow-Origin', '*');
@@ -54,7 +56,8 @@ export default async function handler(req, res) {
         const emp = selo.empresas || {};
         const agora = new Date();
         const expirado = selo.valido_ate ? new Date(selo.valido_ate) < agora : false;
-        const seloValido = selo.ativo !== false && emp.status === 'ativo' && !expirado;
+        const isTeste = !!(emp.is_teste || selo.is_teste);
+        const seloValido = !isTeste && selo.ativo !== false && emp.status === 'ativo' && !expirado;
 
         return res.status(200).json({
           id: emp.id || null,
@@ -66,9 +69,10 @@ export default async function handler(req, res) {
           dominio_verificado: !!emp.dominio_verificado,
           email_verificado: !!emp.email_verificado,
           telefone_verificado: !!emp.telefone_verificado,
-          status: emp.status || 'inativo',
+          status: isTeste ? 'teste' : (emp.status || 'inativo'),
           valido_ate: selo.valido_ate || null,
-          selo_valido: seloValido
+          selo_valido: seloValido,
+          is_teste: isTeste
         });
       }
 
@@ -95,7 +99,8 @@ export default async function handler(req, res) {
 
       const agora = new Date();
       const expirado = selo?.valido_ate ? new Date(selo.valido_ate) < agora : false;
-      const seloValido = !!selo && selo.ativo !== false && emp.status === 'ativo' && !expirado;
+      const isTeste = !!(emp.is_teste || selo?.is_teste);
+      const seloValido = !isTeste && !!selo && selo.ativo !== false && emp.status === 'ativo' && !expirado;
 
       return res.status(200).json({
         id: emp.id,
@@ -107,9 +112,10 @@ export default async function handler(req, res) {
         dominio_verificado: !!emp.dominio_verificado,
         email_verificado: !!emp.email_verificado,
         telefone_verificado: !!emp.telefone_verificado,
-        status: emp.status,
+        status: isTeste ? 'teste' : emp.status,
         valido_ate: selo?.valido_ate || null,
-        selo_valido: seloValido
+        selo_valido: seloValido,
+        is_teste: isTeste
       });
 
     } catch (err) {

@@ -2,18 +2,32 @@
 // Especificação Fechada ZAP, QUEM É? — B2B
 // Seções 6, 7, 8, 19, 20, 21
 
-import { gerarCodigoSelo } from '../lib/radar.js';
+import {
+  gerarCodigoSelo,
+  compilarIntelligenceRadar,
+  gerarPacoteTakedown
+} from '../lib/radar.js';
 import {
   limparTextoVitima,
   estruturarRelatorioMensal,
   renderRelatorioHtml
 } from '../lib/report_generator.js';
+import {
+  compilarEstadoFase1,
+  aplicarDecisaoHumanaFila,
+  aplicarDecisaoHumanaCluster,
+  criarItemFilaRevisao,
+  agruparEventosEmClusters,
+  getMemoriaGolpesNovos,
+  sanitizarCampoAnonimizado
+} from '../lib/golpes_novos.js';
 
-// Campos de verificação comercial e CRM (migração 20261016 e 20261015).
+// Campos de verificação comercial e CRM (migração 20261016, 20261015 e 20261019).
 const CAMPOS_VERIFICACAO = [
   'nif', 'nif_verificado', 'iban', 'iban_verificado', 'verificacao_notas', 'verificado_em',
   'nome_legal', 'nome_comercial', 'email_contacto', 'representante_nome', 'representante_cargo',
-  'plano', 'estado', 'codigo_selo', 'data_emissao', 'data_validade', 'preco_acordado', 'notas', 'marca_aliases'
+  'plano', 'estado', 'codigo_selo', 'data_emissao', 'data_validade', 'preco_acordado', 'notas', 'marca_aliases',
+  'is_teste', 'arquivado_em', 'arquivado_motivo', 'arquivado_por'
 ];
 
 function extrairCamposVerificacao(body) {
@@ -36,13 +50,19 @@ function extrairCamposVerificacao(body) {
   if (body.codigo_selo !== undefined) out.codigo_selo = body.codigo_selo;
   if (body.data_emissao !== undefined) out.data_emissao = body.data_emissao;
   if (body.data_validade !== undefined) out.data_validade = body.data_validade;
-  if (body.preco_acordado !== undefined) out.preco_acordado = Number(body.preco_acordado) || 49.00;
+  if (body.preco_acordado !== undefined) out.preco_acordado = Number(body.preco_acordado) || (body.plano === 'radar' ? 290.00 : 49.00);
   if (body.notas !== undefined) out.notas = body.notas ? String(body.notas).trim() : null;
   if (body.marca_aliases !== undefined) {
     out.marca_aliases = Array.isArray(body.marca_aliases)
       ? body.marca_aliases.map(a => String(a).trim()).filter(Boolean)
       : (typeof body.marca_aliases === 'string' ? body.marca_aliases.split(',').map(a => a.trim()).filter(Boolean) : []);
   }
+
+  // Campos Fase 1 (20261019)
+  if (body.is_teste !== undefined) out.is_teste = !!body.is_teste;
+  if (body.arquivado_em !== undefined) out.arquivado_em = body.arquivado_em;
+  if (body.arquivado_motivo !== undefined) out.arquivado_motivo = body.arquivado_motivo ? String(body.arquivado_motivo).trim() : null;
+  if (body.arquivado_por !== undefined) out.arquivado_por = body.arquivado_por ? String(body.arquivado_por).trim() : null;
 
   return out;
 }
@@ -66,6 +86,74 @@ async function registrarHistorico(supabaseUrl, headers, { empresa_id, acao, ante
   }
 }
 
+async function inicializarQuatroPilares(supabaseUrl, headers, empresa_id) {
+  const pilares = ['nif', 'dominio', 'telefone', 'representante'];
+  try {
+    await fetch(`${supabaseUrl}/rest/v1/verificacoes`, {
+      method: 'POST',
+      headers: { ...headers, Prefer: 'resolution=ignore-duplicates' },
+      body: JSON.stringify(
+        pilares.map(tipo => ({
+          empresa_id,
+          tipo,
+          estado: 'pendente'
+        }))
+      )
+    });
+  } catch (err) {
+    console.warn('[Admin Verificacoes] Aviso ao inicializar pilares:', err.message);
+  }
+}
+
+async function validarTravaAtivacao4Pilares(supabaseUrl, headers, empresa_id) {
+  // A) Checar 4 verificações
+  const verifResp = await fetch(`${supabaseUrl}/rest/v1/verificacoes?empresa_id=eq.${encodeURIComponent(empresa_id)}&select=*`, { headers });
+  const verifs = verifResp.ok ? await verifResp.json() : [];
+  const tiposOk = new Set(verifs.filter(v => v.estado === 'ok').map(v => v.tipo));
+  const obrigatorios = ['nif', 'dominio', 'telefone', 'representante'];
+  const faltantes = obrigatorios.filter(t => !tiposOk.has(t));
+
+  if (faltantes.length > 0) {
+    return {
+      permitido: false,
+      error: `Bloqueio de ativação (Critério 1): as 4 verificações obrigatórias devem estar OK no Dossiê B2B. Faltam: ${faltantes.join(', ')}.`
+    };
+  }
+
+  // B) Checar pagamento válido ou isenção justificada
+  const pagResp = await fetch(`${supabaseUrl}/rest/v1/pagamentos?empresa_id=eq.${encodeURIComponent(empresa_id)}&select=*`, { headers });
+  const pags = pagResp.ok ? await pagResp.json() : [];
+  const temPagamentoValido = pags.some(
+    p => p.estado === 'pago' || (p.estado === 'isento' && p.motivo_isencao && p.motivo_isencao.trim().length >= 4)
+  );
+
+  if (!temPagamentoValido) {
+    return {
+      permitido: false,
+      error: 'Bloqueio de ativação (Critério 1): é obrigatório registar pelo menos um pagamento "pago" ou uma isenção justificada no Dossiê B2B antes de ativar.'
+    };
+  }
+
+  return { permitido: true };
+}
+
+function normalizarRelatorioRow(r) {
+  if (!r) return r;
+  const per = r.periodo || '';
+  const partes = per.split('-');
+  const ano = r.ano || (partes[0] ? parseInt(partes[0], 10) : new Date().getFullYear());
+  const mes = r.mes || (partes[1] ? parseInt(partes[1], 10) : (new Date().getMonth() + 1));
+  const estado = r.enviado_em ? 'enviado' : (r.aprovado_em ? 'aprovado' : (r.estado || 'rascunho'));
+  return {
+    ...r,
+    ano,
+    mes,
+    hash_sha256: r.hash_sha256 || r.hash_ficheiro || '',
+    hash_ficheiro: r.hash_ficheiro || r.hash_sha256 || '',
+    estado
+  };
+}
+
 async function fetchComFallback(fetchUrl, options, payload) {
   let resp = await fetch(fetchUrl, { ...options, body: JSON.stringify(payload) });
   if (!resp.ok) {
@@ -87,9 +175,16 @@ async function fetchComFallback(fetchUrl, options, payload) {
 export default async function handler(req, res) {
   const adminSecret = process.env.ADMIN_SECRET_KEY || 'zapadmin2026';
 
-  // Autenticação: aceita apenas header x-admin-key ou campo secret no body (não via query string)
-  const secret = req.headers['x-admin-key'] || (req.body && req.body.secret);
-  if (secret !== adminSecret) {
+  // Autenticação: aceita apenas header x-admin-key, Authorization Bearer ou campo secret no body (não via query string)
+  let secret = req.headers['x-admin-key'] || (req.body && req.body.secret);
+  if (!secret && req.headers['authorization']) {
+    const authHeader = req.headers['authorization'];
+    if (authHeader.toLowerCase().startsWith('bearer ')) {
+      secret = authHeader.slice(7).trim();
+    }
+  }
+
+  if (!secret || secret !== adminSecret) {
     return res.status(401).json({ error: 'Acesso não autorizado. Chave administrativa inválida.' });
   }
 
@@ -120,6 +215,10 @@ export default async function handler(req, res) {
     let historico = [];
     let contactosComerciais = [];
     let relatorios = [];
+    let usoSelo = [];
+    let clustersDb = [];
+    let filaDb = [];
+    let analisesRevisao = [];
     let isDbOnline = true;
     let dbErrorMessage = null;
 
@@ -138,7 +237,9 @@ export default async function handler(req, res) {
         return {
           ...s,
           empresa_nome: emp ? emp.nome : 'Empresa não encontrada',
-          empresa_status: emp ? emp.status : 'inativo'
+          empresa_status: emp ? emp.status : 'inativo',
+          empresa_is_teste: emp ? !!emp.is_teste : !!s.is_teste,
+          empresa_arquivada: emp ? !!emp.arquivado_em : !!s.arquivado_em
         };
       });
 
@@ -148,13 +249,13 @@ export default async function handler(req, res) {
 
       // 4. Buscar ocorrências de impersonation para o detalhe (Seção 21)
       const ocorrenciasResp = await fetch(
-        `${url}/rest/v1/analises?impersonation=eq.true&select=id,criado_em,veredito,confianca,risco_score,tipo,canal_mencionado,marca_mencionada,alerta_link,vezes_reportada,empresa_id&order=criado_em.desc&limit=100`,
+        `${url}/rest/v1/analises?impersonation=eq.true&select=id,criado_em,veredito,confianca,risco_score,tipo,canal,canal_mencionado,marca_mencionada,alerta_link,vezes_reportada,empresa_id&order=criado_em.desc&limit=100`,
         { headers }
       );
       const ocorrenciasRaw = ocorrenciasResp.ok ? await ocorrenciasResp.json() : [];
       ocorrencias = ocorrenciasRaw.map(o => ({
         ...o,
-        empresa_nome: empMap.get(o.empresa_id)?.nome || 'Empresa desconhecida'
+        empresa_nome: empMap.get(o.empresa_id)?.nome || o.marca_mencionada || 'Empresa desconhecida'
       }));
 
       // 5. Buscar leads comerciais do Supabase
@@ -163,13 +264,13 @@ export default async function handler(req, res) {
         if (leadsResp.ok) leads = await leadsResp.json();
       } catch {}
 
-      // 6. Marcas mencionadas em denúncias (inclui não-clientes) — base do alerta gratuito
+      // 6. Marcas mencionadas em denúncias (inclui não-clientes) — base do alerta gratuito e Shadow Radar
       try {
         const marcasResp = await fetch(`${url}/rest/v1/marcas_mencionadas?select=*&order=denuncias.desc&limit=200`, { headers });
         if (marcasResp.ok) marcas = await marcasResp.json();
       } catch {}
 
-      // 7. Denúncias individuais com marca (evidência para os relatórios, últimos 90 dias)
+      // 7. Denúncias individuais com marca (evidência para os relatórios e IOCs, últimos 90 dias)
       try {
         const desde = new Date(Date.now() - 90 * 24 * 3600 * 1000).toISOString();
         const sinaisResp = await fetch(
@@ -187,28 +288,81 @@ export default async function handler(req, res) {
         if (verifResp.ok) verificacoes = await verifResp.json();
       } catch {}
 
-      // 9. Buscar registos financeiros de pagamentos
+      // 9. Buscar registos financeiros de pagamentos e normalizar campos
       try {
         const pagResp = await fetch(`${url}/rest/v1/pagamentos?select=*&order=data.desc&limit=100`, { headers });
-        if (pagResp.ok) pagamentos = await pagResp.json();
+        if (pagResp.ok) {
+          const pagRaw = await pagResp.json();
+          pagamentos = pagRaw.map(p => {
+            let periodoMeses = p.periodo_meses || 12;
+            if (p.periodo_inicio && p.periodo_fim) {
+              const d1 = new Date(p.periodo_inicio);
+              const d2 = new Date(p.periodo_fim);
+              const diffM = Math.round((d2 - d1) / (1000 * 60 * 60 * 24 * 30));
+              if (diffM > 0) periodoMeses = diffM;
+            }
+            return {
+              ...p,
+              periodo_meses: periodoMeses,
+              notas: p.notas || p.motivo_isencao || p.fatura_numero || ''
+            };
+          });
+        }
       } catch {}
 
       // 10. Buscar histórico de auditoria
       try {
-        const histResp = await fetch(`${url}/rest/v1/historico?select=*&order=em.desc&limit=100`, { headers });
+        const histResp = await fetch(`${url}/rest/v1/historico?select=*&order=em.desc&limit=150`, { headers });
         if (histResp.ok) historico = await histResp.json();
       } catch {}
 
-      // 11. Buscar contactos comerciais do funil
+      // 11. Buscar contactos comerciais do funil e normalizar campos para o frontend
       try {
         const contResp = await fetch(`${url}/rest/v1/contactos_comerciais?select=*&order=data.desc&limit=100`, { headers });
-        if (contResp.ok) contactosComerciais = await contResp.json();
+        if (contResp.ok) {
+          const contRaw = await contResp.json();
+          contactosComerciais = contRaw.map(c => ({
+            ...c,
+            data: c.data || c.criado_em,
+            por: c.por || c.registado_por || 'admin',
+            notas: c.notas || c.resumo || '',
+            proximo_passo: c.proximo_passo || c.resposta || ''
+          }));
+        }
       } catch {}
 
-      // 12. Buscar relatórios periciais gerados
+      // 12. Buscar relatórios periciais gerados e normalizar colunas (periodo -> mes/ano, hash_ficheiro -> hash_sha256, estado)
       try {
         const relResp = await fetch(`${url}/rest/v1/relatorios_gerados?select=*&order=gerado_em.desc&limit=50`, { headers });
-        if (relResp.ok) relatorios = await relResp.json();
+        if (relResp.ok) {
+          const relRaw = await relResp.json();
+          relatorios = relRaw.map(normalizarRelatorioRow);
+        }
+      } catch {}
+
+      // 13. Buscar métricas agregadas de uso do selo (uso_selo)
+      try {
+        const usoResp = await fetch(`${url}/rest/v1/uso_selo?select=*&order=data.desc&limit=500`, { headers });
+        if (usoResp.ok) usoSelo = await usoResp.json();
+      } catch {}
+
+      // 14. Módulo Golpes Novos (Fase 1): Buscar clusters, fila_revisao e análises recentes sem texto bruto
+      try {
+        const clResp = await fetch(`${url}/rest/v1/clusters?select=*&order=ultima_vez.desc&limit=200`, { headers });
+        if (clResp.ok) clustersDb = await clResp.json();
+      } catch {}
+
+      try {
+        const frResp = await fetch(`${url}/rest/v1/fila_revisao?select=*&order=criado_em.desc&limit=300`, { headers });
+        if (frResp.ok) filaDb = await frResp.json();
+      } catch {}
+
+      try {
+        const anResp = await fetch(
+          `${url}/rest/v1/analises?select=id,criado_em,veredito,confianca,risco_score,tipo,canal,canal_mencionado,marca_mencionada,alerta_link,vezes_reportada&order=criado_em.desc&limit=200`,
+          { headers }
+        );
+        if (anResp.ok) analisesRevisao = await anResp.json();
       } catch {}
 
     } catch (err) {
@@ -241,18 +395,44 @@ export default async function handler(req, res) {
       }
     }
 
+    // Compila Inteligência Enterprise do Threat Radar (Surtos, IOCs SIBS/MBWAY, Shadow Radar)
+    const radarIntel = compilarIntelligenceRadar({
+      empresas,
+      radar,
+      ocorrencias,
+      sinais,
+      marcas
+    });
+
+    // Compila Estado da Fase 1 do Módulo de Golpes Novos (Fila de Revisão + Clusters de Semelhança)
+    const estadoFase1 = compilarEstadoFase1({
+      clustersDb,
+      filaDb,
+      analisesRecentes: analisesRevisao.length ? analisesRevisao : [...sinais, ...ocorrencias]
+    });
+
+    // Filtra empresas/selos reais (não arquivados e não de teste) para não poluir KPIs de produção
+    const empresasReais = empresas.filter(e => !e.arquivado_em && !e.is_teste);
+    const selosReais = selos.filter(s => !s.arquivado_em && !s.is_teste && !s.empresa_is_teste && !s.empresa_arquivada);
+
     // 5. Total de ocorrências
     const totalOcorrencias = radar.reduce((acc, r) => acc + (parseInt(r.ocorrencias, 10) || 0), 0);
 
-    // KPIs Obrigatórios (Seção 19):
+    // KPIs Obrigatórios (Seção 19) + Métricas de Higiene + Golpes Novos:
     const kpis = {
-      totalEmpresas: empresas.length,
-      totalSelos: selos.length,
-      totalThreatRadar: radar.length,
-      totalOcorrencias: totalOcorrencias || ocorrencias.length,
+      totalEmpresas: empresasReais.length,
+      totalEmpresasTeste: empresas.filter(e => e.is_teste && !e.arquivado_em).length,
+      totalArquivados: empresas.filter(e => !!e.arquivado_em).length + selos.filter(s => !!s.arquivado_em).length,
+      totalSelos: selosReais.filter(s => s.ativo !== false).length,
+      totalThreatRadar: radarIntel.shadow_radar.length || radar.length,
+      totalOcorrencias: totalOcorrencias || ocorrencias.length || sinais.length,
       totalLeads: leads.length,
       totalPagamentos: (pagamentos || []).filter(p => p.estado === 'pago').length,
-      totalSinais: sinais.length
+      totalSinais: sinais.length,
+      totalSurtosAtivos: radarIntel.resumo.total_surtos_criticos,
+      totalIocsFinanceiros: radarIntel.resumo.total_iocs_financeiros,
+      totalFilaRevisao: estadoFase1.resumo_modulo.fila_pendentes,
+      totalPossiveisCampanhas: estadoFase1.resumo_modulo.possiveis_campanhas
     };
 
     return res.status(200).json({
@@ -260,6 +440,7 @@ export default async function handler(req, res) {
       empresas,
       selos,
       radar,
+      radar_intel: radarIntel,
       ocorrencias,
       leads,
       marcas,
@@ -269,6 +450,10 @@ export default async function handler(req, res) {
       historico: historico || [],
       contactos_comerciais: contactosComerciais || [],
       relatorios: relatorios || [],
+      uso_selo: usoSelo || [],
+      clusters: estadoFase1.clusters,
+      fila_revisao: estadoFase1.fila_revisao,
+      golpes_novos_resumo: estadoFase1.resumo_modulo,
       database_online: isDbOnline,
       database_warning: isDbOnline ? null : `Supabase inacessível (${dbErrorMessage}). Verifique se o projeto está pausado em supabase.com.`
     });
@@ -278,7 +463,7 @@ export default async function handler(req, res) {
   if (req.method === 'POST') {
     const { action } = req.body || {};
 
-    // 2.1 CRIAR EMPRESA (Seção 6.1)
+    // 2.1 CRIAR EMPRESA (Seção 6.1 & Respeito Estrito ao Critério 1)
     if (action === 'create_empresa') {
       const {
         nome,
@@ -291,6 +476,7 @@ export default async function handler(req, res) {
         telefone_verificado,
         plano,
         status,
+        estado,
         monitorizacao_impersonation,
         criar_selo
       } = req.body;
@@ -307,7 +493,23 @@ export default async function handler(req, res) {
         apelidosArray = apelidos_marca.split(',').map(a => a.trim()).filter(Boolean);
       }
 
+      // CRITÉRIO 1: Nenhuma empresa real recém-criada pode nascer com selo ativo sem os 4 pilares OK + pagamento.
+      const isTesteFlag = !!req.body.is_teste;
+      const estadoInicialSolicitado = estado || status || 'lead';
+      const estadoInicialSeguro = (!isTesteFlag && estadoInicialSolicitado === 'ativo')
+        ? 'em_verificacao'
+        : (['lead', 'contactado', 'proposta', 'em_verificacao', 'suspenso'].includes(estadoInicialSolicitado) ? estadoInicialSolicitado : 'lead');
+      const statusInicialSeguro = isTesteFlag && status === 'ativo' ? 'ativo' : 'inativo';
+      const planoNormalizado = plano || 'selo';
+
       try {
+        const camposExtras = extrairCamposVerificacao(req.body);
+        camposExtras.estado = estadoInicialSeguro;
+        camposExtras.plano = planoNormalizado;
+        if (!req.body.marca_aliases && apelidosArray.length > 0) {
+          camposExtras.marca_aliases = apelidosArray;
+        }
+
         const empInsert = await fetchComFallback(`${url}/rest/v1/empresas`, {
           method: 'POST',
           headers: { ...headers, Prefer: 'return=representation' }
@@ -320,9 +522,9 @@ export default async function handler(req, res) {
             dominio_verificado: !!dominio_verificado,
             email_verificado: !!email_verificado,
             telefone_verificado: !!telefone_verificado,
-            plano: plano || 'business',
-            status: status || 'ativo',
-            ...extrairCamposVerificacao(req.body)
+            plano: planoNormalizado,
+            status: statusInicialSeguro,
+            ...camposExtras
         });
 
         if (!empInsert.ok) {
@@ -333,11 +535,13 @@ export default async function handler(req, res) {
         const novaEmpresaRows = await empInsert.json();
         const novaEmpresa = novaEmpresaRows[0];
 
-        // Se solicitado criação de selo inicial (padrão true)
+        // Inicializa os 4 pilares da checklist em 'verificacoes' (estado: 'pendente')
+        await inicializarQuatroPilares(url, headers, novaEmpresa.id);
+
+        // Se solicitado criação de selo inicial: fica com ativo=false até aprovação dos 4 pilares + pagamento (exceto teste explícito)
         let novoSelo = null;
         if (criar_selo !== false) {
           const codigoSelo = gerarCodigoSelo();
-          // Validade padrão: 1 ano
           const validoAte = new Date();
           validoAte.setFullYear(validoAte.getFullYear() + 1);
 
@@ -350,7 +554,8 @@ export default async function handler(req, res) {
               tipo: 'canal_verificado',
               valido_ate: validoAte.toISOString(),
               monitorizacao_impersonation: monitorizacao_impersonation !== false,
-              ativo: true
+              ativo: statusInicialSeguro === 'ativo',
+              is_teste: !!novaEmpresa.is_teste
             })
           });
 
@@ -359,6 +564,20 @@ export default async function handler(req, res) {
             novoSelo = seloRows[0];
           }
         }
+
+        await registrarHistorico(url, headers, {
+          empresa_id: novaEmpresa.id,
+          acao: 'criacao_empresa',
+          depois: {
+            nome: novaEmpresa.nome,
+            plano: novaEmpresa.plano,
+            estado: estadoInicialSeguro,
+            status: statusInicialSeguro,
+            is_teste: !!novaEmpresa.is_teste
+          },
+          por: req.body.por || 'admin',
+          motivo: 'Registo de nova empresa no pipeline B2B (aguarda 4 pilares + pagamento para ativação)'
+        });
 
         return res.status(200).json({
           success: true,
@@ -372,7 +591,7 @@ export default async function handler(req, res) {
       }
     }
 
-    // 2.2 EDITAR EMPRESA
+    // 2.2 EDITAR EMPRESA (com proteção da trava de ativação Critério 1)
     if (action === 'update_empresa') {
       const {
         id,
@@ -385,7 +604,9 @@ export default async function handler(req, res) {
         email_verificado,
         telefone_verificado,
         plano,
-        status
+        status,
+        estado,
+        motivo
       } = req.body;
 
       if (!id) {
@@ -400,6 +621,31 @@ export default async function handler(req, res) {
       }
 
       try {
+        const empResp = await fetch(`${url}/rest/v1/empresas?id=eq.${encodeURIComponent(id)}&select=*&limit=1`, { headers });
+        const emps = empResp.ok ? await empResp.json() : [];
+        const empresaAtual = emps[0] || {};
+
+        const querAtivar = (status === 'ativo' || estado === 'ativo') && empresaAtual.status !== 'ativo' && empresaAtual.estado !== 'ativo';
+        if (querAtivar) {
+          const validacao = await validarTravaAtivacao4Pilares(url, headers, id);
+          if (!validacao.permitido) {
+            return res.status(400).json({ error: validacao.error });
+          }
+        }
+
+        if ((status === 'suspenso' || estado === 'suspenso' || estado === 'revogado') &&
+            empresaAtual.status !== 'suspenso' &&
+            (!motivo || String(motivo).trim().length < 4)) {
+          return res.status(400).json({
+            error: 'A alteração para suspenso ou revogado exige obrigatoriamente um motivo escrito.'
+          });
+        }
+
+        const extras = extrairCamposVerificacao(req.body);
+        if (!req.body.marca_aliases && apelidosArray.length > 0) {
+          extras.marca_aliases = apelidosArray;
+        }
+
         const updateResp = await fetchComFallback(`${url}/rest/v1/empresas?id=eq.${encodeURIComponent(id)}`, {
           method: 'PATCH',
           headers: { ...headers, Prefer: 'return=representation' }
@@ -414,58 +660,143 @@ export default async function handler(req, res) {
             telefone_verificado: !!telefone_verificado,
             plano: plano || undefined,
             status: status || undefined,
-            ...extrairCamposVerificacao(req.body)
+            ...extras
         });
 
         if (!updateResp.ok) throw new Error(await updateResp.text());
+
+        await registrarHistorico(url, headers, {
+          empresa_id: id,
+          acao: 'atualizacao_empresa',
+          antes: { nome: empresaAtual.nome, plano: empresaAtual.plano, status: empresaAtual.status, estado: empresaAtual.estado },
+          depois: { nome, plano, status, estado },
+          por: req.body.por || 'admin',
+          motivo: motivo || 'Dados comerciais atualizados no painel'
+        });
+
         return res.status(200).json({ success: true, migracao_pendente: !!updateResp.migracaoPendente });
       } catch (err) {
         console.error('[Admin] Erro update_empresa:', err);
-        return res.status(500).json({ error: 'Falha ao atualizar dados da empresa.' });
+        return res.status(500).json({ error: err.message || 'Falha ao atualizar dados da empresa.' });
       }
     }
 
-    // 2.3 SUSPENDER / REATIVAR EMPRESA
+    // 2.3 SUSPENDER / REATIVAR EMPRESA (com respeito estrito ao Critério 1)
     if (action === 'set_empresa_status') {
-      const { id, status: novoStatus } = req.body;
+      const { id, status: novoStatus, motivo, por = 'admin' } = req.body;
       if (!id || !novoStatus) {
         return res.status(400).json({ error: 'id e status são obrigatórios.' });
       }
 
+      // Suspender ou revogar exige motivo escrito (Seção 2.3)
+      if ((novoStatus === 'suspenso' || novoStatus === 'revogado') && (!motivo || motivo.trim().length < 4)) {
+        return res.status(400).json({ error: 'A suspensão de uma empresa exige obrigatoriamente um motivo escrito para arquivo no histórico.' });
+      }
+
       try {
-        const updateResp = await fetch(`${url}/rest/v1/empresas?id=eq.${encodeURIComponent(id)}`, {
+        // Se tentar ativar, exige cumprimento da trava dos 4 pilares + pagamento (Critério 1)
+        if (novoStatus === 'ativo') {
+          const validacao = await validarTravaAtivacao4Pilares(url, headers, id);
+          if (!validacao.permitido) {
+            return res.status(400).json({ error: validacao.error });
+          }
+        }
+
+        const empResp = await fetch(`${url}/rest/v1/empresas?id=eq.${encodeURIComponent(id)}&select=*&limit=1`, { headers });
+        const emps = empResp.ok ? await empResp.json() : [];
+        const empresaAtual = emps[0] || {};
+
+        const updateResp = await fetchComFallback(`${url}/rest/v1/empresas?id=eq.${encodeURIComponent(id)}`, {
           method: 'PATCH',
-          headers: { ...headers, Prefer: 'return=representation' },
-          body: JSON.stringify({ status: novoStatus })
+          headers: { ...headers, Prefer: 'return=representation' }
+        }, {
+          status: novoStatus,
+          estado: novoStatus === 'ativo' ? 'ativo' : (novoStatus === 'suspenso' ? 'suspenso' : (empresaAtual.estado || 'em_verificacao'))
         });
 
         if (!updateResp.ok) throw new Error(await updateResp.text());
+
+        // Se suspender empresa, desativar selos associados
+        if (novoStatus === 'suspenso' || novoStatus === 'revogado' || novoStatus === 'inativo') {
+          await fetch(`${url}/rest/v1/selos?empresa_id=eq.${encodeURIComponent(id)}&ativo=eq.true`, {
+            method: 'PATCH',
+            headers,
+            body: JSON.stringify({
+              ativo: false,
+              desativado_em: new Date().toISOString(),
+              motivo_desativacao: `Empresa ${novoStatus}: ${motivo || 'Alteração administrativa'}`
+            })
+          });
+        }
+
+        await registrarHistorico(url, headers, {
+          empresa_id: id,
+          acao: `alterar_status_${novoStatus}`,
+          antes: { status: empresaAtual.status, estado: empresaAtual.estado },
+          depois: { status: novoStatus },
+          por,
+          motivo: motivo || `Status alterado para ${novoStatus}`
+        });
+
         return res.status(200).json({ success: true });
       } catch (err) {
-        return res.status(500).json({ error: 'Falha ao alterar status da empresa.' });
+        return res.status(500).json({ error: 'Falha ao alterar status da empresa: ' + err.message });
       }
     }
 
-    // 2.4 CRIAR SELO (Seção 7 & Regra de Unicidade)
+    // 2.4 CRIAR SELO (Seção 7 & Prevenção de Duplicados Ativos)
     if (action === 'create_selo') {
-      const { empresa_id, valido_ate, monitorizacao_impersonation } = req.body;
+      const { empresa_id, valido_ate, monitorizacao_impersonation, is_teste, forcar_duplicado, motivo, por = 'admin' } = req.body;
       if (!empresa_id) {
         return res.status(400).json({ error: 'empresa_id é obrigatório.' });
       }
 
       try {
-        // Desativa selos anteriores ativos desta empresa para garantir 1 selo ativo por empresa
-        await fetch(`${url}/rest/v1/selos?empresa_id=eq.${encodeURIComponent(empresa_id)}&ativo=eq.true`, {
-          method: 'PATCH',
-          headers,
-          body: JSON.stringify({
-            ativo: false,
-            desativado_em: new Date().toISOString(),
-            motivo_desativacao: 'Substituído por novo selo'
-          })
-        });
+        const empResp = await fetch(`${url}/rest/v1/empresas?id=eq.${encodeURIComponent(empresa_id)}&select=*&limit=1`, { headers });
+        const emps = empResp.ok ? await empResp.json() : [];
+        if (!emps.length) return res.status(404).json({ error: 'Empresa não encontrada.' });
+        const empresa = emps[0];
+
+        // 1. Verificar selos ativos da mesma empresa
+        const selosAtivosResp = await fetch(`${url}/rest/v1/selos?empresa_id=eq.${encodeURIComponent(empresa_id)}&ativo=eq.true&select=*`, { headers });
+        const selosAtivos = selosAtivosResp.ok ? await selosAtivosResp.json() : [];
+
+        // 2. Verificar selos ativos para empresas com o mesmo domínio oficial
+        let selosMesmoDominio = [];
+        if (empresa.dominio_oficial) {
+          const domResp = await fetch(`${url}/rest/v1/empresas?dominio_oficial=eq.${encodeURIComponent(empresa.dominio_oficial)}&id=neq.${encodeURIComponent(empresa_id)}&select=id`, { headers });
+          const outras = domResp.ok ? await domResp.json() : [];
+          if (outras.length > 0) {
+            const outIds = outras.map(o => o.id);
+            const selosOutResp = await fetch(`${url}/rest/v1/selos?empresa_id=in.(${outIds.join(',')})&ativo=eq.true&select=*`, { headers });
+            selosMesmoDominio = selosOutResp.ok ? await selosOutResp.json() : [];
+          }
+        }
+
+        const temDuplicado = selosAtivos.length > 0 || selosMesmoDominio.length > 0;
+        if (temDuplicado && (!forcar_duplicado || !motivo || motivo.trim().length < 4)) {
+          return res.status(400).json({
+            error: 'Já existe um selo ativo para esta empresa ou domínio. Para criar outro selo ativo, confirme explicitamente com motivo por escrito.',
+            requer_confirmacao: true
+          });
+        }
+
+        // Se for substituição normal (sem forçar múltiplos ativos simultâneos), desativa os anteriores
+        if (!forcar_duplicado && selosAtivos.length > 0) {
+          await fetch(`${url}/rest/v1/selos?empresa_id=eq.${encodeURIComponent(empresa_id)}&ativo=eq.true`, {
+            method: 'PATCH',
+            headers,
+            body: JSON.stringify({
+              ativo: false,
+              desativado_em: new Date().toISOString(),
+              motivo_desativacao: motivo || 'Substituído por novo selo'
+            })
+          });
+        }
 
         const codigoSelo = gerarCodigoSelo();
+        const seloIsTeste = is_teste !== undefined ? !!is_teste : !!empresa.is_teste;
+
         const insertResp = await fetch(`${url}/rest/v1/selos`, {
           method: 'POST',
           headers: { ...headers, Prefer: 'return=representation' },
@@ -475,28 +806,41 @@ export default async function handler(req, res) {
             tipo: 'canal_verificado',
             valido_ate: valido_ate || null,
             monitorizacao_impersonation: monitorizacao_impersonation !== false,
-            ativo: true
+            ativo: true,
+            is_teste: seloIsTeste
           })
         });
 
         if (!insertResp.ok) throw new Error(await insertResp.text());
         const rows = await insertResp.json();
+
+        await registrarHistorico(url, headers, {
+          empresa_id,
+          acao: 'criacao_selo',
+          depois: { codigo: codigoSelo, is_teste: seloIsTeste, forcar_duplicado: !!forcar_duplicado },
+          por,
+          motivo: motivo || 'Criação de novo selo'
+        });
+
         return res.status(200).json({ success: true, selo: rows[0] });
       } catch (err) {
         console.error('[Admin] Erro create_selo:', err);
-        return res.status(500).json({ error: 'Falha ao criar selo.' });
+        return res.status(500).json({ error: 'Falha ao criar selo: ' + err.message });
       }
     }
 
-    // 2.5 REGENERAR SELO (Seção 7 — Preservação de Histórico)
+    // 2.5 REGENERAR SELO (Seção 2.3 — Avisa que código anterior deixa de funcionar e regista histórico)
     if (action === 'regenerar_selo') {
-      const { selo_id } = req.body;
+      const { selo_id, motivo, por = 'admin' } = req.body;
       if (!selo_id) {
         return res.status(400).json({ error: 'selo_id é obrigatório.' });
       }
 
+      if (!motivo || motivo.trim().length < 3) {
+        return res.status(400).json({ error: 'Regenerar o selo exige obrigatoriamente a indicação do motivo por escrito.' });
+      }
+
       try {
-        // 1. Obter dados do selo atual
         const seloResp = await fetch(`${url}/rest/v1/selos?id=eq.${encodeURIComponent(selo_id)}&select=*&limit=1`, { headers });
         if (!seloResp.ok) throw new Error(await seloResp.text());
         const selos = await seloResp.json();
@@ -505,14 +849,14 @@ export default async function handler(req, res) {
         }
         const seloAntigo = selos[0];
 
-        // 2. Soft-delete / desativar o selo antigo
+        // 2. Desativar/invalidar o selo antigo
         await fetch(`${url}/rest/v1/selos?id=eq.${encodeURIComponent(selo_id)}`, {
           method: 'PATCH',
           headers,
           body: JSON.stringify({
             ativo: false,
             desativado_em: new Date().toISOString(),
-            motivo_desativacao: 'Regeneração de código de segurança'
+            motivo_desativacao: `Regenerado pelo admin: ${motivo}`
           })
         });
 
@@ -527,41 +871,134 @@ export default async function handler(req, res) {
             tipo: seloAntigo.tipo || 'canal_verificado',
             valido_ate: seloAntigo.valido_ate,
             monitorizacao_impersonation: seloAntigo.monitorizacao_impersonation !== false,
-            ativo: true
+            ativo: true,
+            is_teste: !!seloAntigo.is_teste
           })
         });
 
         if (!insertResp.ok) throw new Error(await insertResp.text());
         const rows = await insertResp.json();
-        return res.status(200).json({ success: true, selo: rows[0] });
+
+        // 4. Registar no histórico
+        await registrarHistorico(url, headers, {
+          empresa_id: seloAntigo.empresa_id,
+          acao: 'regenerar_selo',
+          antes: { codigo: seloAntigo.codigo, id: seloAntigo.id },
+          depois: { codigo: novoCodigo, id: rows[0].id },
+          por,
+          motivo: `Código anterior ${seloAntigo.codigo} revogado e substituído por ${novoCodigo}. Motivo: ${motivo}`
+        });
+
+        return res.status(200).json({ success: true, selo: rows[0], codigo_anterior: seloAntigo.codigo });
       } catch (err) {
         console.error('[Admin] Erro regenerar_selo:', err);
         return res.status(500).json({ error: 'Falha ao regenerar código do selo.' });
       }
     }
 
-    // 2.6 DESATIVAR / SUSPENDER SELO (Soft-Delete para preservar histórico)
-    if (action === 'delete_selo' || action === 'suspend_selo') {
-      const { selo_id, motivo } = req.body;
+    // 2.6 SOFT-DELETE / ARQUIVAR SELO (Seção 2.3 — Nunca apaga de facto)
+    if (action === 'delete_selo' || action === 'archive_selo') {
+      const { selo_id, motivo, por = 'admin' } = req.body;
       if (!selo_id) {
         return res.status(400).json({ error: 'selo_id é obrigatório.' });
       }
 
+      if (!motivo || motivo.trim().length < 3) {
+        return res.status(400).json({ error: 'Arquivar o selo exige a indicação de um motivo por escrito.' });
+      }
+
       try {
+        const seloResp = await fetch(`${url}/rest/v1/selos?id=eq.${encodeURIComponent(selo_id)}&select=*&limit=1`, { headers });
+        const selos = seloResp.ok ? await seloResp.json() : [];
+        if (!selos.length) return res.status(404).json({ error: 'Selo não encontrado.' });
+        const selo = selos[0];
+
+        const agoraIso = new Date().toISOString();
         const updateResp = await fetch(`${url}/rest/v1/selos?id=eq.${encodeURIComponent(selo_id)}`, {
           method: 'PATCH',
           headers: { ...headers, Prefer: 'return=representation' },
           body: JSON.stringify({
             ativo: false,
-            desativado_em: new Date().toISOString(),
-            motivo_desativacao: motivo || 'Desativado pelo administrador'
+            arquivado_em: agoraIso,
+            arquivado_motivo: motivo,
+            arquivado_por: por,
+            desativado_em: agoraIso,
+            motivo_desativacao: `Arquivado: ${motivo}`
           })
         });
 
         if (!updateResp.ok) throw new Error(await updateResp.text());
-        return res.status(200).json({ success: true });
+
+        await registrarHistorico(url, headers, {
+          empresa_id: selo.empresa_id,
+          acao: 'arquivar_selo',
+          antes: { codigo: selo.codigo, ativo: selo.ativo },
+          depois: { ativo: false, arquivado_em: agoraIso },
+          por,
+          motivo: `Selo arquivado (soft-delete): ${motivo}`
+        });
+
+        return res.status(200).json({ success: true, message: 'Selo arquivado com sucesso.' });
       } catch (err) {
-        return res.status(500).json({ error: 'Falha ao desativar selo.' });
+        return res.status(500).json({ error: 'Falha ao arquivar selo: ' + err.message });
+      }
+    }
+
+    // 2.6.1 SOFT-DELETE / ARQUIVAR EMPRESA (Seção 2.3 — Nunca apaga de facto)
+    if (action === 'delete_empresa' || action === 'archive_empresa') {
+      const { empresa_id, motivo, por = 'admin' } = req.body;
+      if (!empresa_id) {
+        return res.status(400).json({ error: 'empresa_id é obrigatório.' });
+      }
+
+      if (!motivo || motivo.trim().length < 3) {
+        return res.status(400).json({ error: 'Arquivar a empresa exige a indicação de um motivo por escrito.' });
+      }
+
+      try {
+        const empResp = await fetch(`${url}/rest/v1/empresas?id=eq.${encodeURIComponent(empresa_id)}&select=*&limit=1`, { headers });
+        const emps = empResp.ok ? await empResp.json() : [];
+        if (!emps.length) return res.status(404).json({ error: 'Empresa não encontrada.' });
+        const empresa = emps[0];
+
+        const agoraIso = new Date().toISOString();
+        const updateResp = await fetch(`${url}/rest/v1/empresas?id=eq.${encodeURIComponent(empresa_id)}`, {
+          method: 'PATCH',
+          headers: { ...headers, Prefer: 'return=representation' },
+          body: JSON.stringify({
+            status: 'arquivado',
+            estado: 'arquivado',
+            arquivado_em: agoraIso,
+            arquivado_motivo: motivo,
+            arquivado_por: por
+          })
+        });
+
+        if (!updateResp.ok) throw new Error(await updateResp.text());
+
+        // Desativa selos ativos da empresa arquivada
+        await fetch(`${url}/rest/v1/selos?empresa_id=eq.${encodeURIComponent(empresa_id)}&ativo=eq.true`, {
+          method: 'PATCH',
+          headers,
+          body: JSON.stringify({
+            ativo: false,
+            desativado_em: agoraIso,
+            motivo_desativacao: `Empresa arquivada: ${motivo}`
+          })
+        });
+
+        await registrarHistorico(url, headers, {
+          empresa_id,
+          acao: 'arquivar_empresa',
+          antes: { status: empresa.status, estado: empresa.estado },
+          depois: { status: 'arquivado', arquivado_em: agoraIso },
+          por,
+          motivo: `Empresa arquivada (soft-delete): ${motivo}`
+        });
+
+        return res.status(200).json({ success: true, message: 'Empresa arquivada com sucesso.' });
+      } catch (err) {
+        return res.status(500).json({ error: 'Falha ao arquivar empresa: ' + err.message });
       }
     }
 
@@ -732,11 +1169,37 @@ export default async function handler(req, res) {
       }
     }
 
-    // 2.9 REGISTAR PAGAMENTO
+    // 2.9 REGISTAR PAGAMENTO (Compatível com periodo_meses/notas do Admin UI e periodo_inicio/fim do banco)
     if (action === 'add_pagamento') {
-      const { empresa_id, valor, data, metodo, referencia, fatura_numero, periodo_inicio, periodo_fim, estado, motivo_isencao } = req.body;
-      if (!empresa_id || !estado) {
-        return res.status(400).json({ error: 'empresa_id e estado são obrigatórios.' });
+      const {
+        empresa_id,
+        valor,
+        data,
+        metodo,
+        referencia,
+        fatura_numero,
+        periodo_inicio,
+        periodo_fim,
+        periodo_meses,
+        notas,
+        estado,
+        motivo_isencao
+      } = req.body;
+
+      const estadoFinal = estado || (motivo_isencao ? 'isento' : 'pago');
+      if (!empresa_id) {
+        return res.status(400).json({ error: 'empresa_id é obrigatório.' });
+      }
+      if (estadoFinal === 'isento' && (!motivo_isencao || String(motivo_isencao).trim().length < 4)) {
+        return res.status(400).json({ error: 'A isenção exige obrigatoriamente um motivo justificado por escrito (mínimo 4 caracteres).' });
+      }
+
+      let pInicio = periodo_inicio || new Date().toISOString().slice(0, 10);
+      let pFim = periodo_fim || null;
+      if (!pFim && periodo_meses) {
+        const dt = new Date();
+        dt.setMonth(dt.getMonth() + (parseInt(periodo_meses, 10) || 12));
+        pFim = dt.toISOString().slice(0, 10);
       }
 
       try {
@@ -747,13 +1210,13 @@ export default async function handler(req, res) {
             empresa_id,
             valor: Number(valor) || 0.00,
             data: data || new Date().toISOString(),
-            metodo: metodo || 'transferencia',
+            metodo: metodo || (estadoFinal === 'isento' ? 'isencao' : 'transferencia'),
             referencia: referencia ? String(referencia).trim() : null,
-            fatura_numero: fatura_numero ? String(fatura_numero).trim() : null,
-            periodo_inicio: periodo_inicio || null,
-            periodo_fim: periodo_fim || null,
-            estado: estado || 'pendente',
-            motivo_isencao: motivo_isencao ? String(motivo_isencao).trim() : null
+            fatura_numero: fatura_numero ? String(fatura_numero).trim() : (notas ? String(notas).trim() : null),
+            periodo_inicio: pInicio,
+            periodo_fim: pFim,
+            estado: estadoFinal,
+            motivo_isencao: motivo_isencao ? String(motivo_isencao).trim() : (notas && estadoFinal === 'isento' ? String(notas).trim() : null)
           })
         });
 
@@ -762,9 +1225,11 @@ export default async function handler(req, res) {
 
         await registrarHistorico(url, headers, {
           empresa_id,
-          acao: 'registo_pagamento',
-          depois: { valor, estado, metodo },
-          motivo: `Pagamento registado: ${estado} (${valor}€)`
+          acao: estadoFinal === 'isento' ? 'registo_isencao' : 'registo_pagamento',
+          depois: { valor: Number(valor) || 0, estado: estadoFinal, metodo, periodo_meses: periodo_meses || 12 },
+          motivo: estadoFinal === 'isento'
+            ? `Isenção justificada: ${motivo_isencao}`
+            : `Pagamento registado: ${estadoFinal} (${Number(valor) || 0}€)`
         });
 
         return res.status(200).json({ success: true, pagamento: pagRows[0] });
@@ -774,12 +1239,16 @@ export default async function handler(req, res) {
       }
     }
 
-    // 2.10 REGISTAR CONTACTO COMERCIAL (Funil)
+    // 2.10 REGISTAR CONTACTO COMERCIAL (Compatível com notas/proximo_passo do UI e resumo/resposta do banco)
     if (action === 'add_contacto_comercial') {
-      const { empresa_id, tipo, canal, data, resumo, resposta } = req.body;
-      if (!empresa_id || !tipo) {
-        return res.status(400).json({ error: 'empresa_id e tipo são obrigatórios.' });
+      const { empresa_id, tipo, canal, data, resumo, resposta, notas, proximo_passo, por = 'admin' } = req.body;
+      if (!empresa_id) {
+        return res.status(400).json({ error: 'empresa_id é obrigatório.' });
       }
+
+      const tipoFinal = tipo || 'seguimento';
+      const resumoFinal = (resumo !== undefined ? resumo : notas) || '';
+      const respostaFinal = (resposta !== undefined ? resposta : proximo_passo) || null;
 
       try {
         const contResp = await fetch(`${url}/rest/v1/contactos_comerciais`, {
@@ -787,21 +1256,37 @@ export default async function handler(req, res) {
           headers: { ...headers, Prefer: 'return=representation' },
           body: JSON.stringify({
             empresa_id,
-            tipo: tipo || 'seguimento',
+            tipo: tipoFinal,
             canal: canal || 'email',
             data: data || new Date().toISOString(),
-            resumo: resumo ? String(resumo).trim() : '',
-            resposta: resposta ? String(resposta).trim() : null
+            resumo: String(resumoFinal).trim(),
+            resposta: respostaFinal ? String(respostaFinal).trim() : null
           })
         });
 
         if (!contResp.ok) throw new Error(await contResp.text());
         const contRows = await contResp.json();
 
-        return res.status(200).json({ success: true, contacto: contRows[0] });
+        await registrarHistorico(url, headers, {
+          empresa_id,
+          acao: 'contacto_comercial',
+          depois: { canal: canal || 'email', tipo: tipoFinal, resumo: String(resumoFinal).slice(0, 80) },
+          por,
+          motivo: `Contacto via ${canal || 'email'}: ${String(resumoFinal).slice(0, 60)}`
+        });
+
+        return res.status(200).json({
+          success: true,
+          contacto: {
+            ...contRows[0],
+            notas: contRows[0]?.resumo || '',
+            proximo_passo: contRows[0]?.resposta || '',
+            por
+          }
+        });
       } catch (err) {
         console.error('[Admin] Erro add_contacto_comercial:', err);
-        return res.status(500).json({ error: 'Falha ao registar contacto comercial.' });
+        return res.status(500).json({ error: 'Falha ao registar contacto comercial: ' + err.message });
       }
     }
 
@@ -824,7 +1309,9 @@ export default async function handler(req, res) {
           }
         }
 
-        const marcasFiltro = empresa?.marca_aliases?.length ? [marcaNome, ...empresa.marca_aliases] : [marcaNome];
+        const marcasFiltro = empresa?.marca_aliases?.length
+          ? [marcaNome, ...empresa.marca_aliases]
+          : (empresa?.apelidos_marca?.length ? [marcaNome, ...empresa.apelidos_marca] : [marcaNome]);
         const sinaisResp = await fetch(
           `${url}/rest/v1/analises?marca_mencionada=not.is.null&veredito=in.(golpe,suspeito)&order=criado_em.desc&limit=100`,
           { headers }
@@ -832,38 +1319,40 @@ export default async function handler(req, res) {
         const allSinais = sinaisResp.ok ? await sinaisResp.json() : [];
         const sinaisMarca = allSinais.filter(s => {
           const m = (s.marca_mencionada || '').toLowerCase();
-          return marcasFiltro.some(al => m.includes(al.toLowerCase()));
+          return marcasFiltro.some(al => al && m.includes(al.toLowerCase()));
         });
 
         const totalSinais = sinaisMarca.length;
         const canais = [...new Set(sinaisMarca.map(s => s.canal || 'SMS/WhatsApp'))].join(', ') || 'SMS / WhatsApp';
-        
+        const vetoresDetectados = [...new Set(sinaisMarca.map(s => s.canal_mencionado).filter(Boolean))].slice(0, 3);
+
         const exemplos = sinaisMarca.slice(0, 3).map(s => {
-          const limpo = limparTextoVitima(s.texto_original || s.resumo || 'Tentativa de cobrança urgente com link não oficial.');
-          return limpo.length > 100 ? limpo.slice(0, 97) + '...' : limpo;
+          const limpo = limparTextoVitima(s.texto_original || s.alerta_link || s.resumo || `Tentativa de fraude (${s.tipo || 'phishing'}) com canal não oficial (${s.canal_mencionado || 'link externo'}).`);
+          return limpo.length > 110 ? limpo.slice(0, 107) + '...' : limpo;
         });
 
-        const draftTexto = `Assunto: Alerta Preventivo de Segurança: Sinais de personificação da marca ${marcaNome}
+        const draftAssunto = `Alerta Preventivo de Segurança: Sinais de personificação da marca ${marcaNome}`;
+        const draftCorpo = `Exma. Equipa de Segurança / CSIRT / Comunicação de ${marcaNome},
 
-Exma. Equipa de Segurança / Comunicação de ${marcaNome},
+No âmbito da monitorização contínua do Threat Radar da rede Confirme, Quem É? (confirmequeme.pt), detetámos recentemente ${totalSinais || 1} sinal(is) de mensagens fraudulentas em circulação utilizando o nome da vossa marca antes da consumação de transações.
 
-No âmbito da monitorização contínua da rede Confirme, Quem É? (confirmequeme.pt), detetámos recentemente ${totalSinais} sinal(is) de mensagens em circulação utilizando o nome da vossa marca.
-
-Resumo dos sinais detetados:
-• Total de ocorrências: ${totalSinais}
-• Canais reportados: ${canais}
-• Exemplos limpos (sem qualquer dado pessoal de utilizadores):
-${exemplos.map(e => `  - "${e}"`).join('\n') || '  - Mensagens simulando notificações oficiais com links externos.'}
+Resumo da inteligência intercetada:
+• Total de ocorrências detetadas: ${totalSinais || 1}
+• Canais de propagação: ${canais}
+${vetoresDetectados.length ? `• Indicadores / Canais não oficiais (IOCs): ${vetoresDetectados.join(' | ')}\n` : ''}• Exemplos higienizados (Art. 5.º RGPD — zero dados pessoais de cidadãos):
+${exemplos.map(e => `  - "${e}"`).join('\n') || '  - "Mensagem simulando comunicação oficial com link ou referência de pagamento externa."'}
 
 Recomendação preventiva:
-Sugerimos avaliar a publicação de uma nota preventiva nos vossos canais oficiais, alertando os vossos utilizadores para não acederem a links não oficiais nem partilharem dados confidenciais.
+Sugerimos avaliar a publicação de um aviso preventivo nos vossos canais oficiais e a submissão dos indicadores acima para bloqueio técnico (Takedown / SIBS / CERT.PT).
 
 Nota de integridade e utilidade pública:
-Este alerta é estritamente informativo e não constitui proposta comercial.
+Este alerta é estritamente informativo e faz parte da nossa missão de proteção do ecossistema digital português. Caso desejem receber o Dossiê Pericial completo (com Hash SHA-256) ou ativar a monitorização contínua da vossa marca, estamos inteiramente ao dispor.
 
 Atenciosamente,
-Equipa de Inteligência & Verificação — Confirme, Quem É?
+Equipa de Threat Intelligence & Verificação — Confirme, Quem É?
 https://confirmequeme.pt`;
+
+        const draftTextoCompleto = `Assunto: ${draftAssunto}\n\n${draftCorpo}`;
 
         if (empresa_id) {
           await fetch(`${url}/rest/v1/contactos_comerciais`, {
@@ -874,14 +1363,14 @@ https://confirmequeme.pt`;
               tipo: 'alerta_gratuito',
               canal: 'email',
               resumo: `Alerta gratuito gerado com ${totalSinais} sinais detetados`,
-              resposta: 'Alerta pronto para envio'
+              resposta: 'Rascunho preparado para envio executivo'
             })
           });
 
           await registrarHistorico(url, headers, {
             empresa_id,
             acao: 'geracao_alerta_gratuito',
-            depois: { total_sinais: totalSinais },
+            depois: { total_sinais: totalSinais, marca: marcaNome },
             motivo: 'Alerta preventivo gratuito gerado pelo operador'
           });
         }
@@ -889,18 +1378,29 @@ https://confirmequeme.pt`;
         return res.status(200).json({
           success: true,
           total_sinais: totalSinais,
-          alerta_texto: draftTexto
+          alerta_texto: draftTextoCompleto,
+          draft: {
+            assunto: draftAssunto,
+            texto: draftCorpo
+          }
         });
       } catch (err) {
         console.error('[Admin] Erro gerar_alerta_gratuito:', err);
-        return res.status(500).json({ error: 'Falha ao gerar alerta gratuito.' });
+        return res.status(500).json({ error: 'Falha ao gerar alerta gratuito: ' + err.message });
       }
     }
 
-    // 2.12 GERAR RELATÓRIO MENSAL EM HTML/PDF
+    // 2.12 GERAR RELATÓRIO MENSAL EM HTML/PDF (Aceita periodo="YYYY-MM" ou mes + ano)
     if (action === 'gerar_relatorio_mensal') {
-      const { empresa_id, periodo = new Date().toISOString().slice(0, 7), versao = '1.0' } = req.body;
+      const { empresa_id, mes, ano, versao = '1.0' } = req.body;
+      let { periodo } = req.body;
       if (!empresa_id) return res.status(400).json({ error: 'empresa_id é obrigatório.' });
+
+      if (!periodo) {
+        const y = ano || new Date().getFullYear();
+        const m = mes || (new Date().getMonth() + 1);
+        periodo = `${y}-${String(m).padStart(2, '0')}`;
+      }
 
       try {
         const empResp = await fetch(`${url}/rest/v1/empresas?id=eq.${encodeURIComponent(empresa_id)}&select=*&limit=1`, { headers });
@@ -909,12 +1409,13 @@ https://confirmequeme.pt`;
         const empresa = emps[0];
 
         const marcaNome = empresa.nome_comercial || empresa.nome;
-        const aliases = empresa.marca_aliases || [];
-        const allMarcas = [marcaNome, ...aliases].map(m => m.toLowerCase());
+        const aliases = [...(empresa.marca_aliases || []), ...(empresa.apelidos_marca || [])];
+        const allMarcas = [marcaNome, ...aliases].filter(Boolean).map(m => m.toLowerCase());
 
-        const sinaisResp = await fetch(`${url}/rest/v1/analises?marca_mencionada=not.is.null&veredito=in.(golpe,suspeito)&limit=200`, { headers });
+        const sinaisResp = await fetch(`${url}/rest/v1/analises?marca_mencionada=not.is.null&veredito=in.(golpe,suspeito)&limit=300`, { headers });
         const allSinais = sinaisResp.ok ? await sinaisResp.json() : [];
         const ocorrencias = allSinais.filter(s => {
+          if (s.empresa_id === empresa_id) return true;
           const m = (s.marca_mencionada || '').toLowerCase();
           return allMarcas.some(al => m.includes(al));
         });
@@ -950,24 +1451,85 @@ https://confirmequeme.pt`;
         });
 
         const relRows = relInsert.ok ? await relInsert.json() : [];
+        const relNormalizado = relRows[0]
+          ? { ...normalizarRelatorioRow(relRows[0]), html }
+          : normalizarRelatorioRow({ id: 'temp-' + Date.now(), empresa_id, periodo, versao, hash_ficheiro: dadosRelatorio.hash_sha256, html });
 
         await registrarHistorico(url, headers, {
           empresa_id,
           acao: 'geracao_relatorio_mensal',
           depois: { periodo, versao, hash: dadosRelatorio.hash_sha256 },
-          motivo: `Relatório mensal gerado para ${periodo}`
+          motivo: `Relatório mensal pericial gerado para ${periodo}`
         });
 
         return res.status(200).json({
           success: true,
-          relatorio: relRows[0] || null,
+          relatorio: relNormalizado,
           hash_sha256: dadosRelatorio.hash_sha256,
           dados: dadosRelatorio,
           html
         });
       } catch (err) {
         console.error('[Admin] Erro gerar_relatorio_mensal:', err);
-        return res.status(500).json({ error: 'Falha ao compilar relatório mensal.' });
+        return res.status(500).json({ error: 'Falha ao compilar relatório mensal: ' + err.message });
+      }
+    }
+
+    // 2.12.1 OBTER HTML DE RELATÓRIO JÁ GERADO (Para visualização/impressão no histórico)
+    if (action === 'obter_relatorio_html') {
+      const { relatorio_id } = req.body;
+      if (!relatorio_id) return res.status(400).json({ error: 'relatorio_id é obrigatório.' });
+
+      try {
+        const relResp = await fetch(`${url}/rest/v1/relatorios_gerados?id=eq.${encodeURIComponent(relatorio_id)}&select=*&limit=1`, { headers });
+        const rels = relResp.ok ? await relResp.json() : [];
+        if (!rels.length) return res.status(404).json({ error: 'Relatório não encontrado.' });
+        const rel = normalizarRelatorioRow(rels[0]);
+
+        const empResp = await fetch(`${url}/rest/v1/empresas?id=eq.${encodeURIComponent(rel.empresa_id)}&select=*&limit=1`, { headers });
+        const emps = empResp.ok ? await empResp.json() : [];
+        const empresa = emps[0] || { nome: 'Empresa Registada' };
+
+        const marcaNome = empresa.nome_comercial || empresa.nome;
+        const aliases = [...(empresa.marca_aliases || []), ...(empresa.apelidos_marca || [])];
+        const allMarcas = [marcaNome, ...aliases].filter(Boolean).map(m => m.toLowerCase());
+
+        const sinaisResp = await fetch(`${url}/rest/v1/analises?marca_mencionada=not.is.null&veredito=in.(golpe,suspeito)&limit=300`, { headers });
+        const allSinais = sinaisResp.ok ? await sinaisResp.json() : [];
+        const ocorrencias = allSinais.filter(s => {
+          if (s.empresa_id === rel.empresa_id) return true;
+          const m = (s.marca_mencionada || '').toLowerCase();
+          return allMarcas.some(al => m.includes(al));
+        });
+
+        const usoResp = await fetch(`${url}/rest/v1/uso_selo?empresa_id=eq.${encodeURIComponent(rel.empresa_id)}&select=*`, { headers });
+        const usos = usoResp.ok ? await usoResp.json() : [];
+        const metricas = {
+          visitas_pagina: usos.reduce((a, b) => a + (b.visitas_pagina || 0), 0),
+          verificacoes_widget: usos.reduce((a, b) => a + (b.verificacoes_widget || 0), 0)
+        };
+
+        const dadosRelatorio = estruturarRelatorioMensal({
+          empresa,
+          periodo: rel.periodo,
+          ocorrencias,
+          metricasSelo: metricas,
+          versao: rel.versao || '1.0',
+          geradoPor: rel.gerado_por || 'admin'
+        });
+        // Preserva o hash original registado na emissão
+        if (rel.hash_ficheiro) {
+          dadosRelatorio.hash_sha256 = rel.hash_ficheiro;
+        }
+
+        const html = renderRelatorioHtml(dadosRelatorio);
+        return res.status(200).json({
+          success: true,
+          relatorio: { ...rel, html },
+          html
+        });
+      } catch (err) {
+        return res.status(500).json({ error: 'Falha ao reconstruir HTML do relatório: ' + err.message });
       }
     }
 
@@ -988,10 +1550,461 @@ https://confirmequeme.pt`;
 
         if (!patchResp.ok) throw new Error(await patchResp.text());
         const rows = await patchResp.json();
+        const rel = normalizarRelatorioRow(rows[0]);
 
-        return res.status(200).json({ success: true, relatorio: rows[0] });
+        if (rel?.empresa_id) {
+          await registrarHistorico(url, headers, {
+            empresa_id: rel.empresa_id,
+            acao: 'aprovacao_relatorio',
+            depois: { relatorio_id, periodo: rel.periodo, hash: rel.hash_ficheiro },
+            por: aprovado_por,
+            motivo: `Relatório mensal ${rel.periodo} aprovado formalmente`
+          });
+        }
+
+        return res.status(200).json({ success: true, relatorio: rel });
       } catch (err) {
         return res.status(500).json({ error: 'Falha ao aprovar relatório.' });
+      }
+    }
+
+    // 2.14 MARCAR RELATÓRIO COMO ENVIADO AO CLIENTE (Bloqueado se não estiver aprovado — Critério 6)
+    if (action === 'marcar_relatorio_enviado') {
+      const { relatorio_id, por = 'admin' } = req.body;
+      if (!relatorio_id) return res.status(400).json({ error: 'relatorio_id é obrigatório.' });
+
+      try {
+        const relResp = await fetch(`${url}/rest/v1/relatorios_gerados?id=eq.${encodeURIComponent(relatorio_id)}&select=*&limit=1`, { headers });
+        const rels = relResp.ok ? await relResp.json() : [];
+        if (!rels.length) return res.status(404).json({ error: 'Relatório não encontrado.' });
+        const relAtual = rels[0];
+
+        if (!relAtual.aprovado_em || !relAtual.aprovado_por) {
+          return res.status(400).json({
+            error: 'Bloqueio Critério 6: Um relatório mensal NÃO pode ser marcado como enviado sem aprovação manual prévia.'
+          });
+        }
+
+        const agoraIso = new Date().toISOString();
+        const patchResp = await fetch(`${url}/rest/v1/relatorios_gerados?id=eq.${encodeURIComponent(relatorio_id)}`, {
+          method: 'PATCH',
+          headers: { ...headers, Prefer: 'return=representation' },
+          body: JSON.stringify({
+            enviado_em: agoraIso
+          })
+        });
+
+        if (!patchResp.ok) throw new Error(await patchResp.text());
+        const rows = await patchResp.json();
+        const rel = normalizarRelatorioRow(rows[0]);
+
+        await registrarHistorico(url, headers, {
+          empresa_id: relAtual.empresa_id,
+          acao: 'envio_relatorio_mensal',
+          depois: { relatorio_id, periodo: relAtual.periodo, enviado_em: agoraIso },
+          por,
+          motivo: `Relatório ${relAtual.periodo} enviado ao cliente após aprovação`
+        });
+
+        return res.status(200).json({ success: true, relatorio: rel });
+      } catch (err) {
+        return res.status(500).json({ error: 'Falha ao registar envio do relatório: ' + err.message });
+      }
+    }
+
+    // 2.15 CONVERTER MARCA DO RADAR / SOLICITAÇÃO EM LEAD NO PIPELINE B2B (1-Click Onboarding)
+    if (action === 'converter_marca_lead') {
+      const {
+        marca,
+        dominio_oficial,
+        email_oficial,
+        telefone_oficial,
+        representante_nome,
+        plano = 'radar',
+        notas,
+        por = 'admin'
+      } = req.body;
+
+      if (!marca || !String(marca).trim()) {
+        return res.status(400).json({ error: 'O nome da marca é obrigatório para criar a Lead.' });
+      }
+
+      try {
+        const nomeLimpo = String(marca).trim();
+        const precoDefault = plano === 'radar' ? 290.00 : 49.00;
+
+        const empInsert = await fetchComFallback(`${url}/rest/v1/empresas`, {
+          method: 'POST',
+          headers: { ...headers, Prefer: 'return=representation' }
+        }, {
+          nome: nomeLimpo,
+          nome_comercial: nomeLimpo,
+          dominio_oficial: dominio_oficial ? String(dominio_oficial).trim().toLowerCase() : null,
+          email_oficial: email_oficial ? String(email_oficial).trim().toLowerCase() : null,
+          email_contacto: email_oficial ? String(email_oficial).trim().toLowerCase() : null,
+          telefone_oficial: telefone_oficial ? String(telefone_oficial).trim() : null,
+          representante_nome: representante_nome ? String(representante_nome).trim() : null,
+          apelidos_marca: [nomeLimpo],
+          marca_aliases: [nomeLimpo],
+          plano,
+          preco_acordado: precoDefault,
+          estado: 'lead',
+          status: 'inativo',
+          notas: notas || 'Convertido diretamente a partir do Threat Radar / Solicitações B2B'
+        });
+
+        if (!empInsert.ok) throw new Error(await empInsert.text());
+        const rows = await empInsert.json();
+        const novaEmpresa = rows[0];
+
+        await inicializarQuatroPilares(url, headers, novaEmpresa.id);
+
+        await registrarHistorico(url, headers, {
+          empresa_id: novaEmpresa.id,
+          acao: 'conversao_radar_lead',
+          depois: { nome: nomeLimpo, plano, estado: 'lead' },
+          por,
+          motivo: 'Marca convertida em Lead no Pipeline B2B a partir do Threat Radar'
+        });
+
+        return res.status(200).json({ success: true, empresa: novaEmpresa });
+      } catch (err) {
+        return res.status(500).json({ error: 'Falha ao converter marca em lead: ' + err.message });
+      }
+    }
+
+    // 2.16 GERAR PACOTE PERICIAL DE TAKEDOWN & NOTIFICAÇÃO DE ABUSO (SIBS / CERT.PT / DECO / Seguradoras)
+    if (action === 'gerar_pacote_takedown') {
+      const {
+        marca = 'Marca Vigiada',
+        indicador = '',
+        tipo_ioc = 'DOMÍNIO / CANAL',
+        tatica_nome = 'Usurpação de Marca',
+        ocorrencias_total = 1,
+        primeira_deteccao = null,
+        ultima_deteccao = null,
+        empresa_id = null
+      } = req.body;
+
+      try {
+        const sinaisResp = await fetch(
+          `${url}/rest/v1/analises?veredito=in.(golpe,suspeito)&order=criado_em.desc&limit=100`,
+          { headers }
+        );
+        const allSinais = sinaisResp.ok ? await sinaisResp.json() : [];
+        const marcaLower = String(marca).toLowerCase();
+        const indLower = String(indicador).toLowerCase();
+
+        const relacionados = allSinais.filter(s => {
+          const m = (s.marca_mencionada || '').toLowerCase();
+          const c = (s.canal_mencionado || '').toLowerCase();
+          return (marcaLower && m.includes(marcaLower)) || (indLower && c.includes(indLower));
+        });
+
+        const exemplosLimpos = relacionados.slice(0, 3).map(s => {
+          const txt = limparTextoVitima(
+            s.texto_original ||
+            s.alerta_link ||
+            `Deteção no canal ${s.canal || 'WhatsApp/SMS'} (${s.tipo || 'fraude'}) com indicador ${s.canal_mencionado || indicador} — Score ${s.risco_score || s.confianca || 90}/100.`
+          );
+          return txt.length > 140 ? txt.slice(0, 137) + '...' : txt;
+        });
+
+        const pacote = gerarPacoteTakedown({
+          marca,
+          indicador: indicador || 'Indicador em análise',
+          tipo_ioc,
+          tatica_nome,
+          ocorrencias_total: Math.max(ocorrencias_total, relacionados.length, 1),
+          primeira_deteccao,
+          ultima_deteccao,
+          exemplos_limpos: exemplosLimpos
+        });
+
+        if (empresa_id) {
+          await registrarHistorico(url, headers, {
+            empresa_id,
+            acao: 'geracao_pacote_takedown',
+            depois: { indicador, tipo_ioc, hash: pacote.hash_sha256 },
+            motivo: `Pacote técnico de Takedown/Abuso gerado para ${indicador}`
+          });
+        }
+
+        return res.status(200).json({
+          success: true,
+          pacote
+        });
+      } catch (err) {
+        return res.status(500).json({ error: 'Falha ao gerar pacote de takedown: ' + err.message });
+      }
+    }
+
+    // 2.17 ALTERNAR FLAG DE ENTIDADE DE TESTE (is_teste)
+    if (action === 'toggle_empresa_teste') {
+      const { empresa_id, is_teste, por = 'admin' } = req.body;
+      if (!empresa_id || is_teste === undefined) {
+        return res.status(400).json({ error: 'empresa_id e is_teste são obrigatórios.' });
+      }
+
+      try {
+        const flag = !!is_teste;
+        const updateResp = await fetchComFallback(`${url}/rest/v1/empresas?id=eq.${encodeURIComponent(empresa_id)}`, {
+          method: 'PATCH',
+          headers: { ...headers, Prefer: 'return=representation' }
+        }, { is_teste: flag });
+
+        if (!updateResp.ok) throw new Error(await updateResp.text());
+
+        await fetch(`${url}/rest/v1/selos?empresa_id=eq.${encodeURIComponent(empresa_id)}`, {
+          method: 'PATCH',
+          headers,
+          body: JSON.stringify({ is_teste: flag })
+        });
+
+        await registrarHistorico(url, headers, {
+          empresa_id,
+          acao: flag ? 'marcar_como_teste' : 'desmarcar_teste',
+          depois: { is_teste: flag },
+          por,
+          motivo: flag ? 'Entidade marcada como ambiente de demonstração/teste' : 'Entidade promovida para registo real de produção'
+        });
+
+        return res.status(200).json({ success: true, is_teste: flag });
+      } catch (err) {
+        return res.status(500).json({ error: 'Falha ao alterar modo de teste: ' + err.message });
+      }
+    }
+
+    // 2.18 MÓDULO GOLPES NOVOS (FASE 1): DECIDIR ITEM DA FILA DE REVISÃO HUMANA (Secção 3.1)
+    if (action === 'decidir_fila_revisao') {
+      const {
+        fila_id: rawFilaId,
+        item_id,
+        analise_ref,
+        decisao,
+        revisor = 'admin',
+        notas = '',
+        resumo_item = null
+      } = req.body;
+      const fila_id = rawFilaId || item_id;
+
+      if (!fila_id && !analise_ref) {
+        return res.status(400).json({ error: 'fila_id ou analise_ref é obrigatório.' });
+      }
+
+      try {
+        const mem = getMemoriaGolpesNovos();
+        let itemBase = (fila_id && mem.fila_revisao.get(fila_id)) ||
+          [...mem.fila_revisao.values()].find(i => i.id === fila_id || i.analise_ref === analise_ref);
+
+        if (!itemBase) {
+          itemBase = {
+            id: fila_id,
+            analise_ref: analise_ref || `ref_${Date.now()}`,
+            motivo: 'suspeito',
+            resumo: resumo_item || {},
+            estado: 'novo',
+            criado_em: new Date().toISOString()
+          };
+        }
+
+        const atualizado = aplicarDecisaoHumanaFila({
+          item: itemBase,
+          decisao,
+          revisor,
+          notas
+        });
+
+        mem.fila_revisao.set(atualizado.id, atualizado);
+
+        // Tenta persistir na tabela fila_revisao do Supabase (upsert ou patch)
+        try {
+          if (fila_id) {
+            const patchRes = await fetch(`${url}/rest/v1/fila_revisao?id=eq.${encodeURIComponent(fila_id)}`, {
+              method: 'PATCH',
+              headers: { ...headers, Prefer: 'return=representation' },
+              body: JSON.stringify({
+                estado: 'resolvido',
+                decisao: atualizado.decisao,
+                revisor: atualizado.revisor,
+                notas: atualizado.notas,
+                resolvido_em: atualizado.resolvido_em
+              })
+            });
+            const rows = patchRes.ok ? await patchRes.json() : [];
+            if (!rows.length) {
+              await fetch(`${url}/rest/v1/fila_revisao`, {
+                method: 'POST',
+                headers: { ...headers, Prefer: 'return=minimal' },
+                body: JSON.stringify({
+                  id: atualizado.id,
+                  analise_ref: atualizado.analise_ref,
+                  motivo: atualizado.motivo || 'suspeito',
+                  cluster_id: atualizado.cluster_id || null,
+                  resumo: atualizado.resumo,
+                  estado: 'resolvido',
+                  decisao: atualizado.decisao,
+                  revisor: atualizado.revisor,
+                  notas: atualizado.notas,
+                  resolvido_em: atualizado.resolvido_em
+                })
+              });
+            }
+          }
+        } catch (_dbErr) {}
+
+        // Regista no histórico de auditoria
+        await registrarHistorico(url, headers, {
+          empresa_id: null,
+          acao: 'decisao_fila_revisao',
+          depois: {
+            fila_id: atualizado.id,
+            analise_ref: atualizado.analise_ref,
+            decisao: atualizado.decisao,
+            notas: atualizado.notas
+          },
+          por: atualizado.revisor,
+          motivo: `Decisão na fila de revisão: ${atualizado.decisao} (${atualizado.notas || 'sem nota'})`
+        });
+
+        return res.status(200).json({
+          success: true,
+          item: atualizado
+        });
+      } catch (err) {
+        return res.status(400).json({ error: err.message });
+      }
+    }
+
+    // 2.19 MÓDULO GOLPES NOVOS (FASE 1): ALTERAR ESTADO DE CLUSTER DE SEMELHANÇA (Secção 3.2)
+    // Um cluster nasce como 'possivel_campanha' e SÓ passa a 'ativa', 'encerrada' ou 'descartada' por decisão humana.
+    if (action === 'alterar_estado_cluster') {
+      const {
+        cluster_id,
+        fingerprint,
+        estado,
+        revisor = 'admin',
+        notas = ''
+      } = req.body;
+
+      if (!cluster_id && !fingerprint) {
+        return res.status(400).json({ error: 'cluster_id ou fingerprint é obrigatório.' });
+      }
+
+      try {
+        const mem = getMemoriaGolpesNovos();
+        let clusterBase = (fingerprint && mem.clusters.get(fingerprint)) ||
+          [...mem.clusters.values()].find(c => c.id === cluster_id || c.fingerprint === fingerprint);
+
+        if (!clusterBase) {
+          clusterBase = {
+            id: cluster_id,
+            fingerprint: fingerprint || `fp_${Date.now()}`,
+            indicadores: {},
+            primeira_vez: new Date().toISOString(),
+            ultima_vez: new Date().toISOString(),
+            contagem: 3,
+            contagem_24h: 3,
+            estado: 'possivel_campanha'
+          };
+        }
+
+        const atualizado = aplicarDecisaoHumanaCluster({
+          cluster: clusterBase,
+          novoEstado: estado,
+          revisor,
+          notas
+        });
+
+        mem.clusters.set(atualizado.fingerprint, atualizado);
+
+        // Persiste na tabela clusters do Supabase se disponível
+        try {
+          const queryParam = fingerprint
+            ? `fingerprint=eq.${encodeURIComponent(fingerprint)}`
+            : `id=eq.${encodeURIComponent(cluster_id)}`;
+          const patchRes = await fetch(`${url}/rest/v1/clusters?${queryParam}`, {
+            method: 'PATCH',
+            headers: { ...headers, Prefer: 'return=representation' },
+            body: JSON.stringify({
+              estado: atualizado.estado,
+              revisor: atualizado.revisor,
+              revisto_em: atualizado.revisto_em,
+              notas: atualizado.notas
+            })
+          });
+          const rows = patchRes.ok ? await patchRes.json() : [];
+          if (!rows.length) {
+            await fetch(`${url}/rest/v1/clusters`, {
+              method: 'POST',
+              headers: { ...headers, Prefer: 'return=minimal' },
+              body: JSON.stringify({
+                id: atualizado.id,
+                fingerprint: atualizado.fingerprint,
+                indicadores: atualizado.indicadores || {},
+                primeira_vez: atualizado.primeira_vez,
+                ultima_vez: atualizado.ultima_vez,
+                contagem: atualizado.contagem || 3,
+                contagem_24h: atualizado.contagem_24h || 3,
+                velocidade_por_hora: atualizado.velocidade_por_hora || 1,
+                estado: atualizado.estado,
+                revisor: atualizado.revisor,
+                revisto_em: atualizado.revisto_em,
+                notas: atualizado.notas
+              })
+            });
+          }
+        } catch (_dbErr) {}
+
+        await registrarHistorico(url, headers, {
+          empresa_id: null,
+          acao: 'decisao_cluster_campanha',
+          depois: {
+            cluster_id: atualizado.id,
+            fingerprint: atualizado.fingerprint,
+            estado: atualizado.estado,
+            notas: atualizado.notas
+          },
+          por: atualizado.revisor,
+          motivo: `Estado do agrupamento alterado para ${atualizado.estado} (${atualizado.notas || 'decisão humana'})`
+        });
+
+        return res.status(200).json({
+          success: true,
+          cluster: atualizado
+        });
+      } catch (err) {
+        return res.status(400).json({ error: err.message });
+      }
+    }
+
+    // 2.20 MÓDULO GOLPES NOVOS (FASE 1): INGESTAR EVENTO ANONIMIZADO PARA FILA & AGRUPAMENTO
+    if (action === 'ingestar_item_fila_revisao') {
+      const { evento } = req.body;
+      if (!evento || typeof evento !== 'object') {
+        return res.status(400).json({ error: 'Objeto evento é obrigatório.' });
+      }
+
+      try {
+        const mem = getMemoriaGolpesNovos();
+        const clustersAtuais = [...mem.clusters.values()];
+        const novosClusters = agruparEventosEmClusters([evento], clustersAtuais);
+        for (const c of novosClusters) {
+          mem.clusters.set(c.fingerprint, c);
+        }
+
+        const item = criarItemFilaRevisao(evento, novosClusters[0] || null);
+        if (item) {
+          mem.fila_revisao.set(item.id, item);
+        }
+
+        return res.status(200).json({
+          success: true,
+          item,
+          clusters: novosClusters
+        });
+      } catch (err) {
+        return res.status(400).json({ error: err.message });
       }
     }
 
@@ -1000,3 +2013,4 @@ https://confirmequeme.pt`;
 
   return res.status(405).json({ error: 'Método não permitido.' });
 }
+
