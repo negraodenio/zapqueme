@@ -28,7 +28,12 @@ import {
   decidirAlteracaoDicionario,
   compilarDicionarioAprovado,
   isApprovedDictionaryEnabled,
-  setApprovedDictionaryEnabled
+  setApprovedDictionaryEnabled,
+  criarAmostraTeste,
+  classificarAmostraTeste,
+  promoverAmostraParaRegressao,
+  validarConjuntoBenchmarkRotativo,
+  executarBenchmarkRotativo
 } from '../lib/golpes_novos.js';
 
 // Campos de verificação comercial e CRM (migração 20261016, 20261015 e 20261019).
@@ -231,6 +236,8 @@ export default async function handler(req, res) {
     let alertasDb = [];
     let esquemasDb = [];
     let dicionarioDb = [];
+    let amostrasDb = [];
+    let corridasDb = [];
     let analisesRevisao = [];
     let isDbOnline = true;
     let dbErrorMessage = null;
@@ -391,6 +398,16 @@ export default async function handler(req, res) {
       } catch {}
 
       try {
+        const amResp = await fetch(`${url}/rest/v1/amostras_teste?select=*&order=criado_em.desc&limit=300`, { headers });
+        if (amResp.ok) amostrasDb = await amResp.json();
+      } catch {}
+
+      try {
+        const cbResp = await fetch(`${url}/rest/v1/corridas_benchmark?select=*&order=data_hora.desc&limit=50`, { headers });
+        if (cbResp.ok) corridasDb = await cbResp.json();
+      } catch {}
+
+      try {
         const anResp = await fetch(
           `${url}/rest/v1/analises?select=id,criado_em,veredito,confianca,risco_score,tipo,canal,canal_mencionado,marca_mencionada,alerta_link,vezes_reportada&order=criado_em.desc&limit=200`,
           { headers }
@@ -437,7 +454,7 @@ export default async function handler(req, res) {
       marcas
     });
 
-    // Compila Estado das Fases 1, 2 e 3 do Módulo de Golpes Novos
+    // Compila Estado das Fases 1, 2, 3 e 4 do Módulo de Golpes Novos
     const estadoFase1 = compilarEstadoFase1({
       clustersDb,
       filaDb,
@@ -445,6 +462,8 @@ export default async function handler(req, res) {
       alertasDb,
       esquemasDb,
       dicionarioDb,
+      amostrasDb,
+      corridasDb,
       analisesRecentes: analisesRevisao.length ? analisesRevisao : [...sinais, ...ocorrencias]
     });
 
@@ -473,7 +492,12 @@ export default async function handler(req, res) {
       totalAlertasOficiaisNovos: estadoFase1.resumo_modulo.alertas_novos,
       totalEsquemasAtivos: estadoFase1.resumo_modulo.esquemas_ativos,
       totalDicionarioPendentes: estadoFase1.resumo_modulo.dicionario_pendentes,
-      totalDicionarioAprovados: estadoFase1.resumo_modulo.dicionario_aprovados
+      totalDicionarioAprovados: estadoFase1.resumo_modulo.dicionario_aprovados,
+      totalAmostrasRotativas: estadoFase1.resumo_modulo.amostras_rotativas,
+      totalAmostrasRegressao: estadoFase1.resumo_modulo.amostras_regressao,
+      totalAmostrasSemClassificacao: estadoFase1.resumo_modulo.amostras_sem_classificacao,
+      benchmarkPronto: estadoFase1.resumo_modulo.benchmark_pronto_a_executar,
+      ultimaTaxaAcertoBenchmark: estadoFase1.resumo_modulo.ultima_corrida_taxa_acerto
     };
 
     return res.status(200).json({
@@ -499,6 +523,8 @@ export default async function handler(req, res) {
       esquemas: estadoFase1.esquemas,
       dicionario_alteracoes: estadoFase1.dicionario_alteracoes,
       dicionario_ativo: estadoFase1.dicionario_ativo,
+      amostras_teste: estadoFase1.amostras_teste,
+      corridas_benchmark: estadoFase1.corridas_benchmark,
       golpes_novos_resumo: estadoFase1.resumo_modulo,
       database_online: isDbOnline,
       database_warning: isDbOnline ? null : `Supabase inacessível (${dbErrorMessage}). Verifique se o projeto está pausado em supabase.com.`
@@ -2636,6 +2662,290 @@ https://confirmequeme.pt`;
         success: true,
         dicionario_interruptor_ativo: isApprovedDictionaryEnabled()
       });
+    }
+
+    // =========================================================================
+    // 2.28 MÓDULO GOLPES NOVOS (FASE 4): CRIAR AMOSTRA DE TESTE (Secção 3.6)
+    // =========================================================================
+    if (action === 'criar_amostra_teste') {
+      const {
+        semana,
+        resumo_ou_texto_anonimizado,
+        origem = 'real',
+        tipo_real = null,
+        classificado_por = null,
+        golpe_novo = false,
+        uso = 'rotativo'
+      } = req.body || {};
+
+      try {
+        const mem = getMemoriaGolpesNovos();
+        const novaAmostra = criarAmostraTeste({
+          semana,
+          resumo_ou_texto_anonimizado,
+          origem,
+          tipo_real,
+          classificado_por,
+          golpe_novo,
+          uso
+        });
+
+        mem.amostras_teste.set(novaAmostra.id, novaAmostra);
+
+        try {
+          await fetch(`${url}/rest/v1/amostras_teste`, {
+            method: 'POST',
+            headers: { ...headers, Prefer: 'return=minimal' },
+            body: JSON.stringify(novaAmostra)
+          });
+        } catch (_dbErr) {}
+
+        await registrarHistorico(url, headers, {
+          empresa_id: null,
+          acao: 'criar_amostra_teste',
+          depois: {
+            amostra_id: novaAmostra.id,
+            semana: novaAmostra.semana,
+            origem: novaAmostra.origem,
+            tipo_real: novaAmostra.tipo_real,
+            golpe_novo: novaAmostra.golpe_novo,
+            uso: novaAmostra.uso
+          },
+          por: novaAmostra.classificado_por || 'admin',
+          motivo: `Amostra de teste "${novaAmostra.id}" registada para o conjunto ${novaAmostra.uso}`
+        });
+
+        return res.status(200).json({
+          success: true,
+          amostra: novaAmostra
+        });
+      } catch (err) {
+        return res.status(400).json({ error: err.message });
+      }
+    }
+
+    // =========================================================================
+    // 2.29 MÓDULO GOLPES NOVOS (FASE 4): CLASSIFICAR AMOSTRA POR HUMANO (Secção 3.6 - Critério 5)
+    // =========================================================================
+    if (action === 'classificar_amostra_teste') {
+      const {
+        id,
+        amostra_id,
+        tipo_real,
+        classificado_por,
+        golpe_novo
+      } = req.body || {};
+
+      const targetId = id || amostra_id;
+      if (!targetId) {
+        return res.status(400).json({ error: 'O id da amostra de teste é obrigatório.' });
+      }
+
+      try {
+        const mem = getMemoriaGolpesNovos();
+        let amostraBase = mem.amostras_teste.get(targetId);
+
+        if (!amostraBase) {
+          try {
+            const getRes = await fetch(`${url}/rest/v1/amostras_teste?id=eq.${encodeURIComponent(targetId)}&select=*`, { headers });
+            const rows = getRes.ok ? await getRes.json() : [];
+            if (rows.length > 0) amostraBase = rows[0];
+          } catch (_e) {}
+        }
+
+        if (!amostraBase) {
+          return res.status(404).json({ error: `Amostra de teste "${targetId}" não encontrada.` });
+        }
+
+        const amostraClassificada = classificarAmostraTeste(amostraBase, {
+          tipo_real,
+          classificado_por,
+          golpe_novo
+        });
+
+        mem.amostras_teste.set(amostraClassificada.id, amostraClassificada);
+
+        try {
+          await fetch(`${url}/rest/v1/amostras_teste?id=eq.${encodeURIComponent(amostraClassificada.id)}`, {
+            method: 'PATCH',
+            headers: { ...headers, Prefer: 'return=minimal' },
+            body: JSON.stringify({
+              tipo_real: amostraClassificada.tipo_real,
+              classificado_por: amostraClassificada.classificado_por,
+              classificado_em: amostraClassificada.classificado_em,
+              golpe_novo: amostraClassificada.golpe_novo
+            })
+          });
+        } catch (_dbErr) {}
+
+        await registrarHistorico(url, headers, {
+          empresa_id: null,
+          acao: 'classificar_amostra_teste',
+          depois: {
+            amostra_id: amostraClassificada.id,
+            tipo_real: amostraClassificada.tipo_real,
+            golpe_novo: amostraClassificada.golpe_novo,
+            classificado_por: amostraClassificada.classificado_por,
+            classificado_em: amostraClassificada.classificado_em
+          },
+          por: amostraClassificada.classificado_por,
+          motivo: `Amostra classificada humanamente como ${amostraClassificada.tipo_real} (golpe_novo: ${amostraClassificada.golpe_novo})`
+        });
+
+        return res.status(200).json({
+          success: true,
+          amostra: amostraClassificada
+        });
+      } catch (err) {
+        return res.status(400).json({ error: err.message });
+      }
+    }
+
+    // =========================================================================
+    // 2.30 MÓDULO GOLPES NOVOS (FASE 4): PROMOVER AMOSTRA PARA REGRESSÃO (Secção 3.6)
+    // =========================================================================
+    if (action === 'promover_amostra_regressao') {
+      const {
+        id,
+        amostra_id,
+        revisor = 'Operador Admin'
+      } = req.body || {};
+
+      const targetId = id || amostra_id;
+      if (!targetId) {
+        return res.status(400).json({ error: 'O id da amostra de teste é obrigatório.' });
+      }
+
+      try {
+        const mem = getMemoriaGolpesNovos();
+        let amostraBase = mem.amostras_teste.get(targetId);
+
+        if (!amostraBase) {
+          try {
+            const getRes = await fetch(`${url}/rest/v1/amostras_teste?id=eq.${encodeURIComponent(targetId)}&select=*`, { headers });
+            const rows = getRes.ok ? await getRes.json() : [];
+            if (rows.length > 0) amostraBase = rows[0];
+          } catch (_e) {}
+        }
+
+        if (!amostraBase) {
+          return res.status(404).json({ error: `Amostra de teste "${targetId}" não encontrada.` });
+        }
+
+        const amostraPromovida = promoverAmostraParaRegressao(amostraBase);
+        mem.amostras_teste.set(amostraPromovida.id, amostraPromovida);
+
+        try {
+          await fetch(`${url}/rest/v1/amostras_teste?id=eq.${encodeURIComponent(amostraPromovida.id)}`, {
+            method: 'PATCH',
+            headers: { ...headers, Prefer: 'return=minimal' },
+            body: JSON.stringify({ uso: 'regressao' })
+          });
+        } catch (_dbErr) {}
+
+        await registrarHistorico(url, headers, {
+          empresa_id: null,
+          acao: 'promover_amostra_regressao',
+          depois: {
+            amostra_id: amostraPromovida.id,
+            uso: 'regressao'
+          },
+          por: revisor,
+          motivo: `Amostra promovida para o conjunto de regressão permanente (sai do conjunto rotativo)`
+        });
+
+        return res.status(200).json({
+          success: true,
+          amostra: amostraPromovida
+        });
+      } catch (err) {
+        return res.status(400).json({ error: err.message });
+      }
+    }
+
+    // =========================================================================
+    // 2.31 MÓDULO GOLPES NOVOS (FASE 4): EXECUTAR BENCHMARK ROTATIVO (Secção 3.6 & Critério 5)
+    // =========================================================================
+    if (action === 'executar_benchmark_rotativo') {
+      const {
+        commit = process.env.VERCEL_GIT_COMMIT_SHA || 'local-head',
+        revisor = 'Operador Auditor'
+      } = req.body || {};
+
+      try {
+        const mem = getMemoriaGolpesNovos();
+
+        // 1. Reúne amostras da memória + Supabase + seed inicial
+        let amostrasCombinadas = [...mem.amostras_teste.values()];
+        try {
+          const amResp = await fetch(`${url}/rest/v1/amostras_teste?select=*&order=criado_em.desc&limit=300`, { headers });
+          if (amResp.ok) {
+            const dbAmostras = await amResp.json();
+            const mapComb = new Map();
+            for (const a of [...dbAmostras, ...amostrasCombinadas]) {
+              if (a && a.id) mapComb.set(a.id, a);
+            }
+            amostrasCombinadas = [...mapComb.values()];
+          }
+        } catch (_e) {}
+
+        // Filtra conjunto ativo rotativo
+        const amostrasRotativas = amostrasCombinadas.filter(a => a.uso === 'rotativo');
+
+        // CRITÉRIO 5 OBRIGATÓRIO: Bloqueia estritamente a corrida se faltar classificação humana prévia
+        validarConjuntoBenchmarkRotativo(amostrasRotativas);
+
+        // Executa o benchmark com intervalos de Wilson (95%), relatório separado de golpes novos e rotulagem estrita
+        const relatorio = await executarBenchmarkRotativo(amostrasRotativas, { commit });
+
+        mem.corridas_benchmark.set(relatorio.id, relatorio);
+
+        // Persiste resultado da corrida no Supabase
+        try {
+          await fetch(`${url}/rest/v1/corridas_benchmark`, {
+            method: 'POST',
+            headers: { ...headers, Prefer: 'return=minimal' },
+            body: JSON.stringify({
+              id: relatorio.id,
+              data_hora: relatorio.data_hora,
+              commit: relatorio.commit,
+              hash_dataset: relatorio.hash_dataset,
+              modelo: relatorio.modelo,
+              amostra_id: `lote_${relatorio.amostras_totais}_amostras`,
+              veredito: `${relatorio.acertos}/${relatorio.amostras_totais} (${relatorio.taxa_acerto}%)`,
+              pontuacao: parseFloat(relatorio.taxa_acerto) || 0,
+              origem_veredito: 'Benchmark Rotativo Fase 4',
+              fontes: relatorio.distribuicao_decisoes,
+              erro: null
+            })
+          });
+        } catch (_dbErr) {}
+
+        await registrarHistorico(url, headers, {
+          empresa_id: null,
+          acao: 'execucao_benchmark_rotativo',
+          depois: {
+            corrida_id: relatorio.id,
+            hash_dataset: relatorio.hash_dataset,
+            taxa_acerto: relatorio.taxa_acerto,
+            intervalo_wilson: relatorio.intervalo_wilson_95,
+            golpes_novos_cobertura: relatorio.relatorio_golpes_novos?.taxa_cobertura
+          },
+          por: revisor,
+          motivo: `Executado ${relatorio.rotulagem} com taxa de acerto de ${relatorio.taxa_acerto}% (IC 95% Wilson: ${relatorio.intervalo_wilson_95})`
+        });
+
+        return res.status(200).json({
+          success: true,
+          relatorio
+        });
+      } catch (err) {
+        // Erro nunca silenciado (ex: violação do Critério 5 ou falha do dataset)
+        return res.status(400).json({
+          error: err.message,
+          bloqueado_criterio_5: err.message.includes('humanamente classificada')
+        });
+      }
     }
 
     return res.status(400).json({ error: 'Ação não reconhecida.' });

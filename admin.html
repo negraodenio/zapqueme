@@ -1246,20 +1246,22 @@
       <!-- AVISO DE REGRAS DE TRABALHO E PRIVACIDADE -->
       <div style="background: rgba(16, 185, 129, 0.08); border: 1px solid rgba(16, 185, 129, 0.3); border-radius: 10px; padding: 14px 18px; margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
         <div>
-          <div style="font-weight: 700; color: #34d399; font-size: 0.9rem;">🛡️ Processo Vivo de Acompanhamento de Golpes Novos — Fases 1, 2 & 3 (Fila, Agrupamento, Alertas Oficiais, Esquemas & Dicionário Aprovado)</div>
+          <div style="font-weight: 700; color: #34d399; font-size: 0.9rem;">🛡️ Processo Vivo de Acompanhamento de Golpes Novos — Fases 1 a 4 (Fila, Agrupamento, Alertas, Dicionário & Benchmark Rotativo)</div>
           <div style="color: var(--text-muted); font-size: 0.78rem; margin-top: 4px;">
-            <strong>Privacidade e controlo humano por desenho:</strong> Zero texto bruto guardado. Respeito por <code>robots.txt</code>. As propostas de marcas e domínios entram como <code>pendente</code> (não alteram nenhuma análise) e só passam a valer depois de aprovadas por si.
+            <strong>Privacidade e controlo humano por desenho:</strong> Zero texto bruto guardado. Respeito por <code>robots.txt</code>. Classificação humana obrigatória antes de qualquer benchmark correr (Critério 5). Propostas de dicionário só vigoram após aprovação.
           </div>
         </div>
         <div style="display: flex; gap: 8px; flex-wrap: wrap;">
-          <button onclick="executarVerificacaoFontesAlerta()" id="btnVerificarFontes" class="btn-xs btn-xs-primary" style="padding: 8px 12px;">🔄 Verificar Fontes Oficiais Agora</button>
+          <button onclick="executarBenchmarkRotativoUI()" id="btnBenchmarkRotativoTopo" class="btn-xs btn-xs-primary" style="padding: 8px 12px; background: #6366f1; border-color: #4f46e5;">▶️ Executar Benchmark Rotativo</button>
+          <button onclick="abrirModalNovaAmostra()" class="btn-xs" style="background: rgba(139, 92, 246, 0.18); border-color: rgba(139, 92, 246, 0.45); color: #c084fc; padding: 8px 12px;">+ Nova Amostra</button>
+          <button onclick="executarVerificacaoFontesAlerta()" id="btnVerificarFontes" class="btn-xs" style="background: rgba(16, 185, 129, 0.16); border-color: rgba(16, 185, 129, 0.4); color: #34d399; padding: 8px 12px;">🔄 Verificar Fontes Oficiais</button>
           <button onclick="abrirModalNovoEsquema()" class="btn-xs" style="background: rgba(245, 158, 11, 0.18); border-color: rgba(245, 158, 11, 0.45); color: #fcd34d; padding: 8px 12px;">+ Novo Esquema</button>
           <button onclick="abrirModalProporDicionario()" class="btn-xs" style="background: rgba(56, 189, 248, 0.18); border-color: rgba(56, 189, 248, 0.45); color: #38bdf8; padding: 8px 12px;">+ Propor ao Dicionário</button>
         </div>
       </div>
 
-      <!-- MINI KPIS DAS FASES 1, 2 E 3 -->
-      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(165px, 1fr)); gap: 14px; margin-bottom: 22px;">
+      <!-- MINI KPIS DAS FASES 1, 2, 3 E 4 -->
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 14px; margin-bottom: 22px;">
         <div class="kpi-card" style="padding: 16px;">
           <div class="kpi-header"><span>Pendentes na Fila</span><span>📥</span></div>
           <div class="kpi-value" id="gnKpiPendentes" style="color: #f59e0b; font-size: 1.8rem;">0</div>
@@ -1291,9 +1293,14 @@
           <div class="kpi-sub" id="gnKpiDicionarioSub">0 aprovados · 49 marcas base</div>
         </div>
         <div class="kpi-card" style="padding: 16px;">
-          <div class="kpi-header"><span>Casos Resolvidos</span><span>✅</span></div>
-          <div class="kpi-value" id="gnKpiResolvidos" style="color: #10b981; font-size: 1.8rem;">0</div>
-          <div class="kpi-sub">Decisões humanas registadas</div>
+          <div class="kpi-header"><span>Amostras Rotativas</span><span>🎯</span></div>
+          <div class="kpi-value" id="gnKpiAmostrasRotativas" style="color: #818cf8; font-size: 1.8rem;">0</div>
+          <div class="kpi-sub" id="gnKpiAmostrasRotativasSub">0 sem classificação</div>
+        </div>
+        <div class="kpi-card" style="padding: 16px;">
+          <div class="kpi-header"><span>Benchmark Rotativo</span><span>📈</span></div>
+          <div class="kpi-value" id="gnKpiBenchmarkTaxa" style="color: #10b981; font-size: 1.8rem;">-%</div>
+          <div class="kpi-sub" id="gnKpiBenchmarkWilson">IC 95% Wilson: a calcular</div>
         </div>
       </div>
 
@@ -1517,6 +1524,58 @@
           </thead>
           <tbody id="dicionarioAlteracoesTableBody">
             <tr><td colspan="7" style="text-align: center; color: var(--text-muted); padding: 24px;">A carregar propostas e histórico do dicionário...</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- SECÇÃO 3.6 (FASE 4): BENCHMARK ROTATIVO & AMOSTRAS DE TESTE -->
+      <div class="table-container" style="margin-bottom: 26px;">
+        <div class="table-header" style="flex-wrap: wrap; gap: 12px;">
+          <div>
+            <h3>🎯 Benchmark Rotativo & Amostras de Teste (Fase 4)</h3>
+            <p style="color: var(--text-muted); font-size: 0.8rem; margin-top: 2px;">
+              15 a 30 amostras novas por semana, classificadas previamente por humanos (<strong>Critério 5: o benchmark recusa-se a correr se faltar classificação</strong>). Relatório separado de generalização para <code>golpes novos</code> (&lt; 14 dias). Amostras de correção passam a <code>regressão</code>. Rótulo estrito: <em>"teste interno com N amostras"</em>.
+            </p>
+          </div>
+          <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+            <button id="btnExecutarBenchmarkRotativo" onclick="executarBenchmarkRotativoUI()" class="btn-xs btn-xs-primary" style="background: #6366f1; border-color: #4f46e5; padding: 7px 14px;">
+              ▶️ Executar Benchmark Rotativo
+            </button>
+            <select id="gnFilterAmostraUso" class="form-select" onchange="renderGolpesNovos()" style="font-size: 0.8rem; padding: 6px 10px;">
+              <option value="todos">Todos os usos (Rotativo + Regressão)</option>
+              <option value="rotativo" selected>Conjunto Rotativo Ativo</option>
+              <option value="regressao">Conjunto de Regressão Permanente</option>
+            </select>
+            <select id="gnFilterAmostraTipo" class="form-select" onchange="renderGolpesNovos()" style="font-size: 0.8rem; padding: 6px 10px;">
+              <option value="todos">Todos os tipos reais</option>
+              <option value="pendente">⚠️ Aguardam classificação humana</option>
+              <option value="Golpe">Golpes reais</option>
+              <option value="Legítimo">Legítimos reais</option>
+              <option value="golpe_novo">Novos esquemas (&lt; 14 dias)</option>
+            </select>
+            <button onclick="abrirModalNovaAmostra()" class="btn-xs" style="background: rgba(139, 92, 246, 0.18); border-color: rgba(139, 92, 246, 0.45); color: #c084fc;">+ Nova Amostra</button>
+          </div>
+        </div>
+
+        <!-- PAINEL DE RESULTADOS DA ÚLTIMA CORRIDA DO BENCHMARK -->
+        <div id="benchmarkUltimaCorridaBox" style="background: rgba(15, 23, 42, 0.6); border: 1px solid rgba(99, 102, 241, 0.25); border-radius: 8px; padding: 14px 18px; margin: 14px 0 18px 0;">
+          <div style="color: var(--text-muted); font-size: 0.82rem;">A carregar resultados do benchmark...</div>
+        </div>
+
+        <table>
+          <thead>
+            <tr>
+              <th>Semana & Origem</th>
+              <th>Resumo Anonimizado (Sem PII)</th>
+              <th>Tipo Real (Humano)</th>
+              <th>Golpe Novo (&lt; 14d)</th>
+              <th>Classificado Por & Data</th>
+              <th>Uso</th>
+              <th>Ações</th>
+            </tr>
+          </thead>
+          <tbody id="amostrasTableBody">
+            <tr><td colspan="7" style="text-align: center; color: var(--text-muted); padding: 24px;">A carregar amostras de teste do benchmark rotativo...</td></tr>
           </tbody>
         </table>
       </div>
@@ -1803,6 +1862,109 @@
         <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 16px;">
           <button type="button" class="btn-secondary" onclick="closeModals()">Cancelar</button>
           <button type="submit" class="btn-action">Submeter Proposta (Pendente)</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL FASE 4: CRIAR AMOSTRA DE TESTE (Secção 3.6) -->
+  <div id="amostraModal" class="modal-overlay">
+    <div class="modal-content" style="max-width: 600px;">
+      <div class="modal-title">
+        <span>🎯 Nova Amostra de Teste (Benchmark Rotativo)</span>
+        <button class="close-modal" onclick="closeModals()">×</button>
+      </div>
+      <form onsubmit="submeterNovaAmostra(event)">
+        <div style="background: rgba(99, 102, 241, 0.08); border: 1px solid rgba(99, 102, 241, 0.3); border-radius: 8px; padding: 10px 12px; margin-bottom: 14px; font-size: 0.78rem; color: #c7d2fe;">
+          🔒 <strong>Anonimização Obrigatória:</strong> Nunca guarde números de telemóvel, emails, NIF ou IBAN. Resumos serão limpos automaticamente.
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Semana *</label>
+            <input type="text" id="amostraModalSemana" class="form-input" required placeholder="Ex: Semana 42 - 2026">
+          </div>
+          <div class="form-group">
+            <label class="form-label">Origem *</label>
+            <select id="amostraModalOrigem" class="form-select">
+              <option value="real">Real (anonimizada com consentimento)</option>
+              <option value="alerta_oficial">Alerta Oficial (exemplo oficial)</option>
+              <option value="sintetico">Sintético (baseado em alerta)</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Resumo Anonimizado / Padrão da Mensagem *</label>
+          <textarea id="amostraModalResumo" class="form-input" rows="3" required placeholder="Ex: SMS em nome dos CTT com aviso de encomenda retida na alfandega e link para pagar taxa"></textarea>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label class="form-label">Tipo Real (Classificação Humana Prévia) *</label>
+            <select id="amostraModalTipoReal" class="form-select">
+              <option value="">Ainda não classificado (bloqueará o benchmark)</option>
+              <option value="Golpe">Golpe</option>
+              <option value="Legítimo">Legítimo</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Classificado Por (Auditor Humano)</label>
+            <input type="text" id="amostraModalClassificador" class="form-input" placeholder="Ex: Auditor Humano Independente">
+          </div>
+        </div>
+        <div class="form-row" style="align-items: center; margin-top: 4px;">
+          <div class="form-group" style="margin-bottom: 0;">
+            <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 0.82rem; color: #fff;">
+              <input type="checkbox" id="amostraModalGolpeNovo" value="1">
+              <span><strong>Golpe Novo</strong> (Esquema surgido nos últimos 14 dias — métrica de generalização)</span>
+            </label>
+          </div>
+        </div>
+        <div class="form-group" style="margin-top: 14px;">
+          <label class="form-label">Destino / Uso da Amostra *</label>
+          <select id="amostraModalUso" class="form-select">
+            <option value="rotativo">Conjunto Rotativo Semanal (15 a 30 amostras)</option>
+            <option value="regressao">Conjunto de Regressão Permanente</option>
+          </select>
+        </div>
+        <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 16px;">
+          <button type="button" class="btn-secondary" onclick="closeModals()">Cancelar</button>
+          <button type="submit" class="btn-action">Guardar Amostra</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL FASE 4: CLASSIFICAÇÃO HUMANA RÁPIDA (Critério 5) -->
+  <div id="classificarAmostraModal" class="modal-overlay">
+    <div class="modal-content" style="max-width: 520px;">
+      <div class="modal-title">
+        <span>⚖️ Classificação Humana da Amostra (Critério 5)</span>
+        <button class="close-modal" onclick="closeModals()">×</button>
+      </div>
+      <form onsubmit="submeterClassificacaoAmostra(event)">
+        <input type="hidden" id="clsAmostraId" value="">
+        <div id="clsAmostraInfoBox" style="background: rgba(15, 23, 42, 0.8); border: 1px solid rgba(148, 163, 184, 0.25); border-radius: 8px; padding: 12px; margin-bottom: 14px; font-size: 0.82rem; line-height: 1.5;"></div>
+        <div class="form-group">
+          <label class="form-label">Tipo Real (Veredito Humano) *</label>
+          <select id="clsAmostraTipoReal" class="form-select" required>
+            <option value="">Selecione o tipo real...</option>
+            <option value="Golpe">🚨 Golpe (Fraude / Burla)</option>
+            <option value="Legítimo">✅ Legítimo (Mensagem autêntica / benigna)</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Auditor Humano (Nome / Iniciais) *</label>
+          <input type="text" id="clsAmostraClassificador" class="form-input" required placeholder="Ex: Auditor Humano Independente" value="Auditor Humano Independente">
+          <div style="font-size: 0.72rem; color: var(--text-muted); margin-top: 3px;">Regra da Secção 3.6: Não pode ser quem desenvolveu o motor analítico.</div>
+        </div>
+        <div class="form-group" style="margin-top: 10px;">
+          <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 0.82rem; color: #fff;">
+            <input type="checkbox" id="clsAmostraGolpeNovo" value="1">
+            <span><strong>Golpe Novo</strong> (Esquema surgido nos últimos 14 dias)</span>
+          </label>
+        </div>
+        <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 16px;">
+          <button type="button" class="btn-secondary" onclick="closeModals()">Cancelar</button>
+          <button type="submit" class="btn-action">Gravar Classificação Humana</button>
         </div>
       </form>
     </div>
@@ -4917,6 +5079,39 @@ Zap, Quem É?`;
         elDicSub.textContent = `${apCount} aprovados · ${totalMarcas} marcas ativas`;
       }
 
+      // KPIs Fase 4: Amostras Rotativas e Benchmark
+      const elAmostrasRot = document.getElementById('gnKpiAmostrasRotativas');
+      if (elAmostrasRot) {
+        elAmostrasRot.textContent = typeof resumo.amostras_rotativas === 'number'
+          ? resumo.amostras_rotativas
+          : (dashboardState.amostras_teste || []).filter(a => a.uso === 'rotativo').length;
+      }
+      const elAmostrasRotSub = document.getElementById('gnKpiAmostrasRotativasSub');
+      if (elAmostrasRotSub) {
+        const semCls = typeof resumo.amostras_sem_classificacao === 'number'
+          ? resumo.amostras_sem_classificacao
+          : (dashboardState.amostras_teste || []).filter(a => a.uso === 'rotativo' && (!a.tipo_real || !a.classificado_por)).length;
+        if (semCls > 0) {
+          elAmostrasRotSub.innerHTML = `<span style="color: #fbbf24; font-weight: 700;">⚠️ ${semCls} sem classificação (bloqueia)</span>`;
+        } else {
+          elAmostrasRotSub.innerHTML = `<span style="color: #34d399;">✅ Todas classificadas</span>`;
+        }
+      }
+      const elBenchmarkTaxa = document.getElementById('gnKpiBenchmarkTaxa');
+      if (elBenchmarkTaxa) {
+        const tx = resumo.ultima_corrida_taxa_acerto;
+        elBenchmarkTaxa.textContent = tx !== null && tx !== undefined ? `${tx}%` : '-%';
+      }
+      const elBenchmarkWilson = document.getElementById('gnKpiBenchmarkWilson');
+      if (elBenchmarkWilson) {
+        const uc = (dashboardState.corridas_benchmark || [])[0];
+        if (uc && uc.intervalo_wilson_95) {
+          elBenchmarkWilson.textContent = `IC 95% Wilson: ${uc.intervalo_wilson_95}`;
+        } else {
+          elBenchmarkWilson.textContent = 'IC 95% Wilson: a calcular';
+        }
+      }
+
       const btnSwitch = document.getElementById('btnToggleInterruptorDicionario');
       if (btnSwitch) {
         const ativo = resumo.dicionario_interruptor_ativo !== false;
@@ -5299,6 +5494,158 @@ Zap, Quem É?`;
                   ` : `
                     <span style="font-size: 0.74rem; color: var(--text-muted);">Histórico registado</span>
                   `}
+                </td>
+              </tr>
+            `;
+          }).join('');
+        }
+      }
+
+      // 5. Renderizar Painel de Resultados do Benchmark Rotativo (Secção 3.6)
+      const boxBenchmark = document.getElementById('benchmarkUltimaCorridaBox');
+      const corridas = Array.isArray(dashboardState.corridas_benchmark) ? dashboardState.corridas_benchmark : [];
+      const ultimaCorrida = corridas[0] || null;
+
+      if (boxBenchmark) {
+        if (!ultimaCorrida) {
+          boxBenchmark.innerHTML = `
+            <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+              <div>
+                <strong style="color: #c7d2fe;">Nenhuma execução de benchmark rotativo registada nesta sessão.</strong>
+                <div style="font-size: 0.78rem; color: var(--text-muted); margin-top: 3px;">
+                  O benchmark requer que todas as amostras do conjunto rotativo ativo estejam previamente classificadas por humanos (Critério 5).
+                </div>
+              </div>
+              <button onclick="executarBenchmarkRotativoUI()" class="btn-xs btn-xs-primary" style="background: #6366f1; border-color: #4f46e5; padding: 7px 14px;">
+                ▶️ Executar Benchmark Agora
+              </button>
+            </div>
+          `;
+        } else {
+          const gnInfo = ultimaCorrida.relatorio_golpes_novos || {};
+          const sensInfo = ultimaCorrida.sensibilidade_golpes || {};
+          const specInfo = ultimaCorrida.especificidade_legitimos || {};
+          const distDec = ultimaCorrida.distribuicao_decisoes || {};
+          const distStr = Object.entries(distDec).map(([k, v]) => `${k}: ${v}`).join(' · ') || 'Padrão';
+
+          boxBenchmark.innerHTML = `
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 12px; margin-bottom: 12px;">
+              <div>
+                <span style="font-size: 0.74rem; background: rgba(99, 102, 241, 0.2); color: #c7d2fe; padding: 2px 8px; border-radius: 4px; font-weight: 700; text-transform: uppercase;">
+                  ${escapeHtml(ultimaCorrida.rotulagem || 'Teste interno com amostras')}
+                </span>
+                <span style="font-size: 0.75rem; color: var(--text-muted); margin-left: 8px;">
+                  Executado em ${escapeHtml(new Date(ultimaCorrida.data_hora || Date.now()).toLocaleString('pt-PT'))} · Modelo: <code>${escapeHtml(ultimaCorrida.modelo || 'scanner')}</code>
+                </span>
+              </div>
+              <div style="font-family: 'JetBrains Mono', monospace; font-size: 0.72rem; color: #94a3b8;">
+                SHA-256 Dataset: <code>${escapeHtml((ultimaCorrida.hash_dataset || '').slice(0, 16))}...</code>
+              </div>
+            </div>
+
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 10px; margin-bottom: 12px;">
+              <div style="background: rgba(15, 23, 42, 0.6); padding: 10px 12px; border-radius: 6px; border-left: 3px solid #10b981;">
+                <div style="font-size: 0.72rem; color: var(--text-muted); text-transform: uppercase;">Taxa de Acerto Global</div>
+                <div style="font-size: 1.3rem; font-weight: 700; color: #34d399;">${escapeHtml(String(ultimaCorrida.taxa_acerto))}%</div>
+                <div style="font-size: 0.7rem; color: #94a3b8;">IC 95% Wilson: <strong>${escapeHtml(ultimaCorrida.intervalo_wilson_95 || '-')}</strong></div>
+              </div>
+
+              <div style="background: rgba(15, 23, 42, 0.6); padding: 10px 12px; border-radius: 6px; border-left: 3px solid #f59e0b;">
+                <div style="font-size: 0.72rem; color: var(--text-muted); text-transform: uppercase;">Sensibilidade a Golpes</div>
+                <div style="font-size: 1.3rem; font-weight: 700; color: #fbbf24;">${escapeHtml(String(sensInfo.taxa ?? '-'))}%</div>
+                <div style="font-size: 0.7rem; color: #94a3b8;">${sensInfo.detetados ?? 0}/${sensInfo.total_golpes ?? 0} detetados (qualquer "suspeito" = alerta)</div>
+              </div>
+
+              <div style="background: rgba(15, 23, 42, 0.6); padding: 10px 12px; border-radius: 6px; border-left: 3px solid #38bdf8;">
+                <div style="font-size: 0.72rem; color: var(--text-muted); text-transform: uppercase;">Especificidade Legítimos</div>
+                <div style="font-size: 1.3rem; font-weight: 700; color: #38bdf8;">${escapeHtml(String(specInfo.taxa ?? '-'))}%</div>
+                <div style="font-size: 0.7rem; color: #94a3b8;">${specInfo.confirmados ?? 0}/${specInfo.total_legitimos ?? 0} legítimos (FP: ${specInfo.falsos_positivos ?? 0})</div>
+              </div>
+
+              <div style="background: rgba(15, 23, 42, 0.6); padding: 10px 12px; border-radius: 6px; border-left: 3px solid #a855f7;">
+                <div style="font-size: 0.72rem; color: var(--text-muted); text-transform: uppercase;">⚡ Cobertura Golpes Novos (&lt; 14d)</div>
+                <div style="font-size: 1.3rem; font-weight: 700; color: #c084fc;">${escapeHtml(String(gnInfo.taxa_cobertura ?? '-'))}%</div>
+                <div style="font-size: 0.7rem; color: #94a3b8;">IC 95%: <strong>${escapeHtml(gnInfo.intervalo_wilson_95 || '-')}</strong> (${gnInfo.detetados ?? 0}/${gnInfo.total_golpes_novos ?? 0})</div>
+              </div>
+            </div>
+
+            <div style="font-size: 0.74rem; color: var(--text-muted); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
+              <div>Origem das decisões: <strong style="color: #cbd5e1;">${escapeHtml(distStr)}</strong></div>
+              <div style="color: #94a3b8; font-style: italic;">Rótulo obrigatório: "${escapeHtml(ultimaCorrida.rotulagem || '')}"</div>
+            </div>
+          `;
+        }
+      }
+
+      // 6. Renderizar tabela de Amostras de Teste (Secção 3.6)
+      const tbodyAmostras = document.getElementById('amostrasTableBody');
+      if (tbodyAmostras) {
+        const amostras = Array.isArray(dashboardState.amostras_teste) ? dashboardState.amostras_teste : [];
+        const filtroUso = document.getElementById('gnFilterAmostraUso')?.value || 'rotativo';
+        const filtroTipo = document.getElementById('gnFilterAmostraTipo')?.value || 'todos';
+
+        const amostrasFiltradas = amostras.filter(a => {
+          if (filtroUso !== 'todos' && a.uso !== filtroUso) return false;
+          if (filtroTipo === 'pendente') {
+            return !a.tipo_real || !a.classificado_por;
+          }
+          if (filtroTipo === 'golpe_novo') {
+            return Boolean(a.golpe_novo);
+          }
+          if (filtroTipo !== 'todos' && a.tipo_real !== filtroTipo) return false;
+          return true;
+        });
+
+        if (!amostrasFiltradas.length) {
+          tbodyAmostras.innerHTML = '<tr><td colspan="7" style="text-align: center; color: var(--text-muted); padding: 24px;">Nenhuma amostra encontrada para o filtro selecionado. Use o botão "+ Nova Amostra" para adicionar exemplos semanais.</td></tr>';
+        } else {
+          tbodyAmostras.innerHTML = amostrasFiltradas.map(a => {
+            const dataStr = a.classificado_em ? new Date(a.classificado_em).toLocaleDateString('pt-PT') : (a.criado_em ? new Date(a.criado_em).toLocaleDateString('pt-PT') : '-');
+
+            let badgeTipoReal = '<span style="background: rgba(245, 158, 11, 0.2); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.4); padding: 2px 8px; border-radius: 999px; font-size: 0.72rem; font-weight: 700;">⚠️ Por Classificar</span>';
+            if (a.tipo_real === 'Golpe') {
+              badgeTipoReal = '<span style="background: rgba(239, 68, 68, 0.2); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.4); padding: 2px 8px; border-radius: 999px; font-size: 0.72rem; font-weight: 700;">🚨 Golpe</span>';
+            } else if (a.tipo_real === 'Legítimo') {
+              badgeTipoReal = '<span style="background: rgba(16, 185, 129, 0.2); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.4); padding: 2px 8px; border-radius: 999px; font-size: 0.72rem; font-weight: 700;">✅ Legítimo</span>';
+            }
+
+            const badgeGolpeNovo = a.golpe_novo
+              ? '<span style="background: rgba(168, 85, 247, 0.2); color: #c084fc; border: 1px solid rgba(168, 85, 247, 0.4); padding: 2px 7px; border-radius: 999px; font-size: 0.7rem; font-weight: 700;">⚡ Sim (&lt; 14d)</span>'
+              : '<span style="color: var(--text-muted); font-size: 0.72rem;">Não</span>';
+
+            const badgeUso = a.uso === 'regressao'
+              ? '<span style="background: rgba(59, 130, 246, 0.16); color: #93c5fd; padding: 2px 7px; border-radius: 4px; font-size: 0.72rem; font-weight: 700;">📁 Regressão</span>'
+              : '<span style="background: rgba(99, 102, 241, 0.16); color: #c7d2fe; padding: 2px 7px; border-radius: 4px; font-size: 0.72rem; font-weight: 700;">🔄 Rotativo</span>';
+
+            const precisaClassificar = !a.tipo_real || !a.classificado_por;
+
+            return `
+              <tr>
+                <td style="font-size: 0.78rem;">
+                  <div style="font-weight: 700; color: #fff;">${escapeHtml(a.semana || 'Semana N/A')}</div>
+                  <div style="font-size: 0.7rem; color: #94a3b8; text-transform: uppercase; margin-top: 2px;">Origem: ${escapeHtml(a.origem || 'real')}</div>
+                </td>
+                <td style="font-size: 0.8rem; color: #e2e8f0; max-width: 380px;">
+                  <div style="line-height: 1.45;">${escapeHtml(a.resumo_ou_texto_anonimizado)}</div>
+                </td>
+                <td>${badgeTipoReal}</td>
+                <td>${badgeGolpeNovo}</td>
+                <td style="font-size: 0.78rem;">
+                  <div>${a.classificado_por ? `<strong>${escapeHtml(a.classificado_por)}</strong>` : '<span style="color: #fbbf24;">Aguardando classificação humana</span>'}</div>
+                  <div style="font-size: 0.7rem; color: var(--text-muted);">${escapeHtml(dataStr)}</div>
+                </td>
+                <td>${badgeUso}</td>
+                <td>
+                  <div style="display: flex; gap: 6px; flex-wrap: wrap;">
+                    <button onclick="abrirModalClassificarAmostra('${escapeHtml(a.id)}')" class="btn-xs ${precisaClassificar ? 'btn-xs-primary' : ''}" style="${precisaClassificar ? 'background: #f59e0b; border-color: #d97706;' : ''}">
+                      ⚖️ ${precisaClassificar ? 'Classificar' : 'Editar'}
+                    </button>
+                    ${a.uso === 'rotativo' ? `
+                      <button onclick="promoverAmostraRegressao('${escapeHtml(a.id)}')" class="btn-xs" style="color: #93c5fd;" title="Amostra usada para corrigir o sistema passa a regressão">
+                        📁 Regressão
+                      </button>
+                    ` : ''}
+                  </div>
                 </td>
               </tr>
             `;
@@ -5782,6 +6129,199 @@ Zap, Quem É?`;
         await loadDashboardData();
       } catch (err) {
         alert('Erro ao alternar interruptor: ' + err.message);
+      }
+    }
+
+    // =========================================================================
+    // HANDLERS FASE 4: BENCHMARK ROTATIVO E AMOSTRAS DE TESTE (Secção 3.6)
+    // =========================================================================
+    function abrirModalNovaAmostra() {
+      document.getElementById('amostraModalSemana').value = 'Semana 42 - 2026';
+      document.getElementById('amostraModalOrigem').value = 'real';
+      document.getElementById('amostraModalResumo').value = '';
+      document.getElementById('amostraModalTipoReal').value = '';
+      document.getElementById('amostraModalClassificador').value = 'Auditor Humano Independente';
+      document.getElementById('amostraModalGolpeNovo').checked = false;
+      document.getElementById('amostraModalUso').value = 'rotativo';
+      document.getElementById('amostraModal').style.display = 'flex';
+    }
+
+    async function submeterNovaAmostra(event) {
+      if (event) event.preventDefault();
+      const semana = document.getElementById('amostraModalSemana').value.trim();
+      const origem = document.getElementById('amostraModalOrigem').value;
+      const resumo_ou_texto_anonimizado = document.getElementById('amostraModalResumo').value.trim();
+      const tipo_real = document.getElementById('amostraModalTipoReal').value || null;
+      const classificado_por = document.getElementById('amostraModalClassificador').value.trim() || null;
+      const golpe_novo = document.getElementById('amostraModalGolpeNovo').checked;
+      const uso = document.getElementById('amostraModalUso').value;
+
+      if (!semana || !resumo_ou_texto_anonimizado) {
+        alert('Indique a semana e o resumo da amostra.');
+        return;
+      }
+
+      try {
+        const res = await fetch('/api/admin', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'x-admin-key': globalAdminSecret },
+          body: JSON.stringify({
+            action: 'criar_amostra_teste',
+            semana,
+            origem,
+            resumo_ou_texto_anonimizado,
+            tipo_real,
+            classificado_por,
+            golpe_novo,
+            uso
+          })
+        });
+        if (!res.ok) {
+          const errData = await res.json().catch(() => null);
+          throw new Error(errData?.error || (await res.text()));
+        }
+        closeModals();
+        showToast('Amostra de teste registada com sucesso!');
+        await loadDashboardData();
+      } catch (err) {
+        alert('Erro ao registar amostra de teste: ' + err.message);
+      }
+    }
+
+    function abrirModalClassificarAmostra(amostraId) {
+      const amostras = Array.isArray(dashboardState?.amostras_teste) ? dashboardState.amostras_teste : [];
+      const a = amostras.find(x => x.id === amostraId);
+      if (!a) return;
+
+      document.getElementById('clsAmostraId').value = a.id;
+      document.getElementById('clsAmostraTipoReal').value = a.tipo_real || '';
+      document.getElementById('clsAmostraClassificador').value = a.classificado_por || 'Auditor Humano Independente';
+      document.getElementById('clsAmostraGolpeNovo').checked = Boolean(a.golpe_novo);
+
+      const box = document.getElementById('clsAmostraInfoBox');
+      if (box) {
+        box.innerHTML = `
+          <div><strong>Semana:</strong> ${escapeHtml(a.semana || '-')} · <strong>Origem:</strong> ${escapeHtml(a.origem || '-')}</div>
+          <div style="margin-top: 6px; font-size: 0.82rem; color: #cbd5e1; background: rgba(0,0,0,0.3); padding: 8px; border-radius: 4px;">
+            "${escapeHtml(a.resumo_ou_texto_anonimizado)}"
+          </div>
+          <div style="margin-top: 6px; font-size: 0.72rem; color: #34d399;">🔒 Anonimização estrita: nenhum dado pessoal (PII) é mantido.</div>
+        `;
+      }
+
+      document.getElementById('classificarAmostraModal').style.display = 'flex';
+    }
+
+    async function submeterClassificacaoAmostra(event) {
+      if (event) event.preventDefault();
+      const id = document.getElementById('clsAmostraId').value;
+      const tipo_real = document.getElementById('clsAmostraTipoReal').value;
+      const classificado_por = document.getElementById('clsAmostraClassificador').value.trim();
+      const golpe_novo = document.getElementById('clsAmostraGolpeNovo').checked;
+
+      if (!id || !tipo_real || !classificado_por) {
+        alert('Indique o veredito humano e o nome do auditor.');
+        return;
+      }
+
+      try {
+        const res = await fetch('/api/admin', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'x-admin-key': globalAdminSecret },
+          body: JSON.stringify({
+            action: 'classificar_amostra_teste',
+            id,
+            tipo_real,
+            classificado_por,
+            golpe_novo
+          })
+        });
+        if (!res.ok) {
+          const errData = await res.json().catch(() => null);
+          throw new Error(errData?.error || (await res.text()));
+        }
+        closeModals();
+        showToast('Classificação humana gravada com sucesso!');
+        await loadDashboardData();
+      } catch (err) {
+        alert('Erro ao classificar amostra: ' + err.message);
+      }
+    }
+
+    async function promoverAmostraRegressao(amostraId) {
+      if (!confirm('Deseja promover esta amostra para o conjunto de REGRESSÃO permanente?\n\nA amostra sairá do conjunto rotativo semanal e passará a integrar os testes de regressão automáticos do sistema.')) {
+        return;
+      }
+
+      const revisor = prompt('Indique o seu nome/iniciais de revisor:', 'Operador Admin');
+      if (!revisor || !revisor.trim()) return;
+
+      try {
+        const res = await fetch('/api/admin', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'x-admin-key': globalAdminSecret },
+          body: JSON.stringify({
+            action: 'promover_amostra_regressao',
+            id: amostraId,
+            revisor: revisor.trim()
+          })
+        });
+        if (!res.ok) {
+          const errData = await res.json().catch(() => null);
+          throw new Error(errData?.error || (await res.text()));
+        }
+        showToast('Amostra promovida com sucesso para o conjunto de regressão permanente!');
+        await loadDashboardData();
+      } catch (err) {
+        alert('Erro ao promover amostra: ' + err.message);
+      }
+    }
+
+    async function executarBenchmarkRotativoUI() {
+      const rotativas = (dashboardState?.amostras_teste || []).filter(a => a.uso === 'rotativo');
+      const semClassificacao = rotativas.filter(a => !a.tipo_real || !a.classificado_por);
+
+      // Critério 5: Bloqueio estrito no frontend e no backend
+      if (semClassificacao.length > 0) {
+        alert(`O benchmark rotativo recusa-se a correr (Critério 5 da Secção 3.6):\n\nExistem ${semClassificacao.length} amostra(s) no conjunto rotativo ativo sem classificação humana prévia.\n\nPor favor, classifique todas as amostras humanas antes de executar a auditoria.`);
+        return;
+      }
+
+      const revisor = prompt(
+        `Executar Benchmark Rotativo Semanal com ${rotativas.length} amostras ativas?\n\nIndique o nome/iniciais do auditor independente que valida esta corrida (não pode ser o desenvolvedor do motor):`,
+        'Auditor Humano Independente'
+      );
+      if (!revisor || !revisor.trim()) return;
+
+      const btn1 = document.getElementById('btnExecutarBenchmarkRotativo');
+      const btn2 = document.getElementById('btnBenchmarkRotativoTopo');
+      if (btn1) { btn1.disabled = true; btn1.textContent = '⏳ A executar benchmark...'; }
+      if (btn2) { btn2.disabled = true; btn2.textContent = '⏳ A executar...'; }
+
+      try {
+        const res = await fetch('/api/admin', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'x-admin-key': globalAdminSecret },
+          body: JSON.stringify({
+            action: 'executar_benchmark_rotativo',
+            revisor: revisor.trim()
+          })
+        });
+
+        if (!res.ok) {
+          const errData = await res.json().catch(() => null);
+          throw new Error(errData?.error || (await res.text()));
+        }
+
+        const data = await res.json();
+        const rel = data.relatorio || {};
+        showToast(`Benchmark rotativo concluído! Taxa de acerto: ${rel.taxa_acerto}% (IC 95% Wilson: ${rel.intervalo_wilson_95})`);
+        await loadDashboardData();
+      } catch (err) {
+        alert('Falha na execução do benchmark rotativo:\n\n' + err.message);
+      } finally {
+        if (btn1) { btn1.disabled = false; btn1.textContent = '▶️ Executar Benchmark Rotativo'; }
+        if (btn2) { btn2.disabled = false; btn2.textContent = '▶️ Executar Benchmark Rotativo'; }
       }
     }
 
