@@ -1,0 +1,1152 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pitch Deck Executivo — CONFIRME, QUEM É?</title>
+  <link rel="icon" type="image/png" href="/favicon.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #090d16;
+      --card-bg: rgba(15, 23, 42, 0.85);
+      --card-border: rgba(255, 255, 255, 0.08);
+      --primary: #10b981;
+      --primary-glow: rgba(16, 185, 129, 0.25);
+      --accent: #38bdf8;
+      --accent-purple: #a855f7;
+      --warning: #f59e0b;
+      --danger: #ef4444;
+      --text: #f8fafc;
+      --text-muted: #94a3b8;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+    }
+
+    body {
+      background: radial-gradient(circle at 50% 0%, #172554 0%, var(--bg) 70%);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow-x: hidden;
+    }
+
+    /* BARRA SUPERIOR DE PROGRESSO E CONTROLOS */
+    .top-bar {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 64px;
+      background: rgba(9, 13, 22, 0.85);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--card-border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0 28px;
+      z-index: 100;
+    }
+
+    .progress-bar-container {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 3px;
+      background: rgba(255, 255, 255, 0.08);
+    }
+
+    .progress-bar {
+      height: 100%;
+      background: linear-gradient(90deg, var(--primary), var(--accent));
+      width: 9%;
+      transition: width 0.3s ease;
+    }
+
+    .brand-logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-weight: 800;
+      font-size: 1.05rem;
+      color: #fff;
+      letter-spacing: -0.5px;
+    }
+
+    .brand-badge {
+      background: rgba(16, 185, 129, 0.15);
+      color: var(--primary);
+      border: 1px solid rgba(16, 185, 129, 0.3);
+      padding: 2px 8px;
+      border-radius: 999px;
+      font-size: 0.7rem;
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+
+    .deck-controls {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .slide-counter {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      background: rgba(255, 255, 255, 0.04);
+      padding: 5px 12px;
+      border-radius: 6px;
+      border: 1px solid var(--card-border);
+    }
+
+    .btn-nav {
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid var(--card-border);
+      color: #fff;
+      padding: 6px 14px;
+      border-radius: 6px;
+      font-size: 0.82rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      transition: all 0.2s;
+    }
+
+    .btn-nav:hover {
+      background: rgba(255, 255, 255, 0.12);
+      border-color: rgba(255, 255, 255, 0.2);
+    }
+
+    .btn-nav:disabled {
+      opacity: 0.3;
+      cursor: not-allowed;
+    }
+
+    .btn-primary-nav {
+      background: var(--primary);
+      color: #042f2e;
+      border: none;
+      font-weight: 700;
+    }
+
+    .btn-primary-nav:hover {
+      background: #059669;
+    }
+
+    /* ÁREA PRINCIPAL DOS SLIDES */
+    .deck-viewport {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 84px 24px 80px;
+      position: relative;
+    }
+
+    .slide-card {
+      width: 100%;
+      max-width: 1100px;
+      min-height: 620px;
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 20px;
+      padding: 44px 50px;
+      box-shadow: 0 30px 80px rgba(0, 0, 0, 0.6);
+      position: relative;
+      display: none;
+      animation: fadeIn 0.35s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+    }
+
+    .slide-card.active {
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(14px) scale(0.99); }
+      to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    /* CABEÇALHO DO SLIDE */
+    .slide-header {
+      margin-bottom: 24px;
+    }
+
+    .slide-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.74rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      padding: 4px 10px;
+      border-radius: 6px;
+      margin-bottom: 10px;
+    }
+
+    .tag-green { background: rgba(16, 185, 129, 0.15); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.3); }
+    .tag-blue { background: rgba(56, 189, 248, 0.15); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.3); }
+    .tag-purple { background: rgba(168, 85, 247, 0.15); color: #c084fc; border: 1px solid rgba(168, 85, 247, 0.3); }
+    .tag-amber { background: rgba(245, 158, 11, 0.15); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.3); }
+    .tag-red { background: rgba(239, 68, 68, 0.15); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.3); }
+
+    .slide-title {
+      font-size: 2rem;
+      font-weight: 800;
+      color: #fff;
+      line-height: 1.25;
+      letter-spacing: -0.5px;
+    }
+
+    .slide-subtitle {
+      font-size: 1.05rem;
+      color: var(--text-muted);
+      margin-top: 6px;
+      line-height: 1.5;
+    }
+
+    /* CONTEÚDO DO SLIDE */
+    .slide-body {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      margin: 16px 0;
+    }
+
+    /* RODAPÉ DO SLIDE */
+    .slide-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-top: 1px solid rgba(255, 255, 255, 0.06);
+      padding-top: 18px;
+      margin-top: 20px;
+      font-size: 0.8rem;
+      color: var(--text-muted);
+    }
+
+    /* COMPONENTES VISUAIS */
+    .grid-2 {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 24px;
+    }
+
+    .grid-3 {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 20px;
+    }
+
+    .grid-4 {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+    }
+
+    .glass-card {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      padding: 22px;
+      transition: all 0.2s;
+    }
+
+    .glass-card:hover {
+      border-color: rgba(255, 255, 255, 0.18);
+      background: rgba(255, 255, 255, 0.05);
+    }
+
+    .kpi-huge {
+      font-size: 2.3rem;
+      font-weight: 800;
+      font-family: 'JetBrains Mono', monospace;
+      color: #fff;
+      line-height: 1.1;
+      margin-bottom: 6px;
+    }
+
+    .kpi-label {
+      font-size: 0.82rem;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      font-weight: 700;
+      letter-spacing: 0.5px;
+    }
+
+    .kpi-sub {
+      font-size: 0.78rem;
+      color: var(--text-muted);
+      margin-top: 6px;
+      line-height: 1.4;
+    }
+
+    /* TABELAS */
+    .table-pitch {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.86rem;
+      border-radius: 10px;
+      overflow: hidden;
+      border: 1px solid var(--card-border);
+    }
+
+    .table-pitch th {
+      background: rgba(255, 255, 255, 0.05);
+      color: #fff;
+      padding: 12px 16px;
+      text-align: left;
+      font-weight: 700;
+      border-bottom: 1px solid var(--card-border);
+    }
+
+    .table-pitch td {
+      padding: 12px 16px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+      color: #cbd5e1;
+      line-height: 1.4;
+    }
+
+    .table-pitch tr:last-child td {
+      border-bottom: none;
+    }
+
+    .table-pitch tr:hover td {
+      background: rgba(255, 255, 255, 0.02);
+    }
+
+    /* DIAGRAMAS EM CSS (FLUXOS) */
+    .flow-steps {
+      display: flex;
+      align-items: stretch;
+      gap: 14px;
+      flex-wrap: wrap;
+    }
+
+    .flow-step {
+      flex: 1;
+      min-width: 180px;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid var(--card-border);
+      border-radius: 12px;
+      padding: 18px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      position: relative;
+    }
+
+    .step-number {
+      width: 26px;
+      height: 26px;
+      border-radius: 50%;
+      background: var(--primary);
+      color: #042f2e;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.75rem;
+      font-weight: 800;
+      margin-bottom: 12px;
+    }
+
+    /* PONTOS DE NAVEGAÇÃO NA PARTE INFERIOR */
+    .deck-nav-dots {
+      position: fixed;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      gap: 8px;
+      background: rgba(15, 23, 42, 0.85);
+      backdrop-filter: blur(10px);
+      padding: 8px 16px;
+      border-radius: 999px;
+      border: 1px solid var(--card-border);
+      z-index: 90;
+    }
+
+    .nav-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.2);
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .nav-dot.active {
+      background: var(--primary);
+      width: 28px;
+      border-radius: 999px;
+    }
+
+    /* MODO IMPRESSÃO / PDF */
+    @media print {
+      body {
+        background: #fff !important;
+        color: #0f172a !important;
+      }
+      .top-bar, .deck-nav-dots {
+        display: none !important;
+      }
+      .deck-viewport {
+        padding: 0 !important;
+        display: block !important;
+      }
+      .slide-card {
+        display: flex !important;
+        page-break-after: always;
+        break-after: page;
+        min-height: 100vh !important;
+        max-width: 100% !important;
+        border: none !important;
+        box-shadow: none !important;
+        background: #fff !important;
+        color: #0f172a !important;
+        padding: 40px !important;
+      }
+      .slide-title { color: #0f172a !important; }
+      .slide-subtitle, p, td, li, .kpi-label, .kpi-sub { color: #334155 !important; }
+      .glass-card, .table-pitch th, .table-pitch td {
+        background: #f8fafc !important;
+        border-color: #cbd5e1 !important;
+        color: #0f172a !important;
+      }
+      .kpi-huge { color: #0f172a !important; }
+    }
+
+    @media (max-width: 900px) {
+      .grid-2, .grid-3, .grid-4 { grid-template-columns: 1fr; }
+      .slide-card { padding: 26px 20px; min-height: auto; }
+      .slide-title { font-size: 1.5rem; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- BARRA SUPERIOR FIXA -->
+  <header class="top-bar">
+    <div class="progress-bar-container">
+      <div id="deckProgressBar" class="progress-bar"></div>
+    </div>
+
+    <div class="brand-logo">
+      <span>🛡️ CONFIRME, QUEM É?</span>
+      <span class="brand-badge">Pitch Executivo</span>
+    </div>
+
+    <div class="deck-controls">
+      <span id="slideCounter" class="slide-counter">Slide 1 de 11</span>
+      <button class="btn-nav" onclick="prevSlide()" id="btnPrev" title="Slide Anterior (Seta Esquerda)">← Anterior</button>
+      <button class="btn-nav btn-primary-nav" onclick="nextSlide()" id="btnNext" title="Próximo Slide (Seta Direita / Espaço)">Seguinte →</button>
+      <button class="btn-nav" onclick="toggleFullscreen()" title="Ecrã Inteiro (F)">⛶</button>
+      <button class="btn-nav" onclick="window.print()" title="Imprimir ou Exportar para PDF (P)">🖨️ PDF</button>
+    </div>
+  </header>
+
+  <!-- RECIPIENTE DE SLIDES -->
+  <main class="deck-viewport">
+
+    <!-- SLIDE 1: CAPA & TESE CENTRAL -->
+    <section class="slide-card active" data-slide="1">
+      <div class="slide-header">
+        <span class="slide-tag tag-green">Apresentação Executiva B2B</span>
+        <h1 class="slide-title">CONFIRME, QUEM É?</h1>
+        <p class="slide-subtitle">"A Rede Colaborativa de Inteligência contra Burlas e Proteção de Marcas"</p>
+      </div>
+
+      <div class="slide-body">
+        <div style="background: rgba(16, 185, 129, 0.08); border: 1px solid rgba(16, 185, 129, 0.3); border-radius: 14px; padding: 24px; margin-bottom: 24px;">
+          <h3 style="color: #34d399; font-size: 1.2rem; margin-bottom: 8px;">A Tese Central</h3>
+          <p style="font-size: 1rem; line-height: 1.6; color: #e2e8f0;">
+            Transformamos as mensagens e SMS suspeitas de milhões de cidadãos numa <strong>rede de sensores distribuídos</strong>. Detectamos campanhas de impersonation e burlas financeiras <strong>até 48 horas antes</strong> de serem indexadas por antivírus e blacklists públicas corporativas.
+          </p>
+        </div>
+
+        <div class="grid-3">
+          <div class="glass-card">
+            <div class="kpi-huge" style="color: #34d399;">83%+</div>
+            <div class="kpi-label">Ameaças no Móvel</div>
+            <div class="kpi-sub">Burlas em Portugal via SMS, WhatsApp e chamadas.</div>
+          </div>
+          <div class="glass-card">
+            <div class="kpi-huge" style="color: #38bdf8;">&lt; 3 seg</div>
+            <div class="kpi-label">Tempo de Veredito</div>
+            <div class="kpi-sub">Resposta instantânea ao cidadão com orientações de defesa.</div>
+          </div>
+          <div class="glass-card">
+            <div class="kpi-huge" style="color: #c084fc;">92%</div>
+            <div class="kpi-label">Margem Bruta SaaS</div>
+            <div class="kpi-sub">Menos de 15% de acionamento de LLMs graças a motor híbrido.</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="slide-footer">
+        <span>Portugal & Expansão Europeia (NIS2 / DORA)</span>
+        <span>Canal WhatsApp Oficial: +351 927 618 142 · Canal SMS LetsCall</span>
+      </div>
+    </section>
+
+    <!-- SLIDE 2: O PROBLEMA -->
+    <section class="slide-card" data-slide="2">
+      <div class="slide-header">
+        <span class="slide-tag tag-red">O Diagnóstico de Mercado</span>
+        <h2 class="slide-title">O cibercrime migrou para as redes móveis. As ferramentas corporativas ficaram para trás.</h2>
+        <p class="slide-subtitle">A segurança tradicional monitoriza servidores e domínios estáticos, mas está cega para o tráfego fechado móvel.</p>
+      </div>
+
+      <div class="slide-body">
+        <div class="grid-2">
+          <div class="glass-card" style="border-left: 4px solid #ef4444;">
+            <h3 style="color: #f87171; font-size: 1.1rem; margin-bottom: 8px;">1. Explosão de Smishing e WhatsApp</h3>
+            <p style="font-size: 0.9rem; color: #cbd5e1; line-height: 1.5;">
+              Burlas de encomendas retidas (CTT, DPD), reembolsos falsos (EDP, Galp), notificações fiscais (Finanças/AT), SIBS/MB WAY e esquemas "Olá Pai / Olá Mãe" afetam milhões diariamente.
+            </p>
+          </div>
+          <div class="glass-card" style="border-left: 4px solid #f59e0b;">
+            <h3 style="color: #fbbf24; font-size: 1.1rem; margin-bottom: 8px;">2. A Cegueira dos CISOs e SOCs</h3>
+            <p style="font-size: 0.9rem; color: #cbd5e1; line-height: 1.5;">
+              As equipas de cibersegurança só descobrem que a sua marca está sob ataque quando as vítimas começam a sobrecarregar o suporte ou a apresentar queixas policiais e públicas.
+            </p>
+          </div>
+          <div class="glass-card" style="border-left: 4px solid #38bdf8;">
+            <h3 style="color: #38bdf8; font-size: 1.1rem; margin-bottom: 8px;">3. A Janela Crítica de 48 Horas</h3>
+            <p style="font-size: 0.9rem; color: #cbd5e1; line-height: 1.5;">
+              Feeds de inteligência tradicionais levam entre 24h e 72h para indexar novos domínios maliciosos. Nesse intervalo, os criminosos já recolheram milhares de euros e mudaram de servidor.
+            </p>
+          </div>
+          <div class="glass-card" style="border-left: 4px solid #c084fc;">
+            <h3 style="color: #c084fc; font-size: 1.1rem; margin-bottom: 8px;">4. PMEs Desprotegidas</h3>
+            <p style="font-size: 0.9rem; color: #cbd5e1; line-height: 1.5;">
+              Clínicas, advogados e lojas virtuais sofrem impersonation de canais de atendimento e perdem vendas por falta de um mecanismo simples e acessível de prova de autenticidade.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <div class="slide-footer">
+        <span>Fonte: Relatórios CERT.PT e Observatório de Segurança 2025/2026</span>
+        <span>Perdas estimadas em mais de €120M/ano na economia portuguesa</span>
+      </div>
+    </section>
+
+    <!-- SLIDE 3: A SOLUÇÃO -->
+    <section class="slide-card" data-slide="3">
+      <div class="slide-header">
+        <span class="slide-tag tag-green">A Solução Disruptiva</span>
+        <h2 class="slide-title">Um Ciclo Virtuoso: O Cidadão Protegido Alimenta a Defesa Corporativa</h2>
+        <p class="slide-subtitle">Como transformamos utilizadores normais num escudo distribuído em tempo real.</p>
+      </div>
+
+      <div class="slide-body">
+        <div class="flow-steps" style="margin-bottom: 24px;">
+          <div class="flow-step">
+            <div class="step-number">1</div>
+            <strong style="color: #fff; font-size: 0.9rem;">Receção do Golpe</strong>
+            <p style="font-size: 0.8rem; color: var(--text-muted); margin-top: 6px;">O cidadão recebe um SMS ou mensagem suspeita e reencaminha para o robô.</p>
+          </div>
+          <div class="flow-step">
+            <div class="step-number">2</div>
+            <strong style="color: #fff; font-size: 0.9rem;">Análise em &lt; 3s</strong>
+            <p style="font-size: 0.8rem; color: var(--text-muted); margin-top: 6px;">Motor híbrido com OCR e sanitização estrita de PII determina o veredito.</p>
+          </div>
+          <div class="flow-step">
+            <div class="step-number">3</div>
+            <strong style="color: #fff; font-size: 0.9rem;">Defesa Gratuita</strong>
+            <p style="font-size: 0.8rem; color: var(--text-muted); margin-top: 6px;">O utilizador recebe orientação clara e imediata sobre o golpe e não cai.</p>
+          </div>
+          <div class="flow-step">
+            <div class="step-number" style="background: #38bdf8;">4</div>
+            <strong style="color: #fff; font-size: 0.9rem;">Alerta B2B Zero-Day</strong>
+            <p style="font-size: 0.8rem; color: var(--text-muted); margin-top: 6px;">O Threat Radar agrupa ocorrências e notifica o CISO da marca visada.</p>
+          </div>
+          <div class="flow-step">
+            <div class="step-number" style="background: #a855f7;">5</div>
+            <strong style="color: #fff; font-size: 0.9rem;">Takedown Pericial</strong>
+            <p style="font-size: 0.8rem; color: var(--text-muted); margin-top: 6px;">Dossiê forense estruturado com SHA-256 é enviado para derrube imediato.</p>
+          </div>
+        </div>
+
+        <div class="glass-card" style="background: rgba(56, 189, 248, 0.05); border-color: rgba(56, 189, 248, 0.25);">
+          <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
+            <div>
+              <strong style="color: #38bdf8;">Princípio Fundamental de Privacidade (Privacy by Design):</strong>
+              <div style="font-size: 0.82rem; color: #cbd5e1; margin-top: 2px;">
+                Nenhum texto bruto de mensagens é armazenado. Telefones, emails, NIFs e IBANs são anonimizados antes de qualquer registo ou agrupamento.
+              </div>
+            </div>
+            <span class="slide-tag tag-blue" style="margin: 0;">100% RGPD Compliant</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="slide-footer">
+        <span>Eficiência Operacional: Resolução instantânea no telemóvel</span>
+        <span>Sem necessidade de instalar aplicações adicionais</span>
+      </div>
+    </section>
+
+    <!-- SLIDE 4: MATRIZ DE PRODUTOS -->
+    <section class="slide-card" data-slide="4">
+      <div class="slide-header">
+        <span class="slide-tag tag-blue">Portfólio de Soluções</span>
+        <h2 class="slide-title">Ecossistema Completo: Da Proteção Pessoal ao Threat Radar Empresarial</h2>
+        <p class="slide-subtitle">Soluções modulares desenhadas para diferentes segmentos de mercado.</p>
+      </div>
+
+      <div class="slide-body">
+        <table class="table-pitch">
+          <thead>
+            <tr>
+              <th>Produto</th>
+              <th>Público-Alvo</th>
+              <th>Proposta de Valor</th>
+              <th>Canal / Entrega</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Verificador Confirme</strong></td>
+              <td>Consumidores & Cidadãos</td>
+              <td>Verificação gratuita e instantânea de mensagens suspeitas.</td>
+              <td>WhatsApp (+351) + SMS curto</td>
+            </tr>
+            <tr>
+              <td><strong>Selo Confirme Verified</strong></td>
+              <td>PMEs, Clínicas, E-commerces</td>
+              <td>Selo dinâmico de alta entropia para provar autenticidade de canais oficiais.</td>
+              <td>Widget Web + Página pública <code>confirmequeme.pt/verify</code></td>
+            </tr>
+            <tr>
+              <td><strong>Brand Threat Radar</strong></td>
+              <td>Grandes Marcas, Bancos, Telcos</td>
+              <td>Deteção de surtos de impersonation e IOCs financeiros (SIBS / MB WAY).</td>
+              <td>Painel <code>/admin</code> + Webhook API</td>
+            </tr>
+            <tr>
+              <td><strong>Dossiê CISO & Takedown</strong></td>
+              <td>Equipas de SOC e Jurídico</td>
+              <td>Relatório pericial estruturado com hash SHA-256 pronto para derrube.</td>
+              <td>Exportação PDF e pacotes técnicos</td>
+            </tr>
+            <tr>
+              <td><strong>Módulo Golpes Novos</strong></td>
+              <td>Auditores e Equipas de Risco</td>
+              <td>Fila de revisão humana, alertas oficiais e benchmark rotativo semanal.</td>
+              <td>Módulo interno auditado</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="slide-footer">
+        <span>Arquitetura modular em nuvem (Vercel + Supabase + Redis)</span>
+        <span>Pronto para alta disponibilidade e escalabilidade continental</span>
+      </div>
+    </section>
+
+    <!-- SLIDE 5: MODELO DE NEGÓCIO & MONETIZAÇÃO -->
+    <section class="slide-card" data-slide="5">
+      <div class="slide-header">
+        <span class="slide-tag tag-green">Modelo de Negócio</span>
+        <h2 class="slide-title">Monetização B2B em 3 Fases com Margem Bruta de ~92%</h2>
+        <p class="slide-subtitle">Como transformamos a telemetria do consumidor em contratos de receita recorrente anual (ARR).</p>
+      </div>
+
+      <div class="slide-body">
+        <div class="grid-3" style="margin-bottom: 20px;">
+          <div class="glass-card" style="border-top: 4px solid var(--primary);">
+            <div style="font-size: 0.72rem; color: var(--primary); font-weight: 800; text-transform: uppercase;">Fase 1 · 0 a 6 Meses</div>
+            <h3 style="font-size: 1.1rem; color: #fff; margin: 8px 0;">Confirme Verified Self-Serve</h3>
+            <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 14px;">Para PMEs que precisam de provar contactos legítimos e combater clonagem.</p>
+            <div style="background: rgba(0,0,0,0.3); padding: 10px; border-radius: 8px; font-size: 0.82rem;">
+              <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
+                <span>• Selo B2B PME:</span> <strong style="color: #34d399;">€19 – €49 / mês</strong>
+              </div>
+              <div style="display: flex; justify-content: space-between;">
+                <span>• API Pay-per-check:</span> <strong style="color: #38bdf8;">€0,005 / consulta</strong>
+              </div>
+            </div>
+          </div>
+
+          <div class="glass-card" style="border-top: 4px solid var(--accent);">
+            <div style="font-size: 0.72rem; color: var(--accent); font-weight: 800; text-transform: uppercase;">Fase 2 · 6 a 15 Meses</div>
+            <h3 style="font-size: 1.1rem; color: #fff; margin: 8px 0;">Brand Threat Intelligence</h3>
+            <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 14px;">Para grandes marcas (CTT, EDP, Bancos) com alertas zero-day no WhatsApp.</p>
+            <div style="background: rgba(0,0,0,0.3); padding: 10px; border-radius: 8px; font-size: 0.82rem;">
+              <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
+                <span>• Starter (3 marcas):</span> <strong style="color: #93c5fd;">€299 / mês</strong>
+              </div>
+              <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
+                <span>• Pro (API Webhook):</span> <strong style="color: #60a5fa;">€990 / mês</strong>
+              </div>
+              <div style="display: flex; justify-content: space-between;">
+                <span>• Takedown Add-on:</span> <strong style="color: #f59e0b;">€75 – €150 / dom</strong>
+              </div>
+            </div>
+          </div>
+
+          <div class="glass-card" style="border-top: 4px solid var(--accent-purple);">
+            <div style="font-size: 0.72rem; color: var(--accent-purple); font-weight: 800; text-transform: uppercase;">Fase 3 · 12 a 24 Meses</div>
+            <h3 style="font-size: 1.1rem; color: #fff; margin: 8px 0;">Telco & SIEM Licensing</h3>
+            <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 14px;">Operadoras (MEO, NOS, Vodafone) e grandes bancos que incorporam o feed.</p>
+            <div style="background: rgba(0,0,0,0.3); padding: 10px; border-radius: 8px; font-size: 0.82rem;">
+              <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
+                <span>• White-Label Telco:</span> <strong style="color: #c084fc;">€0,15 / user</strong>
+              </div>
+              <div style="display: flex; justify-content: space-between;">
+                <span>• Feed SIEM Threat:</span> <strong style="color: #c084fc;">€3.500+ / mês</strong>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="glass-card" style="background: rgba(16, 185, 129, 0.05); padding: 16px 20px;">
+          <div style="display: flex; justify-content: space-around; text-align: center; flex-wrap: wrap; gap: 14px;">
+            <div>
+              <div style="font-size: 1.4rem; font-weight: 800; color: #34d399;">&lt; 15%</div>
+              <div style="font-size: 0.75rem; color: var(--text-muted);">Uso de LLMs (Custo Mínimo)</div>
+            </div>
+            <div>
+              <div style="font-size: 1.4rem; font-weight: 800; color: #38bdf8;">92%</div>
+              <div style="font-size: 0.75rem; color: var(--text-muted);">Margem Bruta Estimada</div>
+            </div>
+            <div>
+              <div style="font-size: 1.4rem; font-weight: 800; color: #fbbf24;">Digest CISO</div>
+              <div style="font-size: 0.75rem; color: var(--text-muted);">Prospeção Inbound com Prova Real</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="slide-footer">
+        <span>CAC orgânico ultra-baixo: cada ataque a uma marca gera uma oportunidade de venda quente</span>
+        <span>Sem custos proibitivos de infraestrutura</span>
+      </div>
+    </section>
+
+    <!-- SLIDE 6: PROJEÇÕES FINANCEIRAS & TRAÇÃO -->
+    <section class="slide-card" data-slide="6">
+      <div class="slide-header">
+        <span class="slide-tag tag-green">Roadmap Financeiro</span>
+        <h2 class="slide-title">Projeção a 24 Meses: Escalando para €780.000 em ARR</h2>
+        <p class="slide-subtitle">Crescimento sustentável suportado pela adoção mista de PMEs e grandes clientes corporativos.</p>
+      </div>
+
+      <div class="slide-body">
+        <div class="grid-2" style="margin-bottom: 24px;">
+          <div class="glass-card">
+            <h3 style="font-size: 1.05rem; margin-bottom: 12px; color: #fff;">Marcos de Receita Recorrente (MRR / ARR)</h3>
+            <div style="font-family: 'JetBrains Mono', monospace; font-size: 0.88rem; line-height: 1.9; color: #cbd5e1;">
+              <div>• <strong>Mês 01–03:</strong> 50 PMEs (Verified) <span style="color: #34d399; float: right;">€1.950 / mês</span></div>
+              <div>• <strong>Mês 04–09:</strong> 180 PMEs + 4 Grandes Marcas <span style="color: #34d399; float: right;">€11.680 / mês (~€140k ARR)</span></div>
+              <div>• <strong>Mês 10–18:</strong> 400 PMEs + 12 Marcas + 1 Telco <span style="color: #34d399; float: right;">€30.980 / mês (~€371k ARR)</span></div>
+              <div>• <strong>Mês 19–24:</strong> 800 PMEs + 25 Marcas + 2 Telcos <span style="color: #34d399; float: right;">€65.000 / mês (~€780k ARR)</span></div>
+            </div>
+          </div>
+
+          <div class="glass-card">
+            <h3 style="font-size: 1.05rem; margin-bottom: 12px; color: #fff;">Métricas de Eficiência Comercial</h3>
+            <div style="display: flex; flex-direction: column; gap: 12px;">
+              <div>
+                <div style="display: flex; justify-content: space-between; font-size: 0.82rem; margin-bottom: 4px;">
+                  <span>Taxa de Conversão Dossiê CISO:</span>
+                  <strong style="color: #38bdf8;">~22%</strong>
+                </div>
+                <div style="font-size: 0.74rem; color: var(--text-muted);">Abordagem inbound com prints e domínios reais sob ataque converte muito mais que cold calls.</div>
+              </div>
+              <div>
+                <div style="display: flex; justify-content: space-between; font-size: 0.82rem; margin-bottom: 4px;">
+                  <span>LTV / CAC Estimado:</span>
+                  <strong style="color: #34d399;">&gt; 5.5x</strong>
+                </div>
+                <div style="font-size: 0.74rem; color: var(--text-muted);">Elevada retenção empresarial (proteção de reputação e responsabilidade jurídica).</div>
+              </div>
+              <div>
+                <div style="display: flex; justify-content: space-between; font-size: 0.82rem; margin-bottom: 4px;">
+                  <span>Churn Mensal Previsto:</span>
+                  <strong style="color: #fbbf24;">&lt; 1.8%</strong>
+                </div>
+                <div style="font-size: 0.74rem; color: var(--text-muted);">Selo integrado em websites e faturas torna o cancelamento operacionalmente improvável.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div style="background: rgba(255, 255, 255, 0.02); border: 1px solid var(--card-border); border-radius: 10px; padding: 14px 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+          <span style="font-size: 0.82rem; color: #cbd5e1;">🎯 Simulador Interativo disponível em tempo real no painel administrativo <code>/admin</code>.</span>
+          <span style="font-family: 'JetBrains Mono', monospace; font-size: 0.85rem; color: #34d399; font-weight: 700;">Margem Operacional Líquida &gt; 65%</span>
+        </div>
+      </div>
+
+      <div class="slide-footer">
+        <span>Foco no break-even no Mês 8 com crescimento sustentado por fluxo de caixa</span>
+        <span>Escalabilidade internacional preparada para Espanha e LATAM</span>
+      </div>
+    </section>
+
+    <!-- SLIDE 7: FOSSOS COMPETITIVOS & PRIVACIDADE -->
+    <section class="slide-card" data-slide="7">
+      <div class="slide-header">
+        <span class="slide-tag tag-purple">Barreiras de Entrada</span>
+        <h2 class="slide-title">Fossos Competitivos e Vantagem Injusta Inalcançável por Concorrentes Legados</h2>
+        <p class="slide-subtitle">Por que um grande player de antivírus não consegue replicar esta solução do dia para a noite.</p>
+      </div>
+
+      <div class="slide-body">
+        <div class="grid-2">
+          <div class="glass-card">
+            <h3 style="color: #c084fc; font-size: 1.05rem; margin-bottom: 8px;">1. Efeito de Rede Distribuído (Network Effects)</h3>
+            <p style="font-size: 0.85rem; color: #cbd5e1; line-height: 1.5;">
+              Cada cidadão que reencaminha uma fraude atua como um sensor. Quanto maior a base de utilizadores gratuitos no WhatsApp, mais rápido alimentamos o radar das empresas pagantes. É uma barreira que cresce exponencialmente.
+            </p>
+          </div>
+          <div class="glass-card">
+            <h3 style="color: #34d399; font-size: 1.05rem; margin-bottom: 8px;">2. Zero PII & Privacidade por Desenho</h3>
+            <p style="font-size: 0.85rem; color: #cbd5e1; line-height: 1.5;">
+              Eliminamos o risco de vazamentos de dados por conformidade nativa com o RGPD. Resumos e indicadores passam por limpeza criptográfica de números, telefones e nomes antes de qualquer armazenamento.
+            </p>
+          </div>
+          <div class="glass-card">
+            <h3 style="color: #38bdf8; font-size: 1.05rem; margin-bottom: 8px;">3. Processo Vivo com Auditoria Estatística (Critério 5)</h3>
+            <p style="font-size: 0.85rem; color: #cbd5e1; line-height: 1.5;">
+              Nenhuma alteração de motor ou dicionário entra em vigor sem validação humana independente e benchmark rotativo semanal com <strong>intervalos de confiança de Wilson (95%)</strong>.
+            </p>
+          </div>
+          <div class="glass-card">
+            <h3 style="color: #fbbf24; font-size: 1.05rem; margin-bottom: 8px;">4. Domínio Profundo do Ecossistema Ibérico</h3>
+            <p style="font-size: 0.85rem; color: #cbd5e1; line-height: 1.5;">
+              Conhecimento cirúrgico de entidades bancárias SIBS, referências Multibanco, MB WAY, transportadoras e operadoras locais, que soluções globais americanas ou israelitas ignoram completamente.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <div class="slide-footer">
+        <span>Respeito integral por robots.txt e termos de utilização de fontes oficiais</span>
+        <span>Sem scraping invasivo nem captação ilícita de redes sociais</span>
+      </div>
+    </section>
+
+    <!-- SLIDE 8: OPORTUNIDADE DE MERCADO (TAM / SAM / SOM) -->
+    <section class="slide-card" data-slide="8">
+      <div class="slide-header">
+        <span class="slide-tag tag-blue">Dimensão de Mercado</span>
+        <h2 class="slide-title">Mercado de Proteção de Marcas e Anti-Phishing em Plena Expansão Europeia</h2>
+        <p class="slide-subtitle">A pressão regulatória da UE torna a proteção ativa uma obrigação de conformidade e não um luxo.</p>
+      </div>
+
+      <div class="slide-body">
+        <div class="grid-3" style="margin-bottom: 24px;">
+          <div class="glass-card" style="border-left: 4px solid #38bdf8;">
+            <div class="kpi-huge" style="color: #38bdf8;">€4,2B</div>
+            <div class="kpi-label">TAM (União Europeia)</div>
+            <div class="kpi-sub">Mercado europeu de Brand Protection, Anti-Phishing e Prevenção de Fraude Digital.</div>
+          </div>
+          <div class="glass-card" style="border-left: 4px solid #a855f7;">
+            <div class="kpi-huge" style="color: #c084fc;">€380M</div>
+            <div class="kpi-label">SAM (Península Ibérica)</div>
+            <div class="kpi-sub">PMEs e grandes marcas nos setores de Banca, Telco, Logística, Retalho e Utilities em PT/ES.</div>
+          </div>
+          <div class="glass-card" style="border-left: 4px solid #10b981;">
+            <div class="kpi-huge" style="color: #34d399;">€1,5M</div>
+            <div class="kpi-label">SOM (Projeção Ano 3 PT)</div>
+            <div class="kpi-sub">Captura de 800+ PMEs no Selo Verified e 30+ contratos empresariais de Threat Intel.</div>
+          </div>
+        </div>
+
+        <div class="glass-card" style="background: rgba(255, 255, 255, 0.02);">
+          <h4 style="color: #fff; font-size: 0.95rem; margin-bottom: 8px;">Os Motores Macroeconómicos de Crescimento:</h4>
+          <ul style="margin-left: 20px; font-size: 0.85rem; color: #cbd5e1; line-height: 1.6;">
+            <li><strong>Diretiva Europeia NIS2 (2024–2026):</strong> Responsabilidade jurídica direta para administradores de empresas por falhas na cadeia de fornecedores e monitorização de ameaças.</li>
+            <li><strong>Regulamento Financeiro DORA:</strong> Obrigatoriedade de resiliência operacional digital e deteção precoce de fraudes em pagamentos.</li>
+            <li><strong>Perda de Confiança do Consumidor:</strong> 72% dos utilizadores afirmam hesitar em carregar em links ou responder a contactos de empresas devido ao medo de burlas.</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="slide-footer">
+        <span>Portugal funciona como mercado de validação regulatória perfeito</span>
+        <span>Elevada concentração bancária (SIBS/MB WAY) acelera o product-market fit</span>
+      </div>
+    </section>
+
+    <!-- SLIDE 9: ALINHAMENTO REGULATÓRIO & INSTITUCIONAL -->
+    <section class="slide-card" data-slide="9">
+      <div class="slide-header">
+        <span class="slide-tag tag-purple">Governança & Parcerias</span>
+        <h2 class="slide-title">Alinhamento Estratégico com Autoridades Públicas e Reguladores em Portugal</h2>
+        <p class="slide-subtitle">Transformando o CONFIRME, QUEM É? num aliado de referência dos órgãos de combate ao cibercrime.</p>
+      </div>
+
+      <div class="slide-body">
+        <div class="grid-2">
+          <div class="glass-card">
+            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
+              <span style="font-size: 1.3rem;">🏛️</span>
+              <strong style="color: #fff; font-size: 1rem;">CNCS / CERT.PT</strong>
+            </div>
+            <p style="font-size: 0.85rem; color: #cbd5e1; line-height: 1.5;">
+              Centro Nacional de Cibersegurança. Alinhamento com a diretiva NIS2 para fornecimento de telemetria de ameaças em redes móveis antes de impactarem infraestruturas críticas.
+            </p>
+          </div>
+
+          <div class="glass-card">
+            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
+              <span style="font-size: 1.3rem;">⚖️</span>
+              <strong style="color: #fff; font-size: 1rem;">Polícia Judiciária (UNC3T)</strong>
+            </div>
+            <p style="font-size: 0.85rem; color: #cbd5e1; line-height: 1.5;">
+              Unidade Nacional de Combate ao Cibercrime. Exportação de dossiês periciais padronizados com hash SHA-256 para servir de suporte técnico formal a inquéritos-crime.
+            </p>
+          </div>
+
+          <div class="glass-card">
+            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
+              <span style="font-size: 1.3rem;">💳</span>
+              <strong style="color: #fff; font-size: 1rem;">Banco de Portugal & SIBS</strong>
+            </div>
+            <p style="font-size: 0.85rem; color: #cbd5e1; line-height: 1.5;">
+              Deteção proativa de contas de mulas bancárias (IBANs portugueses) e entidades/referências Multibanco fraudulentas antes de serem movimentadas.
+            </p>
+          </div>
+
+          <div class="glass-card">
+            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 8px;">
+              <span style="font-size: 1.3rem;">📡</span>
+              <strong style="color: #fff; font-size: 1rem;">ANACOM & ASAE</strong>
+            </div>
+            <p style="font-size: 0.85rem; color: #cbd5e1; line-height: 1.5;">
+              Regulação de telecomunicações e fiscalização económica. Parceria estratégica para identificação de números curtos abusivos e falsos e-commerces.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <div class="slide-footer">
+        <span>Não concorremos com as autoridades — fornecemos a telemetria que lhes falta</span>
+        <span>Apoio direto à segurança da sociedade digital</span>
+      </div>
+    </section>
+
+    <!-- SLIDE 10: ROADMAP ESTRATÉGICO DE EXECUÇÃO -->
+    <section class="slide-card" data-slide="10">
+      <div class="slide-header">
+        <span class="slide-tag tag-green">Plano de Execução</span>
+        <h2 class="slide-title">Roadmap Estratégico: Da Validação Local à Liderança Ibérica</h2>
+        <p class="slide-subtitle">Metas claras de engenharia, parcerias e expansão comercial.</p>
+      </div>
+
+      <div class="slide-body">
+        <div class="grid-3">
+          <div class="glass-card" style="border-top: 4px solid var(--primary);">
+            <div style="font-size: 0.72rem; color: var(--primary); font-weight: 800; text-transform: uppercase;">Q4 2026 · Fundação</div>
+            <h3 style="font-size: 1.1rem; color: #fff; margin: 8px 0;">Operação & Primeiras PMEs</h3>
+            <ul style="font-size: 0.82rem; color: #cbd5e1; margin-left: 18px; line-height: 1.6;">
+              <li>Motor WhatsApp + Gateway SMS 100% no ar.</li>
+              <li>Módulo de Golpes Novos (Fases 1 a 4) concluído.</li>
+              <li>Ativação de 50 PMEs no Selo Confirme Verified.</li>
+              <li>Primeiras abordagens CISO com Dossiês automáticos.</li>
+            </ul>
+          </div>
+
+          <div class="glass-card" style="border-top: 4px solid var(--accent);">
+            <div style="font-size: 0.72rem; color: var(--accent); font-weight: 800; text-transform: uppercase;">Q1–Q2 2027 · Expansão</div>
+            <h3 style="font-size: 1.1rem; color: #fff; margin: 8px 0;">Contratos Corporativos</h3>
+            <ul style="font-size: 0.82rem; color: #cbd5e1; margin-left: 18px; line-height: 1.6;">
+              <li>Fecho de 5 grandes marcas no Brand Threat Intel.</li>
+              <li>Automação de pacotes de Takedown direto a Registrars.</li>
+              <li>Integração de conectores SIEM (Splunk, Sentinel).</li>
+              <li>Piloto com a primeira operadora de telecomunicações.</li>
+            </ul>
+          </div>
+
+          <div class="glass-card" style="border-top: 4px solid var(--accent-purple);">
+            <div style="font-size: 0.72rem; color: var(--accent-purple); font-weight: 800; text-transform: uppercase;">Q3–Q4 2027 · Escala</div>
+            <h3 style="font-size: 1.1rem; color: #fff; margin: 8px 0;">Internacionalização</h3>
+            <ul style="font-size: 0.82rem; color: #cbd5e1; margin-left: 18px; line-height: 1.6;">
+              <li>Lançamento do piloto de SMS/WhatsApp em Espanha.</li>
+              <li>Adaptação a esquemas locais (Bizum em Espanha).</li>
+              <li>Parcerias B2B2C com seguradoras de risco cyber.</li>
+              <li>Consolidação de €65.000+ em MRR recorrente.</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <div class="slide-footer">
+        <span>Desenvolvimento ágil com testes automatizados contínuos (12 suites no CI/CD)</span>
+        <span>Código documentado e pronto para auditorias técnicas externas</span>
+      </div>
+    </section>
+
+    <!-- SLIDE 11: DEMONSTRAÇÃO AO VIVO & CONTACTOS -->
+    <section class="slide-card" data-slide="11">
+      <div class="slide-header">
+        <span class="slide-tag tag-green">Contacto & Demonstração</span>
+        <h2 class="slide-title">Experimente o Produto em Tempo Real</h2>
+        <p class="slide-subtitle">O sistema já está em produção e acessível para testes imediatos.</p>
+      </div>
+
+      <div class="slide-body">
+        <div class="grid-2" style="margin-bottom: 24px;">
+          <div class="glass-card" style="background: rgba(16, 185, 129, 0.05); border-color: rgba(16, 185, 129, 0.3);">
+            <h3 style="color: #34d399; font-size: 1.1rem; margin-bottom: 10px;">📱 Canal de Demonstração WhatsApp</h3>
+            <p style="font-size: 0.88rem; color: #e2e8f0; line-height: 1.5; margin-bottom: 14px;">
+              Envie agora qualquer SMS suspeita, link ou print de telemóvel para receber o veredito instantâneo:
+            </p>
+            <div style="font-family: 'JetBrains Mono', monospace; font-size: 1.25rem; font-weight: 800; color: #fff; background: rgba(0,0,0,0.4); padding: 10px 14px; border-radius: 8px; display: inline-block;">
+              +351 927 618 142
+            </div>
+            <div style="margin-top: 10px; font-size: 0.78rem; color: var(--text-muted);">
+              Operacional 24/7 com IA e verificação de regras em tempo real.
+            </div>
+          </div>
+
+          <div class="glass-card">
+            <h3 style="color: #38bdf8; font-size: 1.1rem; margin-bottom: 10px;">💻 Plataforma Web Corporativa</h3>
+            <div style="font-size: 0.85rem; color: #cbd5e1; line-height: 1.8;">
+              <div>• <strong>Website Oficial:</strong> <a href="https://confirmequeme.pt" target="_blank" style="color: #38bdf8; text-decoration: none;">confirmequeme.pt ↗</a></div>
+              <div>• <strong>Portal B2B de Empresas:</strong> <a href="https://confirmequeme.pt/empresas.html" target="_blank" style="color: #38bdf8; text-decoration: none;">confirmequeme.pt/empresas.html ↗</a></div>
+              <div>• <strong>Painel Administrativo & Threat Radar:</strong> <a href="/admin" target="_blank" style="color: #38bdf8; text-decoration: none;">/admin ↗</a></div>
+              <div>• <strong>Página Pública de Verificação:</strong> <a href="https://confirmequeme.pt/verify/DEMO" target="_blank" style="color: #38bdf8; text-decoration: none;">confirmequeme.pt/verify/{código} ↗</a></div>
+              <div>• <strong>Email de Parcerias:</strong> <span style="color: #fff; font-family: 'JetBrains Mono', monospace;">contacto@confirmequeme.pt</span></div>
+            </div>
+          </div>
+        </div>
+
+        <div style="text-align: center; background: rgba(255, 255, 255, 0.02); border: 1px solid var(--card-border); border-radius: 12px; padding: 22px;">
+          <blockquote style="font-size: 1.15rem; font-weight: 700; color: #fff; font-style: italic;">
+            "Fraude prevenida é reputação corporativa salva e dinheiro que não sai da economia."
+          </blockquote>
+          <div style="font-size: 0.8rem; color: var(--text-muted); margin-top: 8px;">
+            CONFIRME, QUEM É? — Protegendo o cidadão, blindando as marcas portuguesas.
+          </div>
+        </div>
+      </div>
+
+      <div class="slide-footer">
+        <span>© 2026 CONFIRME, QUEM É? · Domínio Oficial: confirmequeme.pt</span>
+        <span>Aceda online: confirmequeme.pt/pitch.html</span>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- PONTOS DE NAVEGAÇÃO RÁPIDA -->
+  <nav class="deck-nav-dots" id="deckNavDots"></nav>
+
+  <script>
+    const totalSlides = 11;
+    let currentSlide = 1;
+
+    function renderDots() {
+      const dotsContainer = document.getElementById('deckNavDots');
+      dotsContainer.innerHTML = '';
+      for (let i = 1; i <= totalSlides; i++) {
+        const dot = document.createElement('div');
+        dot.className = `nav-dot ${i === currentSlide ? 'active' : ''}`;
+        dot.title = `Ir para o Slide ${i}`;
+        dot.onclick = () => goToSlide(i);
+        dotsContainer.appendChild(dot);
+      }
+    }
+
+    function updateSlide() {
+      document.querySelectorAll('.slide-card').forEach(card => {
+        card.classList.remove('active');
+      });
+
+      const activeCard = document.querySelector(`.slide-card[data-slide="${currentSlide}"]`);
+      if (activeCard) {
+        activeCard.classList.add('active');
+      }
+
+      // Atualiza contador e barra de progresso
+      document.getElementById('slideCounter').textContent = `Slide ${currentSlide} de ${totalSlides}`;
+      const progressPct = ((currentSlide) / totalSlides) * 100;
+      document.getElementById('deckProgressBar').style.width = `${progressPct}%`;
+
+      // Atualiza botões
+      document.getElementById('btnPrev').disabled = currentSlide === 1;
+      document.getElementById('btnNext').textContent = currentSlide === totalSlides ? 'Início ↺' : 'Seguinte →';
+
+      renderDots();
+      window.scrollTo(0, 0);
+    }
+
+    function nextSlide() {
+      if (currentSlide < totalSlides) {
+        currentSlide++;
+      } else {
+        currentSlide = 1;
+      }
+      updateSlide();
+    }
+
+    function prevSlide() {
+      if (currentSlide > 1) {
+        currentSlide--;
+        updateSlide();
+      }
+    }
+
+    function goToSlide(n) {
+      if (n >= 1 && n <= totalSlides) {
+        currentSlide = n;
+        updateSlide();
+      }
+    }
+
+    function toggleFullscreen() {
+      if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen().catch(() => {});
+      } else {
+        if (document.exitFullscreen) {
+          document.exitFullscreen();
+        }
+      }
+    }
+
+    // Navegação por teclado (Setas, Espaço, Page Up/Down)
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowRight' || e.key === 'PageDown' || e.key === ' ') {
+        e.preventDefault();
+        nextSlide();
+      } else if (e.key === 'ArrowLeft' || e.key === 'PageUp') {
+        e.preventDefault();
+        prevSlide();
+      } else if (e.key === 'f' || e.key === 'F') {
+        toggleFullscreen();
+      } else if (e.key === 'p' || e.key === 'P') {
+        window.print();
+      } else if (e.key === 'Home') {
+        goToSlide(1);
+      } else if (e.key === 'End') {
+        goToSlide(totalSlides);
+      }
+    });
+
+    // Inicialização
+    renderDots();
+    updateSlide();
+  </script>
+</body>
+</html>
