@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kit de Imprensa — Confirme, Quem É? (confirmequeme.pt)</title>
+  <link rel="icon" type="image/png" href="favicon.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #070a12;
+      --card: #0f172a;
+      --border: rgba(255, 255, 255, 0.1);
+      --emerald: #10b981;
+      --emerald-dark: #047857;
+      --text: #f8fafc;
+      --text-muted: #94a3b8;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Plus Jakarta Sans', sans-serif; }
+    body { background: var(--bg); color: var(--text); line-height: 1.6; padding: 32px 20px; }
+    .container { max-width: 860px; margin: 0 auto; }
+    .header-bar { border-bottom: 1px solid var(--border); padding-bottom: 24px; margin-bottom: 32px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 16px; }
+    .tag { background: rgba(16, 185, 129, 0.15); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.4); padding: 4px 12px; border-radius: 999px; font-size: 0.75rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; }
+    h1 { font-size: 2.2rem; font-weight: 900; line-height: 1.2; margin-top: 8px; }
+    .lead { font-size: 1.1rem; color: var(--text-muted); margin-top: 8px; }
+    .btn-print { background: var(--emerald); color: #042f2e; border: none; padding: 10px 18px; border-radius: 10px; font-weight: 800; font-size: 0.85rem; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; transition: all 0.2s; }
+    .btn-print:hover { background: #34d399; }
+    .card { background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 24px; margin-bottom: 24px; }
+    .card-title { font-size: 1.2rem; font-weight: 800; color: #fff; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
+    .grid-2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; }
+    .stat-box { background: rgba(0,0,0,0.3); border: 1px solid var(--border); border-radius: 12px; padding: 16px; }
+    .stat-val { font-size: 1.8rem; font-weight: 900; color: var(--emerald); }
+    .stat-label { font-size: 0.85rem; color: var(--text-muted); margin-top: 4px; }
+    .quote-box { border-left: 4px solid var(--emerald); padding-left: 18px; font-style: italic; color: #cbd5e1; margin: 16px 0; font-size: 0.95rem; }
+    ul { list-style: none; padding-left: 0; }
+    li { position: relative; padding-left: 20px; margin-bottom: 8px; font-size: 0.95rem; color: #cbd5e1; }
+    li::before { content: "✓"; position: absolute; left: 0; color: var(--emerald); font-weight: 900; }
+    .contact-box { background: linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(15, 23, 42, 0.9) 100%); border: 1px solid rgba(16, 185, 129, 0.3); }
+    @media print {
+      body { background: #fff; color: #000; padding: 0; }
+      .btn-print, header, .no-print { display: none !important; }
+      .card { background: #fff; border: 1px solid #ccc; color: #000; break-inside: avoid; }
+      .stat-val, .tag { color: #047857 !important; }
+      .card-title { color: #000 !important; }
+      li, p, .lead, .quote-box { color: #222 !important; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header-bar">
+      <div>
+        <span class="tag">Dossiê de Imprensa Oficial • 2026</span>
+        <h1>Confirme, Quem É?</h1>
+        <p class="lead">A primeira linha cívica de Inteligência Artificial contra burlas e extorsões em Portugal.</p>
+      </div>
+      <div>
+        <button onclick="window.print()" class="btn-print no-print">
+          🖨️ Descarregar / Imprimir PDF
+        </button>
+      </div>
+    </div>
+
+    <!-- 1. RESUMO EXECUTIVO -->
+    <div class="card">
+      <div class="card-title">📌 O que é o projeto?</div>
+      <p style="margin-bottom: 12px;">
+        O <strong>Confirme, Quem É?</strong> (disponível em <a href="https://confirmequeme.pt" style="color: var(--emerald);">confirmequeme.pt</a>) é um assistente público e gratuito que protege os cidadãos portugueses contra a onda galopante de burlas digitais através do próprio telemóvel.
+      </p>
+      <p>
+        Basta o cidadão reencaminhar uma mensagem duvidosa ou print para o número de WhatsApp oficial <strong>+351 927 618 142</strong>. Em menos de 3 segundos, um motor avançado de IA treinado em padrões de cibercrime nacional avalia os sinais de perigo e emite um veredito direto em 3 cores (🔴 Golpe, 🟡 Suspeito, 🟢 Seguro).
+      </p>
+    </div>
+
+    <!-- 2. NÚMEROS E CONTEXTO DE PORTUGAL -->
+    <div class="card">
+      <div class="card-title">📊 Factos e Dados do Cibercrime em Portugal</div>
+      <div class="grid-2">
+        <div class="stat-box">
+          <div class="stat-val">120M€+</div>
+          <div class="stat-label">Prejuízo anual estimado em fraudes digitais e burlas bancárias em Portugal.</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-val">73%</div>
+          <div class="stat-label">Das denúncias no Gabinete Cibercrime da PGR envolvem falsas entidades e phishing.</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-val">&lt; 3 Segundos</div>
+          <div class="stat-label">Tempo médio de análise e resposta ao cidadão sem necessidade de instalar apps.</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-val">RGPD Total</div>
+          <div class="stat-label">Privacidade por desenho: zero texto bruto ou números de vítimas armazenados.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- 3. QUEM ESTÁ POR TRÁS -->
+    <div class="card">
+      <div class="card-title">👤 Liderança & Fundação</div>
+      <p style="margin-bottom: 10px;">
+        O projeto foi arquitetado e liderado por <strong>Denio Negrão (CTO)</strong>, engenheiro de sistemas e especialista em arquiteturas de software e inteligência artificial aplicadas à segurança.
+      </p>
+      <div class="quote-box">
+        "A burla do 'Olá Pai' ou as falsas mensagens dos CTT não têm sucesso por sofisticação técnica, mas sim por isolamento emocional. As famílias entram em pânico e não têm a quem perguntar antes de transferir. Criámos o 'Confirme, Quem É?' para que qualquer mãe, pai ou idoso tenha um especialista de segurança no bolso a responder em 3 segundos."
+        <br><br><strong>— Denio Negrão, CTO</strong>
+      </div>
+    </div>
+
+    <!-- 4. DIFERENCIAIS TECNOLÓGICOS -->
+    <div class="card">
+      <div class="card-title">🛡️ Como Funciona a Tecnologia?</div>
+      <ul>
+        <li><strong>Deteção de Contas Mula:</strong> Isola na hora entidades Multibanco de 5 dígitos, referências de 9 dígitos e IBANs portugueses (PT50) associados a redes organizadas.</li>
+        <li><strong>Triagem Multimodal:</strong> Aceita textos simples ou prints de ecrã (fotografias tiradas ao telemóvel), facilitando a vida a seniores.</li>
+        <li><strong>Protocolo de Socorro Imediato:</strong> Se o cidadão avisar que já transferiu, a IA ativa um protocolo de emergência bancária com passos imediatos para estorno e queixa na PJ.</li>
+      </ul>
+    </div>
+
+    <!-- 5. CONTACTOS PARA JORNALISTAS -->
+    <div class="card contact-box">
+      <div class="card-title">📞 Contacto Direto para Entrevistas e Gravações</div>
+      <p style="margin-bottom: 14px; font-size: 0.9rem;">
+        Estamos disponíveis para entrevistas, participação em programas de televisão/rádio e demonstrações ao vivo do motor de IA a desmascarar mensagens reais.
+      </p>
+      <div style="font-size: 0.95rem; line-height: 1.8;">
+        <strong>Porta-Voz:</strong> Denio Negrão (CTO)<br>
+        <strong>Telefone Direto / WhatsApp:</strong> <a href="tel:+351927618142" style="color: var(--emerald); font-weight: 800;">+351 927 618 142</a><br>
+        <strong>E-mail de Imprensa:</strong> <a href="mailto:imprensa@confirmequeme.pt" style="color: var(--emerald); font-weight: 800;">imprensa@confirmequeme.pt</a><br>
+        <strong>Portal Oficial:</strong> <a href="https://confirmequeme.pt" target="_blank" style="color: var(--emerald);">https://confirmequeme.pt</a>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
