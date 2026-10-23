@@ -233,16 +233,19 @@ async function seed() {
   // 3. VERIFICACOES (4 Pilares)
   console.log('3. Inserindo verificações dos 4 pilares...');
   const pilares = ['nif', 'dominio', 'telefone', 'representante'];
+  let vIdx = 1;
   for (const emp of empresasMock.slice(0, 4)) {
     for (const p of pilares) {
+      const vId = `00000000-0000-4000-8000-5000000000${String(vIdx++).padStart(2, '0')}`;
       await fetch(`${url}/rest/v1/verificacoes`, {
         method: 'POST',
         headers: { ...headers, Prefer: 'resolution=merge-duplicates' },
         body: JSON.stringify({
+          id: vId,
           empresa_id: emp.id,
           tipo: p,
           estado: 'ok',
-          notas: `${MOCK_TAG} Validação documental e técnica concluída com sucesso.`,
+          prova: `${MOCK_TAG} Validação documental e técnica concluída com sucesso.`,
           verificado_em: new Date().toISOString()
         })
       });
