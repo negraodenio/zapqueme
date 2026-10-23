@@ -719,20 +719,12 @@
         <span id="badgeFilaPendentes" style="margin-left: auto; background: rgba(245, 158, 11, 0.2); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.4); border-radius: 999px; padding: 1px 7px; font-size: 0.7rem; font-weight: 700; display: none;">0</span>
       </button>
 
-      <button class="nav-btn" onclick="switchTab('tab-monetizacao')">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
-        Monetização B2B
-      </button>
-
       <button class="nav-btn" onclick="switchTab('tab-dossie')">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
         Dossiê CISO & Leads
       </button>
 
-      <a href="/plano-negocio" target="_blank" class="nav-btn" style="color: #38bdf8;">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
-        Plano de Negócio (antigo, superado) ↗
-      </a>
+
     </nav>
 
     <div class="sidebar-footer">
@@ -1061,76 +1053,7 @@
       </div>
     </div>
 
-    <!-- TAB 5: MONETIZAÇÃO & ROADMAP B2B -->
-    <div id="tab-monetizacao" class="tab-pane" style="display: none;">
-      <!-- OFERTAS REAIS (fonte: docs/MODELO_NEGOCIO_FREE_MIDIA_PR.md) -->
-      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 20px; margin-bottom: 28px;">
-        <div style="background: var(--card-bg); border: 1px solid var(--card-border); border-radius: var(--radius); padding: 24px;">
-          <span style="font-size: 0.75rem; font-weight: 800; color: #10b981; text-transform: uppercase; background: rgba(16, 185, 129, 0.15); padding: 4px 8px; border-radius: 6px;">Oferta A</span>
-          <h3 style="font-size: 1.15rem; margin: 12px 0 8px;">Zap Verified</h3>
-          <p style="font-size: 0.85rem; color: var(--text-muted); line-height: 1.5; margin-bottom: 14px;">
-            Clínicas, imobiliárias, advogados e PMEs. Página pública <code>/verify/CODIGO</code> com os contactos oficiais (após verificação de NIF e número), selo para site/redes e texto-modelo para a equipa.
-          </p>
-          <div style="background: rgba(255,255,255,0.03); border-radius: 8px; padding: 12px; font-size: 0.85rem; margin-bottom: 14px; display: flex; justify-content: space-between;">
-            <span>€49 / mês · sem fidelização</span><strong style="color: #34d399;">Plano anual €490 (só após o mensal)</strong>
-          </div>
-          <a href="/empresas.html" target="_blank" class="btn-xs btn-xs-primary" style="width: 100%; justify-content: center; padding: 10px; text-decoration: none;">Ver página de venda ↗</a>
-        </div>
-        <div style="background: var(--card-bg); border: 1px solid rgba(59, 130, 246, 0.3); border-radius: var(--radius); padding: 24px;">
-          <span style="font-size: 0.75rem; font-weight: 800; color: #3b82f6; text-transform: uppercase; background: rgba(59, 130, 246, 0.15); padding: 4px 8px; border-radius: 6px;">Oferta B</span>
-          <h3 style="font-size: 1.15rem; margin: 12px 0 8px;">Acompanhamento de Imitações (Radar)</h3>
-          <p style="font-size: 0.85rem; color: var(--text-muted); line-height: 1.5; margin-bottom: 14px;">
-            Tudo da Oferta A + revisão periódica do Threat Radar com o nome da empresa, aviso por WhatsApp/e-mail quando surge um caso e resumo mensal. Manual, sem tempo de resposta garantido (viável para 1–2 clientes). <strong>Nunca vender a frio</strong>: só a quem já viu evidência no Radar.
-          </p>
-          <div style="background: rgba(255,255,255,0.03); border-radius: 8px; padding: 12px; font-size: 0.85rem; margin-bottom: 14px;">€290 / mês</div>
-          <button onclick="switchTab('tab-radar')" class="btn-xs" style="width: 100%; justify-content: center; padding: 10px; background: rgba(59, 130, 246, 0.2); border-color: rgba(59, 130, 246, 0.4); color: #93c5fd;">Abrir Threat Radar (Marcas sob ataque) 📡</button>
-        </div>
-        <div style="background: var(--card-bg); border: 1px dashed var(--card-border); border-radius: var(--radius); padding: 24px;">
-          <span style="font-size: 0.75rem; font-weight: 800; color: #a855f7; text-transform: uppercase; background: rgba(168, 85, 247, 0.15); padding: 4px 8px; border-radius: 6px;">Ideias futuras · sem preço</span>
-          <h3 style="font-size: 1.15rem; margin: 12px 0 8px;">Não vender hoje</h3>
-          <p style="font-size: 0.85rem; color: var(--text-muted); line-height: 1.5;">
-            Feed API/SIEM, takedown como serviço, white-label e licenciamento a telcos/bancos. Só passam a oferta quando houver entrega comprovada e clientes das ofertas A/B a pedir. O plano antigo (<code>docs/ZAP_PLANO_DE_NEGOCIO_DISRUPTIVO_2026.md</code>) está <strong>superado</strong> pelo manual de monetização.
-          </p>
-        </div>
-      </div>
 
-      <!-- METAS vs REAL (sem premissas inventadas) -->
-      <div style="background: var(--card-bg); border: 1px solid var(--card-border); border-radius: var(--radius); padding: 28px; margin-bottom: 28px;">
-        <h3 style="font-size: 1.2rem;">Metas vs. realidade</h3>
-        <p style="color: var(--text-muted); font-size: 0.85rem; margin: 4px 0 16px;">Valores reais vêm de empresas ativas com pagamento registado. O cenário abaixo é só uma conta, não uma previsão.</p>
-        <table>
-          <thead><tr><th>Meta</th><th>Composição</th><th>MRR alvo</th><th>Anualizado*</th><th>Estado</th></tr></thead>
-          <tbody id="metasTableBody"></tbody>
-        </table>
-        <p style="font-size: 0.75rem; color: var(--text-muted); margin-top: 8px;">* Pressupõe 12 meses de retenção. Antes de impostos, comissões (~2,5%) e horas de operação.</p>
-
-        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 24px; background: rgba(0, 0, 0, 0.25); padding: 20px; border-radius: 12px; margin-top: 20px;">
-          <div>
-            <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
-              <label style="font-size: 0.85rem; font-weight: 700;">Zap Verified (€49):</label>
-              <strong id="simValVerified" style="color: #34d399;">0 empresas</strong>
-            </div>
-            <input type="range" id="simRangeVerified" min="0" max="60" step="1" value="0" oninput="atualizarSimulador()" style="width: 100%; accent-color: #10b981;">
-          </div>
-          <div>
-            <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
-              <label style="font-size: 0.85rem; font-weight: 700;">Acompanhamento (€290):</label>
-              <strong id="simValThreat" style="color: #60a5fa;">0 empresas</strong>
-            </div>
-            <input type="range" id="simRangeThreat" min="0" max="5" step="1" value="0" oninput="atualizarSimulador()" style="width: 100%; accent-color: #3b82f6;">
-          </div>
-          <div>
-            <div style="font-size: 0.8rem; color: var(--text-muted);">Cenário (MRR / ARR):</div>
-            <strong id="simMrrTotal" style="color: #38bdf8; font-size: 1.1rem; font-family: 'JetBrains Mono', monospace;">€0 / mês</strong>
-            <div id="simArrTotal" style="font-size: 1rem; font-weight: 800; color: #10b981; font-family: 'JetBrains Mono', monospace;">€0 / ano</div>
-            <div style="font-size: 0.8rem; color: var(--text-muted); margin-top: 8px;">
-              • Verified: <span id="simMrrVerified">€0</span><br>
-              • Acompanhamento: <span id="simMrrThreat">€0</span>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
     <!-- TAB 6: DOSSIÊ EXECUTIVO CISO & DIGEST -->
     <div id="tab-dossie" class="tab-pane" style="display: none;">
       <div class="table-container" style="margin-bottom: 24px;">
@@ -2836,15 +2759,11 @@
         'tab-radar': 'Threat Radar',
         'tab-ocorrencias': 'Ocorrências de Impersonation',
         'tab-golpes-novos': 'Acompanhamento de Golpes Novos — Fila de Revisão & Agrupamento',
-        'tab-monetizacao': 'Ofertas, Metas & Receita',
         'tab-dossie': 'Gerador de Dossiê Técnico para CISOs & Leads'
       };
       document.getElementById('pageTitle').textContent = titles[tabId] || 'Painel Administrativo';
 
-      if (tabId === 'tab-monetizacao') {
-        renderMetas();
-        atualizarSimulador();
-      } else if (tabId === 'tab-dossie') {
+      if (tabId === 'tab-dossie') {
         popularSelectMarcasDossie();
       } else if (tabId === 'tab-golpes-novos') {
         renderGolpesNovos();
