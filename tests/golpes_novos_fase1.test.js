@@ -185,6 +185,7 @@ console.log('🧪 Iniciando Testes da Fase 1: Módulo de Acompanhamento de Golpe
 
   // GET sem credenciais
   const resGetSemAuth = criarMockRes();
+  process.env.ADMIN_SECRET_KEY = process.env.ADMIN_SECRET_KEY || 'chave-de-teste-fase1';
   await adminHandler({ method: 'GET', headers: {} }, resGetSemAuth);
   assert.equal(resGetSemAuth.statusCode, 401, 'GET /api/admin sem credenciais deve devolver 401');
   assert.equal(resGetSemAuth.body?.clusters, undefined, 'Zero dados de clusters devolvidos sem autenticação');

@@ -15,19 +15,11 @@ se é golpe, porquê, e o que fazer.
    - `SUPABASE_URL` e `SUPABASE_SERVICE_ROLE_KEY` (opcional, para guardar histórico e métricas — ver abaixo)
 5. Clica **Deploy**. Em ~1 minuto tens um link tipo `e-golpe.vercel.app`.
 
-## Como Conectar ao WhatsApp (Twilio Sandbox)
+## WhatsApp (Baileys no Render)
 
-O bot responde automaticamente pelo WhatsApp mensagens de texto encaminhadas ou prints/fotos enviadas:
-
-1. Cria conta grátis em https://twilio.com.
-2. No menu lateral, aceda a **Messaging → Try it out → Send a WhatsApp message**.
-3. Na aba **Sandbox Settings**:
-   - Em **WHEN A MESSAGE COMES IN**, coloca a URL do teu deploy:
-     `https://<teu-app>.vercel.app/api/whatsapp` (método **HTTP POST**).
-   - Clica **Save**.
-4. No teu telemóvel/celular, envia a mensagem `join <código-da-sandbox>` para o número do WhatsApp da Twilio indicado na tela.
-5. Pronto! Agora podes encaminhar qualquer mensagem ou print que o bot responde na hora com o veredito.
-
+O bot de WhatsApp corre em `bot.js` (Baileys) no Render (`render.yaml`, serviço `zapqueme-bot`).
+Liga-se como dispositivo associado a um número: abre o painel do bot, pede o código de emparelhamento e confirma no telemóvel.
+O site (`/api/analyze`) é o canal principal; o WhatsApp é complementar.
 
 Isto guarda cada análise (veredito, confiança, tipo de golpe) e cada feedback 👍/👎
 num banco de dados de verdade, para depois responder perguntas tipo "quantas análises
@@ -89,7 +81,7 @@ Zero! O modelo `gemini-2.0-flash` no Google AI Studio possui plano gratuito gene
 
 ## Próximos passos e Funcionalidades
 
-- [x] Bot WhatsApp via Twilio Sandbox (`/api/whatsapp`) — já implementado
+- [x] Bot WhatsApp via Baileys (`bot.js`, Render) - já implementado
 - [x] Termômetro visual de risco com barra de emojis (Score 0-100) — já implementado
 - [x] Deteção e alerta de links falsos / typosquatting — já implementado
 - [x] Protocolo de emergência "Fui Vítima" (guia imediato de MED/estorno e BO/queixa) — já implementado
@@ -98,7 +90,7 @@ Zero! O modelo `gemini-2.0-flash` no Google AI Studio possui plano gratuito gene
 - [ ] Rate limit por IP (reusando Upstash com `INCR` + `EXPIRE`)
 - [ ] Link de partilha com resultado anonimizado (`/r/abc123`)
 - [ ] Domínio próprio (ex: `zapqueme.com` ou `zapqueme.pt`)
-- [ ] Migração de Twilio Sandbox para WhatsApp Cloud API oficial (quando validar)
+- [ ] Migração do Baileys (não oficial) para WhatsApp Cloud API oficial (quando validar)
 
 ## Aviso legal a manter sempre visível
 

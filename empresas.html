@@ -646,39 +646,78 @@
         Enquanto os firewalls tradicionais só vigiam os seus servidores, o <strong>Threat Radar</strong> monitoriza o tráfego fechado de mensagens onde o cidadão é atacado. Intercetamos campanhas antes da abertura de inquéritos policiais.
       </p>
 
-      <!-- MOCKUP ESTILIZADO DO RADAR (DARK MODE / BLUR DE SEGURANÇA) -->
-      <div style="max-width: 760px; margin: 0 auto; background: #0a0f1d; border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 16px; overflow: hidden; box-shadow: 0 20px 50px rgba(0, 0, 0, 0.6); text-align: left; position: relative;">
-        <!-- Top bar do terminal -->
-        <div style="background: #111827; padding: 10px 16px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255, 255, 255, 0.08);">
-          <div style="display: flex; gap: 6px; align-items: center;">
-            <span style="width: 10px; height: 10px; border-radius: 50%; background: #ef4444;"></span>
-            <span style="width: 10px; height: 10px; border-radius: 50%; background: #f59e0b;"></span>
-            <span style="width: 10px; height: 10px; border-radius: 50%; background: #10b981;"></span>
-            <span style="font-family: 'JetBrains Mono', monospace; font-size: 0.75rem; color: #94a3b8; margin-left: 10px;">confirme-radar://feed-surtos-ativos.live</span>
+      <!-- MOCKUP ESTILIZADO DO DETETOR DE SURTOS DO RADAR (ESTILO SOC REAL COM MÁSCARA) -->
+      <div style="max-width: 820px; margin: 0 auto; background: #0c1220; border: 1px solid rgba(239, 68, 68, 0.35); border-radius: 16px; overflow: hidden; box-shadow: 0 25px 60px rgba(0, 0, 0, 0.7); text-align: left; position: relative;">
+        <!-- Header idêntico ao Detetor de Surtos Real -->
+        <div style="background: rgba(15, 23, 42, 0.95); padding: 14px 18px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255, 255, 255, 0.08); flex-wrap: wrap; gap: 10px;">
+          <div>
+            <div style="font-weight: 800; font-size: 0.95rem; color: #fff; display: flex; align-items: center; gap: 8px;">
+              <span>🚨</span> Detetor de Surtos & Campanhas Coordenadas (Early-Warning Engine)
+            </div>
+            <div style="font-size: 0.72rem; color: var(--text-muted); margin-top: 2px;">
+              Agrupamento automático por Entidade Multibanco, Referência, IBAN, Telefone de Burla ou Domínio de Phishing
+            </div>
           </div>
-          <span style="font-size: 0.7rem; font-weight: 800; color: #ef4444; background: rgba(239, 68, 68, 0.15); padding: 2px 8px; border-radius: 4px;">SURTO CRÍTICO DETETADO</span>
+          <span style="font-size: 0.72rem; font-weight: 800; color: #34d399; background: rgba(16, 185, 129, 0.15); border: 1px solid rgba(16, 185, 129, 0.3); padding: 4px 10px; border-radius: 6px;">
+            ↓ Exportar Feed IOCs (CSV SIBS / CERT.PT)
+          </span>
         </div>
 
-        <!-- Conteúdo do Radar com dados mascarados para proteção de IP -->
-        <div style="padding: 20px; font-family: 'JetBrains Mono', monospace; font-size: 0.8rem; line-height: 1.8;">
-          <div style="color: #64748b; font-size: 0.72rem; margin-bottom: 10px;">// TELEMETRIA COLETADA VIA +351 927 618 142 — ÚLTIMAS 24 HORAS</div>
-          
-          <div style="display: flex; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.05); padding: 8px 0;">
-            <span style="color: #f87171;">⚠️ ATAQUE COORDENADO EM CURSO</span>
-            <span style="color: #94a3b8;">Setor: Banca & E-commerce PT</span>
-          </div>
+        <!-- Tabela Estilo SOC / Threat Radar Real -->
+        <div style="overflow-x: auto; padding: 0;">
+          <table style="width: 100%; border-collapse: collapse; font-size: 0.78rem;">
+            <thead>
+              <tr style="border-bottom: 1px solid rgba(255, 255, 255, 0.08); background: rgba(0,0,0,0.2); color: #94a3b8; text-transform: uppercase; font-size: 0.68rem; letter-spacing: 0.05em;">
+                <th style="padding: 10px 14px;">Marca / Alvo</th>
+                <th style="padding: 10px 14px;">Setor</th>
+                <th style="padding: 10px 14px;">Vetor / Modus Operandi</th>
+                <th style="padding: 10px 14px;">Indicador Técnico (IOC)</th>
+                <th style="padding: 10px 14px; text-align: center;">Volume</th>
+                <th style="padding: 10px 14px;">Estado</th>
+                <th style="padding: 10px 14px; text-align: right;">Ação Rápida</th>
+              </tr>
+            </thead>
+            <tbody style="color: #cbd5e1;">
+              <!-- Linha 1: Millennium BCP -->
+              <tr style="border-bottom: 1px solid rgba(255, 255, 255, 0.04);">
+                <td style="padding: 12px 14px; font-weight: 800; color: #fff;">Millennium BCP</td>
+                <td style="padding: 12px 14px;"><span style="background: rgba(59, 130, 246, 0.18); color: #60a5fa; border: 1px solid rgba(59, 130, 246, 0.3); padding: 2px 7px; border-radius: 4px; font-size: 0.68rem; font-weight: 700;">BANCA & FINANÇAS</span></td>
+                <td style="padding: 12px 14px; color: #fbbf24;">Phishing Bancário / Roubo de Credenciais</td>
+                <td style="padding: 12px 14px; font-family: 'JetBrains Mono', monospace; color: #f87171;">millennium-seguranca-•••••.com</td>
+                <td style="padding: 12px 14px; text-align: center; font-weight: 900; color: #ef4444; font-size: 0.95rem;">36</td>
+                <td style="padding: 12px 14px;"><span style="background: rgba(239, 68, 68, 0.2); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.4); padding: 2px 7px; border-radius: 4px; font-size: 0.65rem; font-weight: 800;">🔥 SURTO CRÍTICO</span></td>
+                <td style="padding: 12px 14px; text-align: right;"><span style="background: #1e3a5f; color: #38bdf8; padding: 4px 8px; border-radius: 6px; font-weight: 700; font-size: 0.7rem;">⚡ Kit Takedown</span></td>
+              </tr>
 
-          <div style="padding: 12px 0; border-bottom: 1px solid rgba(255,255,255,0.05);">
-            <div style="color: #cbd5e1;"><strong style="color: #fff;">Vetor:</strong> Smishing + Usurpação com falso SMS de entrega e confirmação de conta</div>
-            <div style="color: #38bdf8; margin-top: 4px;"><strong style="color: #fff;">Entidade Multibanco SIBS:</strong> 21••• (Identificada) &nbsp;|&nbsp; <strong style="color: #fff;">Ref:</strong> 938 ••• •••</div>
-            <div style="color: #34d399; margin-top: 4px;"><strong style="color: #fff;">Conta de Mula Isolada:</strong> PT50 0033 0000 •••• •••• •••• • (Banco Nacional)</div>
-          </div>
+              <!-- Linha 2: CTT -->
+              <tr style="border-bottom: 1px solid rgba(255, 255, 255, 0.04);">
+                <td style="padding: 12px 14px; font-weight: 800; color: #fff;">CTT Expresso</td>
+                <td style="padding: 12px 14px;"><span style="background: rgba(59, 130, 246, 0.18); color: #60a5fa; border: 1px solid rgba(59, 130, 246, 0.3); padding: 2px 7px; border-radius: 4px; font-size: 0.68rem; font-weight: 700;">LOGÍSTICA & ENTREGAS</span></td>
+                <td style="padding: 12px 14px; color: #fbbf24;">Falsa Encomenda / Taxa Alfandegária</td>
+                <td style="padding: 12px 14px; font-family: 'JetBrains Mono', monospace; color: #f87171;">ctt-desalfandega-••••.top</td>
+                <td style="padding: 12px 14px; text-align: center; font-weight: 900; color: #ef4444; font-size: 0.95rem;">36</td>
+                <td style="padding: 12px 14px;"><span style="background: rgba(239, 68, 68, 0.2); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.4); padding: 2px 7px; border-radius: 4px; font-size: 0.65rem; font-weight: 800;">🔥 SURTO CRÍTICO</span></td>
+                <td style="padding: 12px 14px; text-align: right;"><span style="background: #1e3a5f; color: #38bdf8; padding: 4px 8px; border-radius: 6px; font-weight: 700; font-size: 0.7rem;">⚡ Kit Takedown</span></td>
+              </tr>
+
+              <!-- Linha 3: MB WAY / SIBS -->
+              <tr style="border-bottom: 1px solid rgba(255, 255, 255, 0.04);">
+                <td style="padding: 12px 14px; font-weight: 800; color: #fff;">MB WAY / SIBS</td>
+                <td style="padding: 12px 14px;"><span style="background: rgba(16, 185, 129, 0.18); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.3); padding: 2px 7px; border-radius: 4px; font-size: 0.68rem; font-weight: 700;">SIBS / PAGAMENTOS</span></td>
+                <td style="padding: 12px 14px; color: #fbbf24;">Falso Familiar WhatsApp (Olá Pai/Mãe)</td>
+                <td style="padding: 12px 14px; font-family: 'JetBrains Mono', monospace; color: #38bdf8;">Ent. MB: 21••• | Ref: 938••••••</td>
+                <td style="padding: 12px 14px; text-align: center; font-weight: 900; color: #ef4444; font-size: 0.95rem;">34</td>
+                <td style="padding: 12px 14px;"><span style="background: rgba(239, 68, 68, 0.2); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.4); padding: 2px 7px; border-radius: 4px; font-size: 0.65rem; font-weight: 800;">🔥 SURTO CRÍTICO</span></td>
+                <td style="padding: 12px 14px; text-align: right;"><span style="background: #1e3a5f; color: #38bdf8; padding: 4px 8px; border-radius: 6px; font-weight: 700; font-size: 0.7rem;">⚡ Kit Takedown</span></td>
+              </tr>
+            </tbody>
+          </table>
 
           <!-- Tarja de Blur / Acesso Restrito a CISOs -->
-          <div style="background: rgba(15, 23, 42, 0.85); backdrop-filter: blur(4px); border: 1px dashed rgba(59, 130, 246, 0.4); border-radius: 10px; padding: 16px; margin-top: 14px; text-align: center;">
-            <div style="font-weight: 800; color: #fff; font-size: 0.9rem; margin-bottom: 4px;">🔒 Dados Brutos & Identidade dos Domínios Protegidos</div>
-            <div style="color: #94a3b8; font-size: 0.75rem; margin-bottom: 12px;">Relatório técnico completo com Hash SHA-256 e pacote forense disponível para equipas de cibersegurança e compliance.</div>
-            <a href="#contato" class="btn-hero-primary" style="font-size: 0.8rem; padding: 8px 18px; display: inline-block;">Solicitar Dossiê de Ameaças da Minha Marca</a>
+          <div style="background: rgba(15, 23, 42, 0.9); backdrop-filter: blur(5px); border-top: 1px dashed rgba(59, 130, 246, 0.4); padding: 18px; text-align: center;">
+            <div style="font-weight: 800; color: #fff; font-size: 0.95rem; margin-bottom: 4px;">🔒 Telemetria Viva & IOCs Brutos Reservados a Equipas de Segurança</div>
+            <div style="color: #94a3b8; font-size: 0.78rem; margin-bottom: 12px;">Dossiê forense completo com Hash SHA-256 e pacotes de bloqueio judicial emitidos em exclusivo para marcas auditadas.</div>
+            <a href="#contato" class="btn-hero-primary" style="font-size: 0.85rem; padding: 10px 22px; display: inline-block;">Solicitar Dossiê Confidencial da Minha Empresa</a>
           </div>
         </div>
       </div>

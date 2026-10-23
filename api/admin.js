@@ -187,7 +187,11 @@ async function fetchComFallback(fetchUrl, options, payload) {
 }
 
 export default async function handler(req, res) {
-  const adminSecret = process.env.ADMIN_SECRET_KEY || 'zapadmin2026';
+  // Sem valor por defeito: se a variável não estiver definida, o painel fica bloqueado (nunca com senha pública)
+  const adminSecret = process.env.ADMIN_SECRET_KEY;
+  if (!adminSecret) {
+    return res.status(500).json({ error: 'ADMIN_SECRET_KEY não configurada no servidor. Painel bloqueado.' });
+  }
 
   // Autenticação: aceita apenas header x-admin-key, Authorization Bearer ou campo secret no body (não via query string)
   let secret = req.headers['x-admin-key'] || (req.body && req.body.secret);
@@ -474,8 +478,49 @@ export default async function handler(req, res) {
     // 5. Total de ocorrências
     const totalOcorrencias = radar.reduce((acc, r) => acc + (parseInt(r.ocorrencias, 10) || 0), 0);
 
+    // KPIs de NEGÓCIO (dados reais): receita recorrente, pagantes, atrasos, expirações e funil comercial
+    const agora = Date.now();
+    const em30d = agora + 30 * 24 * 3600 * 1000;
+    const empresasAtivas = empresasReais.filter(e => e.estado === 'ativo');
+    const empresasPagantes = empresasAtivas.filter(e =>
+      (pagamentos || []).some(p => p.empresa_id === e.id && p.estado === 'pago')
+    );
+    const precoMensal = (e) => Number(e.preco_acordado) || (e.plano === 'radar' ? 290 : 49);
+    const funilContagens = {};
+    for (const e of empresasReais) {
+      const est = e.estado || 'lead';
+      funilContagens[est] = (funilContagens[est] || 0) + 1;
+    }
+    const idsReais = new Set(empresasReais.map(e => e.id));
+    const empresasContactadas = new Set(
+      (contactosComerciais || []).filter(c => idsReais.has(c.empresa_id)).map(c => c.empresa_id)
+    ).size;
+    const negocio = {
+      mrrReal: empresasPagantes.reduce((acc, e) => acc + precoMensal(e), 0),
+      pagantes: empresasPagantes.length,
+      pagantesSelo: empresasPagantes.filter(e => e.plano !== 'radar').length,
+      pagantesRadar: empresasPagantes.filter(e => e.plano === 'radar').length,
+      ativosSemPagamento: empresasAtivas.length - empresasPagantes.length,
+      pagamentosEmAtraso: (pagamentos || []).filter(p => p.estado === 'em_atraso' && idsReais.has(p.empresa_id)).length,
+      expiramEm30Dias: empresasAtivas.filter(e => {
+        const t = e.data_validade ? new Date(e.data_validade).getTime() : NaN;
+        return !isNaN(t) && t <= em30d;
+      }).length,
+      funil: {
+        ...funilContagens,
+        contactadas: empresasContactadas
+      },
+      // Metas do manual de monetização: Validação 3 selos, Tração 10 selos + 1 acompanhamento, Independência 30 + 2
+      metas: [
+        { nome: 'Validação', selos: 3, radar: 0, mrr: 147 },
+        { nome: 'Tração', selos: 10, radar: 1, mrr: 780 },
+        { nome: 'Independência', selos: 30, radar: 2, mrr: 2050 }
+      ]
+    };
+
     // KPIs Obrigatórios (Seção 19) + Métricas de Higiene + Golpes Novos:
     const kpis = {
+      negocio,
       totalEmpresas: empresasReais.length,
       totalEmpresasTeste: empresas.filter(e => e.is_teste && !e.arquivado_em).length,
       totalArquivados: empresas.filter(e => !!e.arquivado_em).length + selos.filter(s => !!s.arquivado_em).length,

@@ -9,7 +9,7 @@
     "dev": "vercel dev",
     "bot": "node bot.js",
     "benchmark": "node benchmark_audit.js",
-    "test": "node tests/b2b_radar.test.js && node tests/badge_kit.test.js && node tests/preproduction_fixes.test.js && node tests/sms.test.js && node tests/renderer.test.js && node tests/report_generator.test.js && node tests/admin_crm.test.js && node tests/admin_security.test.js && node tests/golpes_novos_fase1.test.js && node tests/golpes_novos_fase2.test.js && node tests/golpes_novos_fase3.test.js && node tests/golpes_novos_fase4.test.js"
+    "test": "node tests/b2b_radar.test.js && node tests/badge_kit.test.js && node tests/preproduction_fixes.test.js && node tests/sms.test.js && node tests/renderer.test.js && node tests/report_generator.test.js && node tests/admin_crm.test.js && node tests/admin_security.test.js && node tests/golpes_novos_fase1.test.js && node tests/golpes_novos_fase2.test.js && node tests/golpes_novos_fase3.test.js && node tests/golpes_novos_fase4.test.js && node tests/motor_regressao.test.js"
   },
   "dependencies": {
     "@whiskeysockets/baileys": "^7.0.0-rc14",

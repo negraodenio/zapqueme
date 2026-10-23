@@ -731,7 +731,7 @@
 
       <a href="/plano-negocio" target="_blank" class="nav-btn" style="color: #38bdf8;">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
-        Plano de Negócio 2026 ↗
+        Plano de Negócio (antigo, superado) ↗
       </a>
     </nav>
 
@@ -767,6 +767,30 @@
 
     <!-- BANNER DE STATUS DO SUPABASE -->
     <div id="dbWarningBanner" style="display: none; background: rgba(239, 68, 68, 0.15); border: 1px solid rgba(239, 68, 68, 0.4); color: #fca5a5; padding: 14px 18px; border-radius: 10px; margin-bottom: 24px; font-size: 0.9rem; align-items: center; justify-content: space-between;"></div>
+
+    <!-- KPIS DE NEGÓCIO (dados reais: pagamentos + empresas ativas) -->
+    <section class="kpi-grid" id="kpiNegocioGrid" style="margin-bottom: 14px;">
+      <div class="kpi-card" style="border-color: rgba(16, 185, 129, 0.35);">
+        <div class="kpi-header"><span>Receita mensal real (MRR)</span><span>💶</span></div>
+        <div class="kpi-value" id="kpiMrrReal" style="color: #10b981;">€0</div>
+        <div class="kpi-sub" id="kpiMrrMeta">Só empresas ativas com pagamento registado</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-header"><span>Clientes pagantes</span><span>✅</span></div>
+        <div class="kpi-value" id="kpiPagantes">0</div>
+        <div class="kpi-sub" id="kpiPagantesSub">Selos 0 · Acompanhamento 0</div>
+      </div>
+      <div class="kpi-card" style="border-color: rgba(245, 158, 11, 0.35);">
+        <div class="kpi-header"><span>Atenção</span><span>⏰</span></div>
+        <div class="kpi-value" id="kpiAtencao" style="color: #f59e0b;">0</div>
+        <div class="kpi-sub" id="kpiAtencaoSub">Em atraso 0 · Expiram em 30d 0 · Ativos sem pagamento 0</div>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-header"><span>Funil comercial</span><span>🧭</span></div>
+        <div class="kpi-value" id="kpiFunil" style="font-size: 1.1rem;">-</div>
+        <div class="kpi-sub">Leads → contactadas → proposta → verificação → ativas</div>
+      </div>
+    </section>
 
     <!-- KPIS: 4 CARDS OBRIGATÓRIOS (Seção 19) -->
     <section class="kpi-grid">
@@ -1039,151 +1063,74 @@
 
     <!-- TAB 5: MONETIZAÇÃO & ROADMAP B2B -->
     <div id="tab-monetizacao" class="tab-pane" style="display: none;">
-      <!-- CAMADAS DE RECEITA -->
+      <!-- OFERTAS REAIS (fonte: docs/MODELO_NEGOCIO_FREE_MIDIA_PR.md) -->
       <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 20px; margin-bottom: 28px;">
-        <!-- FASE 1 -->
         <div style="background: var(--card-bg); border: 1px solid var(--card-border); border-radius: var(--radius); padding: 24px;">
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-            <span style="font-size: 0.75rem; font-weight: 800; color: #10b981; text-transform: uppercase; background: rgba(16, 185, 129, 0.15); padding: 4px 8px; border-radius: 6px;">Fase 1 • 0 a 6 meses</span>
-            <span style="font-size: 0.8rem; color: var(--text-muted);">Ciclo: Dias (Self-serve)</span>
-          </div>
-          <h3 style="font-size: 1.15rem; margin-bottom: 8px;">Zap Verified & API Self-Serve</h3>
-          <p style="font-size: 0.85rem; color: var(--text-muted); line-height: 1.5; margin-bottom: 16px;">
-            PMEs, clínicas médicas, escritórios de advocacia e e-commerces que precisam provar canais oficiais e reduzir ligações no SAC.
+          <span style="font-size: 0.75rem; font-weight: 800; color: #10b981; text-transform: uppercase; background: rgba(16, 185, 129, 0.15); padding: 4px 8px; border-radius: 6px;">Oferta A</span>
+          <h3 style="font-size: 1.15rem; margin: 12px 0 8px;">Zap Verified</h3>
+          <p style="font-size: 0.85rem; color: var(--text-muted); line-height: 1.5; margin-bottom: 14px;">
+            Clínicas, imobiliárias, advogados e PMEs. Página pública <code>/verify/CODIGO</code> com os contactos oficiais (após verificação de NIF e número), selo para site/redes e texto-modelo para a equipa.
           </p>
-          <div style="background: rgba(255, 255, 255, 0.03); border-radius: 8px; padding: 12px; font-size: 0.85rem; margin-bottom: 14px;">
-            <div style="display: flex; justify-content: space-between; margin-bottom: 6px;">
-              <span>• Zap Verified B2B</span>
-              <strong style="color: #34d399;">€19 – €49 / mês</strong>
-            </div>
-            <div style="display: flex; justify-content: space-between;">
-              <span>• API Pay-per-check</span>
-              <strong style="color: #38bdf8;">€0,002 – €0,01 / req</strong>
-            </div>
+          <div style="background: rgba(255,255,255,0.03); border-radius: 8px; padding: 12px; font-size: 0.85rem; margin-bottom: 14px; display: flex; justify-content: space-between;">
+            <span>€49 / mês · sem fidelização</span><strong style="color: #34d399;">Plano anual €490 (só após o mensal)</strong>
           </div>
-          <a href="/empresas.html" target="_blank" class="btn-xs btn-xs-primary" style="width: 100%; justify-content: center; padding: 10px; text-decoration: none;">Ver Landing Page B2B ↗</a>
+          <a href="/empresas.html" target="_blank" class="btn-xs btn-xs-primary" style="width: 100%; justify-content: center; padding: 10px; text-decoration: none;">Ver página de venda ↗</a>
         </div>
-
-        <!-- FASE 2 -->
-        <div style="background: var(--card-bg); border: 1px solid rgba(59, 130, 246, 0.3); border-radius: var(--radius); padding: 24px; position: relative;">
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-            <span style="font-size: 0.75rem; font-weight: 800; color: #3b82f6; text-transform: uppercase; background: rgba(59, 130, 246, 0.15); padding: 4px 8px; border-radius: 6px;">Fase 2 • 6 a 15 meses</span>
-            <span style="font-size: 0.8rem; color: var(--text-muted);">Ciclo: 1 a 3 meses</span>
-          </div>
-          <h3 style="font-size: 1.15rem; margin-bottom: 8px;">Brand Threat Intelligence</h3>
-          <p style="font-size: 0.85rem; color: var(--text-muted); line-height: 1.5; margin-bottom: 16px;">
-            Transportadoras, grandes e-commerces e bancos regionais que necessitam de alertas zero-day no WhatsApp antes da indexação pública.
+        <div style="background: var(--card-bg); border: 1px solid rgba(59, 130, 246, 0.3); border-radius: var(--radius); padding: 24px;">
+          <span style="font-size: 0.75rem; font-weight: 800; color: #3b82f6; text-transform: uppercase; background: rgba(59, 130, 246, 0.15); padding: 4px 8px; border-radius: 6px;">Oferta B</span>
+          <h3 style="font-size: 1.15rem; margin: 12px 0 8px;">Acompanhamento de Imitações (Radar)</h3>
+          <p style="font-size: 0.85rem; color: var(--text-muted); line-height: 1.5; margin-bottom: 14px;">
+            Tudo da Oferta A + revisão periódica do Threat Radar com o nome da empresa, aviso por WhatsApp/e-mail quando surge um caso e resumo mensal. Manual, sem tempo de resposta garantido (viável para 1–2 clientes). <strong>Nunca vender a frio</strong>: só a quem já viu evidência no Radar.
           </p>
-          <div style="background: rgba(255, 255, 255, 0.03); border-radius: 8px; padding: 12px; font-size: 0.85rem; margin-bottom: 14px;">
-            <div style="display: flex; justify-content: space-between; margin-bottom: 6px;">
-              <span>• Starter (Alerta Email / 3 marcas)</span>
-              <strong style="color: #93c5fd;">€299 / mês</strong>
-            </div>
-            <div style="display: flex; justify-content: space-between; margin-bottom: 6px;">
-              <span>• Pro (API Webhook / Histórico)</span>
-              <strong style="color: #60a5fa;">€990 / mês</strong>
-            </div>
-            <div style="display: flex; justify-content: space-between;">
-              <span>• Takedown Add-on</span>
-              <strong style="color: #f59e0b;">€50 – €150 / domínio</strong>
-            </div>
-          </div>
-          <button onclick="switchTab('tab-dossie')" class="btn-xs" style="width: 100%; justify-content: center; padding: 10px; background: rgba(59, 130, 246, 0.2); border-color: rgba(59, 130, 246, 0.4); color: #93c5fd;">Abrir Gerador de Dossiê CISO 📄</button>
+          <div style="background: rgba(255,255,255,0.03); border-radius: 8px; padding: 12px; font-size: 0.85rem; margin-bottom: 14px;">€290 / mês</div>
+          <button onclick="switchTab('tab-radar')" class="btn-xs" style="width: 100%; justify-content: center; padding: 10px; background: rgba(59, 130, 246, 0.2); border-color: rgba(59, 130, 246, 0.4); color: #93c5fd;">Abrir Threat Radar (Marcas sob ataque) 📡</button>
         </div>
-
-        <!-- FASE 3 -->
-        <div style="background: var(--card-bg); border: 1px solid var(--card-border); border-radius: var(--radius); padding: 24px;">
-          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-            <span style="font-size: 0.75rem; font-weight: 800; color: #a855f7; text-transform: uppercase; background: rgba(168, 85, 247, 0.15); padding: 4px 8px; border-radius: 6px;">Fase 3 • 12 a 24 meses</span>
-            <span style="font-size: 0.8rem; color: var(--text-muted);">Ciclo: 6 a 12 meses</span>
-          </div>
-          <h3 style="font-size: 1.15rem; margin-bottom: 8px;">White-Label & Data Licensing</h3>
-          <p style="font-size: 0.85rem; color: var(--text-muted); line-height: 1.5; margin-bottom: 16px;">
-            Telcos (Vodafone, MEO, Vivo), grandes bancos e seguradoras cyber que incorporam o bot ou licenciam feeds para SIEM.
+        <div style="background: var(--card-bg); border: 1px dashed var(--card-border); border-radius: var(--radius); padding: 24px;">
+          <span style="font-size: 0.75rem; font-weight: 800; color: #a855f7; text-transform: uppercase; background: rgba(168, 85, 247, 0.15); padding: 4px 8px; border-radius: 6px;">Ideias futuras · sem preço</span>
+          <h3 style="font-size: 1.15rem; margin: 12px 0 8px;">Não vender hoje</h3>
+          <p style="font-size: 0.85rem; color: var(--text-muted); line-height: 1.5;">
+            Feed API/SIEM, takedown como serviço, white-label e licenciamento a telcos/bancos. Só passam a oferta quando houver entrega comprovada e clientes das ofertas A/B a pedir. O plano antigo (<code>docs/ZAP_PLANO_DE_NEGOCIO_DISRUPTIVO_2026.md</code>) está <strong>superado</strong> pelo manual de monetização.
           </p>
-          <div style="background: rgba(255, 255, 255, 0.03); border-radius: 8px; padding: 12px; font-size: 0.85rem; margin-bottom: 14px;">
-            <div style="display: flex; justify-content: space-between; margin-bottom: 6px;">
-              <span>• White-label B2B2C Telco</span>
-              <strong style="color: #c084fc;">€0,10 – €0,30 / user</strong>
-            </div>
-            <div style="display: flex; justify-content: space-between; margin-bottom: 6px;">
-              <span>• Enterprise Threat SIEM</span>
-              <strong style="color: #c084fc;">€3.000+ / mês</strong>
-            </div>
-            <div style="display: flex; justify-content: space-between;">
-              <span>• Relatórios Setoriais Cyber</span>
-              <strong style="color: #c084fc;">€5.000 – €15.000 / rep</strong>
-            </div>
-          </div>
-          <button class="btn-xs" style="width: 100%; justify-content: center; padding: 10px; opacity: 0.7;" disabled>Planejado para Ano 2 🔒</button>
         </div>
       </div>
 
-      <!-- SIMULADOR INTERATIVO DE MRR / ARR -->
+      <!-- METAS vs REAL (sem premissas inventadas) -->
       <div style="background: var(--card-bg); border: 1px solid var(--card-border); border-radius: var(--radius); padding: 28px; margin-bottom: 28px;">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 10px;">
-          <div>
-            <h3 style="font-size: 1.2rem;">Simulador Executivo de Receita Recorrente (MRR / ARR)</h3>
-            <p style="color: var(--text-muted); font-size: 0.85rem; margin-top: 4px;">Simule metas com base na conversão dos leads capturados pelo sensor do WhatsApp</p>
-          </div>
-          <div style="text-align: right;">
-            <span style="font-size: 0.8rem; color: var(--text-muted);">Projeção Anual (ARR):</span>
-            <div id="simArrTotal" style="font-size: 1.6rem; font-weight: 800; color: #10b981; font-family: 'JetBrains Mono', monospace;">€112.200 / ano</div>
-          </div>
-        </div>
+        <h3 style="font-size: 1.2rem;">Metas vs. realidade</h3>
+        <p style="color: var(--text-muted); font-size: 0.85rem; margin: 4px 0 16px;">Valores reais vêm de empresas ativas com pagamento registado. O cenário abaixo é só uma conta, não uma previsão.</p>
+        <table>
+          <thead><tr><th>Meta</th><th>Composição</th><th>MRR alvo</th><th>Anualizado*</th><th>Estado</th></tr></thead>
+          <tbody id="metasTableBody"></tbody>
+        </table>
+        <p style="font-size: 0.75rem; color: var(--text-muted); margin-top: 8px;">* Pressupõe 12 meses de retenção. Antes de impostos, comissões (~2,5%) e horas de operação.</p>
 
-        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 24px; background: rgba(0, 0, 0, 0.25); padding: 20px; border-radius: 12px; margin-bottom: 20px;">
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 24px; background: rgba(0, 0, 0, 0.25); padding: 20px; border-radius: 12px; margin-top: 20px;">
           <div>
             <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
-              <label style="font-size: 0.85rem; font-weight: 700;">Clientes Zap Verified (PMEs):</label>
-              <strong id="simValVerified" style="color: #34d399;">150 empresas</strong>
+              <label style="font-size: 0.85rem; font-weight: 700;">Zap Verified (€49):</label>
+              <strong id="simValVerified" style="color: #34d399;">0 empresas</strong>
             </div>
-            <input type="range" id="simRangeVerified" min="10" max="1000" step="10" value="150" oninput="atualizarSimulador()" style="width: 100%; accent-color: #10b981;">
-            <span style="font-size: 0.75rem; color: var(--text-muted);">Ticket médio: €39 / mês</span>
+            <input type="range" id="simRangeVerified" min="0" max="60" step="1" value="0" oninput="atualizarSimulador()" style="width: 100%; accent-color: #10b981;">
           </div>
-
           <div>
             <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
-              <label style="font-size: 0.85rem; font-weight: 700;">Clientes Brand Threat Intel:</label>
-              <strong id="simValThreat" style="color: #60a5fa;">5 empresas</strong>
+              <label style="font-size: 0.85rem; font-weight: 700;">Acompanhamento (€290):</label>
+              <strong id="simValThreat" style="color: #60a5fa;">0 empresas</strong>
             </div>
-            <input type="range" id="simRangeThreat" min="1" max="50" step="1" value="5" oninput="atualizarSimulador()" style="width: 100%; accent-color: #3b82f6;">
-            <span style="font-size: 0.75rem; color: var(--text-muted);">Ticket médio: €700 / mês</span>
+            <input type="range" id="simRangeThreat" min="0" max="5" step="1" value="0" oninput="atualizarSimulador()" style="width: 100%; accent-color: #3b82f6;">
           </div>
-
           <div>
-            <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
-              <label style="font-size: 0.85rem; font-weight: 700;">Receita Mensal Estimada (MRR):</label>
-              <strong id="simMrrTotal" style="color: #38bdf8; font-size: 1.1rem; font-family: 'JetBrains Mono', monospace;">€9.350 / mês</strong>
-            </div>
+            <div style="font-size: 0.8rem; color: var(--text-muted);">Cenário (MRR / ARR):</div>
+            <strong id="simMrrTotal" style="color: #38bdf8; font-size: 1.1rem; font-family: 'JetBrains Mono', monospace;">€0 / mês</strong>
+            <div id="simArrTotal" style="font-size: 1rem; font-weight: 800; color: #10b981; font-family: 'JetBrains Mono', monospace;">€0 / ano</div>
             <div style="font-size: 0.8rem; color: var(--text-muted); margin-top: 8px;">
-              • Verified: <span id="simMrrVerified">€5.850</span><br>
-              • Threat Intel: <span id="simMrrThreat">€3.500</span>
+              • Verified: <span id="simMrrVerified">€0</span><br>
+              • Acompanhamento: <span id="simMrrThreat">€0</span>
             </div>
-          </div>
-        </div>
-
-        <!-- ECONOMIA UNITÁRIA -->
-        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; border-top: 1px solid var(--card-border); padding-top: 20px;">
-          <div>
-            <span style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; font-weight: 700;">Meta Acionamento LLM</span>
-            <div style="font-size: 1.25rem; font-weight: 800; color: #10b981; margin-top: 4px;">&lt; 15%</div>
-            <span style="font-size: 0.75rem; color: var(--text-muted);">85%+ resolvido por cache e regras</span>
-          </div>
-          <div>
-            <span style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; font-weight: 700;">Margem Bruta Estimada</span>
-            <div style="font-size: 1.25rem; font-weight: 800; color: #38bdf8; margin-top: 4px;">92%</div>
-            <span style="font-size: 0.75rem; color: var(--text-muted);">Custo marginal mínimo de servidor</span>
-          </div>
-          <div>
-            <span style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; font-weight: 700;">Modelo de Prospecção</span>
-            <div style="font-size: 1.25rem; font-weight: 800; color: #f59e0b; margin-top: 4px;">Digest CISO</div>
-            <span style="font-size: 0.75rem; color: var(--text-muted);">Inbound com evidência técnica real</span>
           </div>
         </div>
       </div>
     </div>
-
     <!-- TAB 6: DOSSIÊ EXECUTIVO CISO & DIGEST -->
     <div id="tab-dossie" class="tab-pane" style="display: none;">
       <div class="table-container" style="margin-bottom: 24px;">
@@ -2889,12 +2836,13 @@
         'tab-radar': 'Threat Radar',
         'tab-ocorrencias': 'Ocorrências de Impersonation',
         'tab-golpes-novos': 'Acompanhamento de Golpes Novos — Fila de Revisão & Agrupamento',
-        'tab-monetizacao': 'Roadmap de Monetização B2B & Simulador de Receita',
+        'tab-monetizacao': 'Ofertas, Metas & Receita',
         'tab-dossie': 'Gerador de Dossiê Técnico para CISOs & Leads'
       };
       document.getElementById('pageTitle').textContent = titles[tabId] || 'Painel Administrativo';
 
       if (tabId === 'tab-monetizacao') {
+        renderMetas();
         atualizarSimulador();
       } else if (tabId === 'tab-dossie') {
         popularSelectMarcasDossie();
@@ -2908,33 +2856,53 @@
       const threatEl = document.getElementById('simRangeThreat');
       if (!verifiedEl || !threatEl) return;
 
+      const PRECO_SELO = 49;
+      const PRECO_RADAR = 290;
       const verifiedCount = parseInt(verifiedEl.value, 10) || 0;
       const threatCount = parseInt(threatEl.value, 10) || 0;
 
-      const mrrVerified = verifiedCount * 39;
-      const mrrThreat = threatCount * 700;
+      const mrrVerified = verifiedCount * PRECO_SELO;
+      const mrrThreat = threatCount * PRECO_RADAR;
       const mrrTotal = mrrVerified + mrrThreat;
       const arrTotal = mrrTotal * 12;
+      const fmt = (v) => `€${v.toLocaleString('pt-PT')}`;
 
-      const valVerified = document.getElementById('simValVerified');
-      if (valVerified) valVerified.textContent = `${verifiedCount} empresas`;
-
-      const valThreat = document.getElementById('simValThreat');
-      if (valThreat) valThreat.textContent = `${threatCount} empresas`;
-
-      const mrrVerifiedEl = document.getElementById('simMrrVerified');
-      if (mrrVerifiedEl) mrrVerifiedEl.textContent = `€${mrrVerified.toLocaleString('pt-PT')}`;
-
-      const mrrThreatEl = document.getElementById('simMrrThreat');
-      if (mrrThreatEl) mrrThreatEl.textContent = `€${mrrThreat.toLocaleString('pt-PT')}`;
-
-      const mrrTotalEl = document.getElementById('simMrrTotal');
-      if (mrrTotalEl) mrrTotalEl.textContent = `€${mrrTotal.toLocaleString('pt-PT')} / mês`;
-
-      const arrTotalEl = document.getElementById('simArrTotal');
-      if (arrTotalEl) arrTotalEl.textContent = `€${arrTotal.toLocaleString('pt-PT')} / ano`;
+      document.getElementById('simValVerified').textContent = `${verifiedCount} empresas`;
+      document.getElementById('simValThreat').textContent = `${threatCount} empresas`;
+      document.getElementById('simMrrVerified').textContent = fmt(mrrVerified);
+      document.getElementById('simMrrThreat').textContent = fmt(mrrThreat);
+      document.getElementById('simMrrTotal').textContent = `${fmt(mrrTotal)} / mês`;
+      document.getElementById('simArrTotal').textContent = `${fmt(arrTotal)} / ano`;
     }
 
+    // Metas do manual de monetização vs. clientes pagantes reais
+    function renderMetas() {
+      const body = document.getElementById('metasTableBody');
+      if (!body) return;
+      const neg = (dashboardState && dashboardState.kpis && dashboardState.kpis.negocio) || {};
+      const metas = neg.metas || [];
+      const selos = neg.pagantesSelo || 0;
+      const radar = neg.pagantesRadar || 0;
+      body.innerHTML = metas.map(m => {
+        const ok = selos >= m.selos && radar >= m.radar;
+        return `<tr>
+          <td><strong>${escapeHtml(m.nome)}</strong></td>
+          <td>${m.selos} selos${m.radar ? ` + ${m.radar} acompanhamento` : ''}</td>
+          <td>€${m.mrr.toLocaleString('pt-PT')}</td>
+          <td>€${(m.mrr * 12).toLocaleString('pt-PT')}</td>
+          <td>${ok ? '✅ Atingida' : `Faltam ${Math.max(0, m.selos - selos)} selos${m.radar ? ` e ${Math.max(0, m.radar - radar)} acompanhamento` : ''}`}</td>
+        </tr>`;
+      }).join('') || '<tr><td colspan="5" style="text-align:center; color: var(--text-muted);">Sem dados</td></tr>';
+
+      // Cenário parte da realidade atual
+      const v = document.getElementById('simRangeVerified');
+      const r = document.getElementById('simRangeThreat');
+      if (v && r && !v.dataset.tocado) {
+        v.value = selos; r.value = radar;
+        v.oninput = () => { v.dataset.tocado = '1'; atualizarSimulador(); };
+        r.oninput = () => { v.dataset.tocado = '1'; atualizarSimulador(); };
+      }
+    }
     function normMarca(s) {
       return String(s || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim();
     }
@@ -3247,6 +3215,25 @@ Zap, Quem É?`;
         document.getElementById('kpiThreatRadar').textContent = kpis.totalThreatRadar || 0;
         document.getElementById('kpiOcorrencias').textContent = kpis.totalOcorrencias || 0;
 
+        // KPIs de negócio
+        const neg = kpis.negocio || {};
+        const fmtEur = (v) => `€${(v || 0).toLocaleString('pt-PT')}`;
+        document.getElementById('kpiMrrReal').textContent = fmtEur(neg.mrrReal);
+        const metaAtual = (neg.metas || []).find(m => (neg.mrrReal || 0) < m.mrr);
+        document.getElementById('kpiMrrMeta').textContent = metaAtual
+          ? `Próxima meta (${metaAtual.nome}): ${fmtEur(metaAtual.mrr)}/mês`
+          : 'Meta Independência atingida';
+        document.getElementById('kpiPagantes').textContent = neg.pagantes || 0;
+        document.getElementById('kpiPagantesSub').textContent =
+          `Selos ${neg.pagantesSelo || 0} · Acompanhamento ${neg.pagantesRadar || 0}`;
+        document.getElementById('kpiAtencao').textContent =
+          (neg.pagamentosEmAtraso || 0) + (neg.expiramEm30Dias || 0) + (neg.ativosSemPagamento || 0);
+        document.getElementById('kpiAtencaoSub').textContent =
+          `Em atraso ${neg.pagamentosEmAtraso || 0} · Expiram em 30d ${neg.expiramEm30Dias || 0} · Ativos sem pagamento ${neg.ativosSemPagamento || 0}`;
+        const fn = neg.funil || {};
+        document.getElementById('kpiFunil').textContent =
+          `${fn.lead || 0} → ${fn.contactadas || 0} → ${fn.proposta || 0} → ${fn.em_verificacao || 0} → ${fn.ativo || 0}`;
+
         atualizarContadoresPipeline(data.empresas || []);
 
         // Banner de banco de dados
@@ -3270,6 +3257,7 @@ Zap, Quem É?`;
         renderLeads(data.leads || []);
         renderGolpesNovos();
         popularSelectMarcasDossie();
+        renderMetas();
         atualizarSimulador();
 
       } catch (err) {
