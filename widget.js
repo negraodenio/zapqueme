@@ -151,16 +151,16 @@
     const verifyUrl = targetCodigo ? `${customHost}/verify/${encodeURIComponent(targetCodigo)}` : `${customHost}/`;
 
     container.innerHTML = `
-      <a href="${verifyUrl}" target="_blank" rel="noopener noreferrer" class="zq-badge-link" title="Selo Oficial de Segurança Zap, quem é?">
+      <a href="${verifyUrl}" target="_blank" rel="noopener noreferrer" class="zq-badge-link" title="Consulta do registo empresarial">
         <svg class="zq-badge-shield" viewBox="0 0 24 24">
           <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
           <path d="m9 12 2 2 4-4"/>
         </svg>
         <div class="zq-badge-content">
           <div class="zq-badge-title">
-            Loja Verificada <span class="zq-badge-dot"></span>
+            Consulta do registo <span class="zq-badge-dot"></span>
           </div>
-          <div class="zq-badge-sub">Zap, quem é? Seguro</div>
+          <div class="zq-badge-sub">Veja os dados indicados</div>
         </div>
       </a>
     `;

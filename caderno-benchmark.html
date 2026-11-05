@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Caderno de Validação & Benchmark — Confirme, Quem É?</title>
-  <meta name="description" content="Ambiente interativo de validação cega e preparação de amostras para o benchmark forense do Confirme, Quem É?">
+  <title>Caderno interno de exemplos — Confirme, Quem É?</title>
+  <meta name="description" content="Caderno local de exemplos para revisão exploratória. Os exemplos predefinidos são sintéticos e não constituem benchmark nem ground truth.">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
@@ -475,27 +475,28 @@
     <header>
       <div>
         <div class="brand-title">
-          <span class="badge-tag">Validação Cega & Calibração</span>
+          <span class="badge-tag">Rascunho interno — exemplos sintéticos</span>
           <span style="color: var(--text-muted); font-size: 0.85rem;">Confirme, Quem É?</span>
         </div>
-        <h1>Caderno de Trabalho de Amostras (50 Linhas)</h1>
+        <h1>Caderno de exemplos (50 linhas)</h1>
         <p class="subtitle">
-          Edição interativa das mensagens de teste. As primeiras 25 são burlas documentadas pela PSP/CERT.PT. As seguintes 25 são legítimas reais para validação cega antes de submeter ao motor.
+          Os textos predefinidos são exemplos fictícios criados para exploração. Não foram confirmados pela PSP, CERT.PT ou pelas marcas mencionadas e não devem ser tratados como incidentes reais, mensagens legítimas verificadas ou conjunto de validação.
         </p>
+        <p class="subtitle">As alterações ficam no armazenamento local deste navegador. Antes de usar mensagens reais, documente origem, autorização, minimização de dados e revisão dos rótulos.</p>
       </div>
 
       <div class="header-actions">
-        <button id="btnPreencherLegitimas" class="btn btn-outline" title="Insere 25 mensagens legítimas autênticas de Portugal para acelerar">
-          ✨ Preencher 25 Legítimas Típicas
+        <button id="btnPreencherLegitimas" class="btn btn-outline" title="Insere 25 exemplos fictícios de mensagens de rotina">
+          ✨ Preencher 25 exemplos de rotina
         </button>
         <button id="btnAssinarModal" class="btn btn-primary" title="Aplica o nome da pessoa real e carimbo de data em lote">
-          ✍️ Assinar Validação Humana
+          ✍️ Registar revisor
         </button>
         <button id="btnCopiarExcel" class="btn btn-success" title="Copia toda a tabela formatada para colar no Excel">
           📋 Copiar p/ Excel (TSV)
         </button>
-        <button id="btnBaixarCsv" class="btn btn-outline" title="Transfere o CSV oficial atualizado">
-          💾 Baixar CSV Oficial
+        <button id="btnBaixarCsv" class="btn btn-outline" title="Transfere o CSV deste caderno local">
+          💾 Descarregar CSV do caderno
         </button>
       </div>
     </header>
@@ -513,14 +514,14 @@
         <div class="stat-sub" id="statTextosSub">50% completo</div>
       </div>
       <div class="stat-card">
-        <div class="stat-label">Classificadas (Ground Truth)</div>
+        <div class="stat-label">Com rótulo manual</div>
         <div class="stat-val" style="color: #34d399;" id="statClassificadas">0 / 50</div>
         <div class="stat-sub" id="statClassificadasSub">Aguardando validação humana</div>
       </div>
       <div class="stat-card">
         <div class="stat-label">Assinadas com Validador</div>
         <div class="stat-val" style="color: #fbbf24;" id="statAssinadas">0 / 50</div>
-        <div class="stat-sub">Nome e data/hora do classificador</div>
+        <div class="stat-sub">Nome e data/hora do revisor neste navegador</div>
       </div>
     </section>
 
@@ -529,7 +530,7 @@
       <div class="filter-tabs">
         <button class="tab-btn active" data-filter="all">Todas as 50</button>
         <button class="tab-btn" data-filter="scam">Burlas (AM-001..AM-025)</button>
-        <button class="tab-btn" data-filter="clean">Legítimas (AM-026..AM-050)</button>
+        <button class="tab-btn" data-filter="clean">Exemplos de rotina (AM-026..AM-050)</button>
         <button class="tab-btn" data-filter="unclassified">Pendentes de Classificação</button>
       </div>
 
@@ -553,7 +554,7 @@
               <th style="width: 110px;">Canal</th>
               <th style="width: 180px;">Categoria</th>
               <th>Texto da Mensagem (Anonimizado)</th>
-              <th style="width: 170px;">Tipo Real (Ground Truth)</th>
+              <th style="width: 170px;">Rótulo manual (não validado)</th>
               <th style="width: 160px;">Classificado por</th>
               <th style="width: 160px;">Data Classificação</th>
               <th style="width: 70px;">Ações</th>
@@ -571,11 +572,11 @@
   <!-- Modal Assinatura do Validador -->
   <div class="modal-backdrop" id="modalAssinatura">
     <div class="modal-box">
-      <h3>Assinar Validação Humana</h3>
+      <h3>Registar revisão local</h3>
       <p>Introduza o nome da pessoa independente que avaliou as mensagens e a data/hora exata em que fez a leitura.</p>
 
       <div class="form-group">
-        <label for="inputNomeValidador">Nome Real da Pessoa (Classificador)</label>
+        <label for="inputNomeValidador">Nome do revisor</label>
         <input type="text" id="inputNomeValidador" placeholder="Ex: Mariana Silva" value="">
       </div>
 
@@ -595,7 +596,7 @@
   <div class="toast" id="toastBox">Mensagem</div>
 
   <script>
-    // 25 Burlas Reais Documentadas (AM-001 a AM-025)
+    // 25 cenários sintéticos de mensagens suspeitas (AM-001 a AM-025)
     const BURLAS_INICIAIS = [
       { id: 'AM-001', canal: 'SMS', cat: 'Smishing Via Verde', texto: 'Via Verde: Tem valores de portagens pendentes no montante de 12,45 EUR. Regularize hoje para evitar coima e custas processuais: https://viaverde-regularizacao.com' },
       { id: 'AM-002', canal: 'WhatsApp', cat: 'Falso Filho WhatsApp', texto: 'Ola mae perdi o telemovel e estou temporariamente neste numero. Podes mandar uma mensagem aqui por favor?' },
@@ -624,7 +625,7 @@
       { id: 'AM-025', canal: 'SMS', cat: 'Phishing DHL Encomenda', texto: 'DHL Express: Nao conseguimos entregar o seu envio porque a taxa de reencaminhamento de 2,40 EUR nao foi liquidada. Proceda a liquidacao em: https://dhl-express-portugal.top' }
     ];
 
-    // 25 Mensagens Legítimas de Exemplo Real (AM-026 a AM-050)
+    // 25 mensagens sintéticas de rotina, sem validação externa (AM-026 a AM-050)
     const LEGITIMAS_SUGERIDAS = [
       { cat: 'Saúde CUF Consulta', texto: 'Hospital CUF: Lembramos que tem consulta agendada para 22/10 as 15h30 com a Dra. Ana Martins na CUF Descobertas. Para desmarcar ligue 210025200.' },
       { cat: 'Banca Santander 2FA OTP', texto: 'Santander: O seu codigo de autorizacao para a operacao no valor de 35,00 EUR e 749213. Valido por 3 minutos. Nunca partilhe este codigo com ninguem.' },
@@ -676,7 +677,7 @@
             canal: burla.canal,
             categoria: burla.cat,
             texto: burla.texto,
-            tipoReal: '', // Em branco para a validação cega
+            tipoReal: '', // Rótulo manual em branco; não é ground truth
             classificadoPor: '',
             dataClassificacao: ''
           });
@@ -717,7 +718,7 @@
       document.getElementById('statTextos').textContent = `${comTexto} / ${total}`;
       document.getElementById('statTextosSub').textContent = `${Math.round((comTexto/total)*100)}% preenchido`;
       document.getElementById('statClassificadas').textContent = `${classificadas} / ${total}`;
-      document.getElementById('statClassificadasSub').textContent = classificadas === total ? '✅ Validação cega 100% pronta' : `${total - classificadas} pendentes`;
+      document.getElementById('statClassificadasSub').textContent = classificadas === total ? 'Rótulos preenchidos; ainda requerem validação independente' : `${total - classificadas} sem rótulo`;
       document.getElementById('statAssinadas').textContent = `${assinadas} / ${total}`;
     }
 
@@ -823,7 +824,7 @@
       });
     });
 
-    // Preencher 25 Legítimas Sugeridas
+    // Preencher exemplos sintéticos de rotina
     document.getElementById('btnPreencherLegitimas').addEventListener('click', () => {
       let count = 0;
       for (let i = 26; i <= 50; i++) {
@@ -837,12 +838,12 @@
       }
       saveData();
       renderTable();
-      showToast(`Preenchidas ${count} mensagens legítimas sugeridas nas linhas AM-026 a AM-050!`);
+      showToast(`Preenchidos ${count} exemplos fictícios de rotina nas linhas AM-026 a AM-050.`);
     });
 
     // Limpar Classificações
     document.getElementById('btnLimparClassificacao').addEventListener('click', () => {
-      if (confirm('Tem a certeza de que deseja limpar todos os tipos reais, nomes de validador e datas?')) {
+      if (confirm('Tem a certeza de que deseja limpar os rótulos manuais, nomes de revisores e datas?')) {
         amostras.forEach(item => {
           item.tipoReal = '';
           item.classificadoPor = '';
@@ -856,7 +857,7 @@
 
     // Repor Originais
     document.getElementById('btnResetGeral').addEventListener('click', () => {
-      if (confirm('Atenção: isto vai repor os dados de fábrica (AM-001..AM-025 com as 25 burlas reais e AM-026..AM-050 em branco). Continuar?')) {
+      if (confirm('Atenção: isto vai repor os exemplos fictícios predefinidos (AM-001..AM-025) e limpar AM-026..AM-050. Continuar?')) {
         localStorage.removeItem('confirmequeme_benchmark_amostras_v2');
         initData();
         renderTable();
@@ -881,7 +882,7 @@
       const dataHora = document.getElementById('inputDataValidador').value.trim();
 
       if (!nome) {
-        alert('Por favor introduza o nome real da pessoa que fez a validação cega.');
+        alert('Indique o nome do revisor para registar a revisão local.');
         return;
       }
 
@@ -916,17 +917,17 @@
       });
     });
 
-    // Baixar CSV Oficial
+    // Descarregar CSV do caderno
     document.getElementById('btnBaixarCsv').addEventListener('click', () => {
       let csv = 'Benchmark de verificação: Confirme Quem É (Caderno de Recolha e Calibração),,,,,,,,,,,,,\n';
       csv += ',,,,,,,,,,,,,\n';
-      csv += 'Objetivo,"Registar mensagens de teste recolhidas de fontes reais e anonimizadas, classificadas manualmente antes da submissão ao verificador.",,,,,,,,,,,,,\n';
-      csv += 'Regra 1: preencher antes do teste,"Preencha as colunas B (Canal), C (Categoria), D (Texto anonimizado), E (Tipo real: Golpe ou Legítimo), F (Classificado por) e G (Data/hora em que a pessoa classificou) ANTES de correr qualquer teste no sistema.",,,,,,,,,,,,,\n';
+      csv += 'Objetivo,"Caderno local de exemplos. As amostras predefinidas são sintéticas e não constituem ground truth, benchmark ou casos confirmados.",,,,,,,,,,,,,\n';
+      csv += 'Regra 1: registar antes da avaliação,"Para um estudo futuro, documente canal, categoria, texto minimizado, rótulo provisório, revisor e data antes da avaliação. O rótulo requer validação independente.",,,,,,,,,,,,,\n';
       csv += 'Regra 2: separação de funções,De preferência quem classifica as mensagens não é quem desenvolveu o software ou treinou os prompts.,,,,,,,,,,,,,\n';
       csv += 'Regra 3: anonimização obrigatória,"Substitua nomes próprios por [Nome], números por [Telemóvel], NIF por [NIF], IBAN por [IBAN] e referências pessoais antes de colar o texto.",,,,,,,,,,,,,\n';
       csv += 'Regra 4: regra do alerta,"Alerta = \'golpe\' ou \'suspeito\'. Sem alerta = \'sem sinais de risco\'. Qualquer mensagem legítima que receba alerta conta como Falso Positivo (FP).",,,,,,,,,,,,,\n';
       csv += ',,,,,,,,,,,,,\n';
-      csv += 'ID,Canal,Categoria,Texto (anonimizado),Tipo real (Golpe ou Legítimo),Classificado por,Data Classificação Humana,Veredito do sistema,Pontuação,Data do Teste,Modelo usado (Runtime),Origem do veredito (Fonte Real),Resultado Forense,Sinais Identificados\n';
+      csv += 'ID,Canal,Categoria,Texto minimizado,Rótulo manual provisório,Revisor,Data da revisão,Veredito do sistema,Pontuação,Data do teste,Modelo usado,Origem do resultado,Notas da revisão,Sinais identificados\n';
 
       amostras.forEach(item => {
         const escapeCsv = (val) => {

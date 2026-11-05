@@ -2,6 +2,8 @@
 // Especificação Fechada ZAP, QUEM É? — Kit Comercial de Badges
 // Formatos: principal (vertical), horizontal (website/email), circular (perfil/whatsapp)
 
+import { checkRateLimit } from '../lib/security.js';
+
 function escapeXml(str) {
   if (str === null || str === undefined) return '';
   return String(str)
@@ -23,7 +25,7 @@ export function generateHorizontalBadge({ codigo, empresaNome, status, statusTex
 
   const primaryColor = isAtivo ? '#10b981' : (isSuspenso ? '#ef4444' : '#f59e0b');
   const glowColor = isAtivo ? 'rgba(16, 185, 129, 0.25)' : (isSuspenso ? 'rgba(239, 68, 68, 0.25)' : 'rgba(245, 158, 11, 0.25)');
-  const statusLabel = isTeste ? 'PÁGINA DE TESTE' : (isAtivo ? 'CANAIS CONFIRMADOS' : (isSuspenso ? 'VERIFICAÇÃO SUSPENSA' : 'VERIFICAÇÃO EXPIRADA'));
+  const statusLabel = isTeste ? 'DEMONSTRAÇÃO' : (isAtivo ? 'REGISTO ATIVO' : (isSuspenso ? 'REGISTO SUSPENSO' : 'REGISTO INATIVO'));
   const safeCodigo = escapeXml(codigo || 'ZAP VERIFIED');
 
   return `<svg xmlns="http://www.w3.org/2000/svg" width="310" height="64" viewBox="0 0 310 64" fill="none">
@@ -67,7 +69,7 @@ export function generateHorizontalBadge({ codigo, empresaNome, status, statusTex
   <!-- Verification Pill -->
   <rect x="236" y="16" width="60" height="20" rx="10" fill="${primaryColor}" fill-opacity="0.15" stroke="${primaryColor}" stroke-opacity="0.4" stroke-width="1" />
   <circle cx="246" cy="26" r="3" fill="${primaryColor}" />
-  <text x="254" y="29.5" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="9" font-weight="700" fill="${primaryColor}">${isTeste ? 'TESTE' : (isAtivo ? 'OFICIAL' : (isSuspenso ? 'SUSP' : 'EXP'))}</text>
+  <text x="254" y="29.5" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="9" font-weight="700" fill="${primaryColor}">${isTeste ? 'TESTE' : (isAtivo ? 'ATIVO' : (isSuspenso ? 'SUSP' : 'INATIVO'))}</text>
 </svg>`;
 }
 
@@ -80,9 +82,9 @@ export function generatePrincipalBadge({ codigo, empresaNome, status, statusText
   const isSuspenso = status === 'suspenso';
 
   const primaryColor = isAtivo ? '#10b981' : (isSuspenso ? '#ef4444' : '#f59e0b');
-  const safeEmpresa = escapeXml(empresaNome || 'Empresa Certificada');
+  const safeEmpresa = escapeXml(empresaNome || 'Empresa');
   const safeCodigo = escapeXml(codigo || 'ZAP VERIFIED');
-  const statusLabel = isTeste ? 'PÁGINA DE TESTE' : (isAtivo ? 'VERIFICAÇÃO ATIVA' : (isSuspenso ? 'VERIFICAÇÃO SUSPENSA' : 'VERIFICAÇÃO EXPIRADA'));
+  const statusLabel = isTeste ? 'DEMONSTRAÇÃO' : (isAtivo ? 'REGISTO ATIVO' : (isSuspenso ? 'REGISTO SUSPENSO' : 'REGISTO INATIVO'));
 
   return `<svg xmlns="http://www.w3.org/2000/svg" width="220" height="250" viewBox="0 0 220 250" fill="none">
   <defs>
@@ -107,7 +109,7 @@ export function generatePrincipalBadge({ codigo, empresaNome, status, statusText
 
   <!-- Title -->
   <text x="110" y="104" text-anchor="middle" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="14.5" font-weight="900" fill="#ffffff" letter-spacing="0.1em">ZAP VERIFIED</text>
-  <text x="110" y="122" text-anchor="middle" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="9" font-weight="700" fill="${primaryColor}" letter-spacing="0.08em">CANAIS OFICIAIS CONFIRMADOS</text>
+  <text x="110" y="122" text-anchor="middle" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="9" font-weight="700" fill="${primaryColor}" letter-spacing="0.08em">CONSULTA DE REGISTO</text>
 
   <!-- Divider -->
   <line x1="30" y1="138" x2="190" y2="138" stroke="#ffffff" stroke-opacity="0.1" stroke-width="1" />
@@ -159,22 +161,41 @@ export function generateCircularBadge({ codigo, empresaNome, status, statusTexto
 
   <!-- Texts -->
   <text x="80" y="112" text-anchor="middle" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="11" font-weight="900" fill="#ffffff" letter-spacing="0.08em">ZAP VERIFIED</text>
-  <text x="80" y="126" text-anchor="middle" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="8" font-weight="700" fill="${primaryColor}" letter-spacing="0.06em">CANAIS OFICIAIS</text>
+  <text x="80" y="126" text-anchor="middle" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="8" font-weight="700" fill="${primaryColor}" letter-spacing="0.06em">CONSULTA DE REGISTO</text>
   <circle cx="80" cy="138" r="3" fill="${primaryColor}" />
 </svg>`;
 }
 
 export default async function handler(req, res) {
-  const codigo = (req.query.codigo || req.query.c || '').trim();
-  const formato = (req.query.formato || req.query.f || 'horizontal').toLowerCase().trim();
+  if (req.method !== 'GET') {
+    res.setHeader('Allow', 'GET');
+    return res.status(405).send('Método não permitido.');
+  }
+  const rawCodigo = req.query?.codigo || req.query?.c;
+  const codigo = typeof rawCodigo === 'string' ? rawCodigo.trim() : '';
+  const rawFormato = req.query?.formato || req.query?.f || 'horizontal';
+  const formato = typeof rawFormato === 'string' ? rawFormato.toLowerCase().trim() : 'horizontal';
+  if (!codigo || !/^[A-Za-z0-9_-]{3,100}$/.test(codigo)) {
+    res.setHeader('Cache-Control', 'no-store');
+    return res.status(400).send('Código de registo inválido.');
+  }
+  const limit = await checkRateLimit(req, 'public-badge', 120, 60);
+  if (limit.unavailable && process.env.NODE_ENV === 'production') {
+    res.setHeader('Cache-Control', 'no-store');
+    return res.status(503).send('Consulta temporariamente indisponível.');
+  }
+  if (!limit.allowed) {
+    res.setHeader('Cache-Control', 'no-store');
+    return res.status(429).send('Demasiadas consultas.');
+  }
 
   // Cache headers para performance global em CDN
   res.setHeader('Content-Type', 'image/svg+xml; charset=utf-8');
   res.setHeader('Cache-Control', 'public, max-age=60, s-maxage=300');
 
-  let status = 'ativo';
-  let statusTexto = 'Verificação ativa';
-  let empresaNome = 'Empresa Verificada';
+  let status = 'inativo';
+  let statusTexto = 'Registo inativo ou não encontrado';
+  let empresaNome = 'Empresa';
 
   const url = process.env.SUPABASE_URL;
   const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
@@ -182,32 +203,39 @@ export default async function handler(req, res) {
   if (url && key && codigo) {
     try {
       const headers = { 'Content-Type': 'application/json', apikey: key, Authorization: `Bearer ${key}` };
-      const seloRes = await fetch(`${url}/rest/v1/selos?codigo=eq.${encodeURIComponent(codigo)}&select=*,empresas(*)&limit=1`, { headers });
+      const seloRes = await fetch(`${url}/rest/v1/selos?codigo=eq.${encodeURIComponent(codigo)}&select=codigo,valido_ate,ativo,is_teste,arquivado_em,empresa_id,empresas(nome,status,is_teste,arquivado_em)&limit=1`, { headers, signal: AbortSignal.timeout(5000) });
       if (seloRes.ok) {
         const selos = await seloRes.json();
         if (selos && selos.length > 0) {
           const selo = selos[0];
           const emp = selo.empresas || {};
-          empresaNome = emp.nome || empresaNome;
-
           const agora = new Date();
-          const expirado = selo.valido_ate ? new Date(selo.valido_ate) < agora : false;
+          const dataMs = selo.valido_ate ? new Date(selo.valido_ate).getTime() : NaN;
+          const expirado = !Number.isFinite(dataMs) || dataMs < agora.getTime();
 
           if (selo.is_teste || emp.is_teste) {
             status = 'teste';
-            statusTexto = 'Página de teste';
-          } else if (selo.ativo === false) {
+            statusTexto = 'Demonstração';
+            empresaNome = emp.nome || 'Exemplo de demonstração';
+          } else if (emp.status === 'revogado') {
             status = 'inativo';
-            statusTexto = 'Verificação inativa';
+            statusTexto = 'Registo revogado';
           } else if (emp.status === 'suspenso') {
             status = 'suspenso';
-            statusTexto = 'Verificação suspensa';
+            statusTexto = 'Registo suspenso';
+          } else if (selo.ativo !== true || selo.arquivado_em || emp.arquivado_em) {
+            status = 'inativo';
+            statusTexto = 'Registo inativo';
           } else if (emp.status !== 'ativo') {
             status = 'inativo';
-            statusTexto = 'Verificação inativa';
+            statusTexto = 'Registo inativo';
           } else if (expirado) {
             status = 'expirado';
-            statusTexto = 'Verificação expirada';
+            statusTexto = 'Validade expirada ou não confirmada';
+          } else {
+            status = 'ativo';
+            statusTexto = 'Registo ativo no serviço';
+            empresaNome = emp.nome || 'Empresa';
           }
         }
       }

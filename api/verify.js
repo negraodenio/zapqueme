@@ -1,6 +1,6 @@
-// api/verify.js — Página Pública ZAP VERIFIED (/verify/[codigo])
-// Especificação Fechada ZAP, QUEM É? — B2B
-// Seções 5, 15, 16, 17, 18
+// api/verify.js — Consulta pública do estado do registo (/verify/[codigo])
+
+import { checkRateLimit } from '../lib/security.js';
 
 /**
  * Escapa strings para prevenir injeção XSS (Seção 18)
@@ -16,51 +16,53 @@ export function escapeHtml(str) {
 }
 
 /**
- * Determina o status do selo conforme Seção 16
- * Estados públicos:
- * - Válido: "✓ Verificação ativa"
- * - Suspenso: "⚠️ Verificação suspensa"
- * - Expirado: "⚠️ Verificação expirada"
- * - Empresa inativa: "⚠️ Verificação inativa"
+ * Determina o estado publicado no registo. Não declara que a pessoa que contacta
+ * controla os canais listados nem que um pedido de pagamento é legítimo.
  */
 export function calcularStatusPublico({ selo, empresa, agora = new Date() }) {
   const isTeste = !!(selo?.is_teste || empresa?.is_teste);
   const arquivado = !!(selo?.arquivado_em || empresa?.arquivado_em);
-  const dataValidade = empresa?.data_validade || selo?.valido_ate;
-  const expirado = dataValidade ? new Date(dataValidade) < agora : false;
-  const est = (empresa?.estado || empresa?.status || 'ativo').toLowerCase();
+  const dataValidade = selo?.valido_ate;
+  const dataMs = dataValidade ? new Date(dataValidade).getTime() : NaN;
+  const expirado = Number.isFinite(dataMs) && dataMs < agora.getTime();
+  const validadeIndeterminada = !Number.isFinite(dataMs);
+  const est = String(empresa?.estado || empresa?.status || '').toLowerCase();
 
-  let statusPublico = '✓ Verificação ativa';
-  let statusClasse = 'status-valido';
-  let statusRaw = 'valido';
+  let statusPublico = 'Registo inativo ou sem estado confirmado';
+  let statusClasse = 'status-inativo';
+  let statusRaw = 'inativo';
 
   if (isTeste) {
-    statusPublico = '🧪 Página de teste';
+    statusPublico = 'Demonstração — sem validade';
     statusClasse = 'status-teste';
     statusRaw = 'teste';
-  } else if (arquivado || selo?.ativo === false) {
-    statusPublico = '⚠️ Verificação inativa';
-    statusClasse = 'status-inativo';
-    statusRaw = 'inativo';
   } else if (est === 'revogado') {
-    statusPublico = '❌ Verificação revogada';
+    statusPublico = 'Registo revogado';
     statusClasse = 'status-revogado';
     statusRaw = 'revogado';
   } else if (est === 'suspenso') {
-    statusPublico = '⚠️ Verificação suspensa';
+    statusPublico = 'Registo suspenso';
     statusClasse = 'status-suspenso';
     statusRaw = 'suspenso';
-  } else if (est === 'expirado' || expirado) {
-    statusPublico = '⚠️ Verificação expirada';
+  } else if (arquivado || selo?.ativo !== true) {
+    statusPublico = 'Registo inativo';
+    statusClasse = 'status-inativo';
+    statusRaw = 'inativo';
+  } else if (est === 'expirado' || expirado || validadeIndeterminada) {
+    statusPublico = expirado ? 'Registo expirado' : 'Validade não confirmada';
     statusClasse = 'status-expirado';
     statusRaw = 'expirado';
   } else if (est !== 'ativo') {
-    statusPublico = '⚠️ Verificação inativa';
+    statusPublico = 'Registo inativo ou sem estado confirmado';
     statusClasse = 'status-inativo';
     statusRaw = 'inativo';
+  } else {
+    statusPublico = 'Registo ativo no serviço';
+    statusClasse = 'status-valido';
+    statusRaw = 'valido';
   }
 
-  return { statusPublico, statusClasse, statusRaw, expirado, isTeste, arquivado };
+  return { statusPublico, statusClasse, statusRaw, expirado, validadeIndeterminada, isTeste, arquivado };
 }
 
 export default async function handler(req, res) {
@@ -69,7 +71,16 @@ export default async function handler(req, res) {
   res.setHeader('Pragma', 'no-cache');
   res.setHeader('Expires', '0');
 
-  const codigo = (req.query.codigo || req.query.c || '').trim();
+  if (req.method !== 'GET') {
+    res.setHeader('Allow', 'GET');
+    return res.status(405).send('Método não permitido.');
+  }
+
+  const rawCodigo = req.query?.codigo || req.query?.c;
+  const codigo = typeof rawCodigo === 'string' ? rawCodigo.trim() : '';
+  if (codigo && !/^[A-Za-z0-9_-]{3,100}$/.test(codigo)) {
+    return res.status(400).json({ error: 'Código de registo inválido.' });
+  }
 
   if (!codigo) {
     if (req.headers.accept?.includes('application/json') || req.query.format === 'json') {
@@ -77,6 +88,12 @@ export default async function handler(req, res) {
     }
     return res.status(400).send(renderErrorHtml('Código Inválido', 'Nenhum código de selo foi fornecido na URL.'));
   }
+
+  const limit = await checkRateLimit(req, 'public-seal-lookup', 60, 60);
+  if (limit.unavailable && process.env.NODE_ENV === 'production') {
+    return res.status(503).json({ error: 'A consulta está temporariamente indisponível.' });
+  }
+  if (!limit.allowed) return res.status(429).json({ error: 'Demasiadas consultas. Tenta novamente mais tarde.' });
 
   const url = process.env.SUPABASE_URL;
   const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
@@ -97,7 +114,7 @@ export default async function handler(req, res) {
   try {
     // 1. Consultar o selo pelo código
     const seloResp = await fetch(
-      `${url}/rest/v1/selos?codigo=eq.${encodeURIComponent(codigo)}&select=*&limit=1`,
+      `${url}/rest/v1/selos?codigo=eq.${encodeURIComponent(codigo)}&select=codigo,tipo,valido_ate,criado_em,ativo,is_teste,arquivado_em,empresa_id&limit=1`,
       { headers: dbHeaders }
     );
 
@@ -110,14 +127,14 @@ export default async function handler(req, res) {
       if (req.headers.accept?.includes('application/json') || req.query.format === 'json') {
         return res.status(404).json({ error: 'Selo não encontrado.', status_selo: 'nao_encontrado' });
       }
-      return res.status(404).send(renderErrorHtml('Código Não Encontrado', 'O código de verificação consultado não foi localizado no registo oficial.'));
+      return res.status(404).send(renderErrorHtml('Código não encontrado', 'Não foi encontrado um registo com este código.'));
     }
 
     const selo = selos[0];
 
     // 2. Consultar a empresa associada ao selo
     const empResp = await fetch(
-      `${url}/rest/v1/empresas?id=eq.${encodeURIComponent(selo.empresa_id)}&select=*&limit=1`,
+      `${url}/rest/v1/empresas?id=eq.${encodeURIComponent(selo.empresa_id)}&select=nome,status,estado,dominio_oficial,email_oficial,telefone_oficial,dominio_verificado,email_verificado,telefone_verificado,is_teste,arquivado_em&limit=1`,
       { headers: dbHeaders }
     );
 
@@ -137,6 +154,15 @@ export default async function handler(req, res) {
 
     // 3. Determinar o status do selo conforme Seção 16
     const { statusPublico, statusClasse, statusRaw } = calcularStatusPublico({ selo, empresa });
+    const empresaPublica = statusRaw === 'valido' ? empresa : {
+      ...empresa,
+      dominio_oficial: null,
+      email_oficial: null,
+      telefone_oficial: null,
+      dominio_verificado: false,
+      email_verificado: false,
+      telefone_verificado: false
+    };
 
     // Se solicitado formato JSON
     if (req.headers.accept?.includes('application/json') || req.query.format === 'json') {
@@ -150,18 +176,14 @@ export default async function handler(req, res) {
           is_teste: isTeste
         },
         empresa: {
-          nome: empresa.nome,
-          status: empresa.status,
-          dominio_oficial: empresa.dominio_oficial,
-          email_oficial: empresa.email_oficial,
-          telefone_oficial: empresa.telefone_oficial,
-          dominio_verificado: !!empresa.dominio_verificado,
-          email_verificado: !!empresa.email_verificado,
-          telefone_verificado: !!empresa.telefone_verificado,
-          nif: empresa.nif || null,
-          nif_verificado: !!empresa.nif_verificado,
-          iban: empresa.iban_verificado ? (empresa.iban || null) : null,
-          iban_verificado: !!empresa.iban_verificado,
+          nome: empresaPublica.nome,
+          status: empresaPublica.status,
+          dominio_oficial: empresaPublica.dominio_oficial,
+          email_oficial: empresaPublica.email_oficial,
+          telefone_oficial: empresaPublica.telefone_oficial,
+          dominio_verificado: !!empresaPublica.dominio_verificado,
+          email_verificado: !!empresaPublica.email_verificado,
+          telefone_verificado: !!empresaPublica.telefone_verificado,
           is_teste: isTeste
         },
         status_publico: statusPublico,
@@ -173,19 +195,19 @@ export default async function handler(req, res) {
 
     // 4. Renderizar página HTML segura com escapeHtml e disclaimers obrigatórios
     res.setHeader('Content-Type', 'text/html; charset=utf-8');
-    return res.status(200).send(renderVerifyHtml({ selo, empresa, statusPublico, statusClasse }));
+    return res.status(200).send(renderVerifyHtml({ selo, empresa: empresaPublica, statusPublico, statusClasse }));
 
   } catch (err) {
     console.error('[Verify] Erro:', err);
     if (req.headers.accept?.includes('application/json') || req.query.format === 'json') {
       return res.status(500).json({ error: 'Erro ao processar verificação.' });
     }
-    return res.status(500).send(renderErrorHtml('Erro de Verificação', 'Ocorreu um erro ao carregar o certificado. Tente novamente.'));
+    return res.status(500).send(renderErrorHtml('Consulta indisponível', 'Ocorreu um erro ao carregar o estado do registo. Tente novamente.'));
   }
 }
 
 /**
- * Renderiza página pública oficial do selo
+ * Renderiza a página pública do registo sem apresentar certificação institucional.
  */
 export function renderVerifyHtml({ selo, empresa, statusPublico, statusClasse }) {
   const nomeEmpresa = escapeHtml(empresa.nome);
@@ -196,7 +218,9 @@ export function renderVerifyHtml({ selo, empresa, statusPublico, statusClasse })
   if (selo.valido_ate) {
     try {
       const d = new Date(selo.valido_ate);
-      validadeTexto = d.toLocaleDateString('pt-PT', { day: '2-digit', month: 'long', year: 'numeric' });
+      validadeTexto = Number.isNaN(d.getTime())
+        ? 'Não confirmada'
+        : d.toLocaleDateString('pt-PT', { day: '2-digit', month: 'long', year: 'numeric' });
     } catch {
       validadeTexto = escapeHtml(selo.valido_ate);
     }
@@ -208,9 +232,9 @@ export function renderVerifyHtml({ selo, empresa, statusPublico, statusClasse })
   if (empresa.dominio_verificado && empresa.dominio_oficial) {
     domHtml = `
       <div class="channel-badge badge-verified">
-        <img src="/badges/canal-dominio-verificado.png" alt="Verificado" style="width: 28px; height: 28px; object-fit: contain; flex-shrink: 0;" />
+        <span aria-hidden="true" style="color: #10b981; font-weight: 800;">✓</span>
         <div class="channel-detail">
-          <span class="channel-type">Canal verificado</span>
+          <span class="channel-type">Validação indicada no registo</span>
           <span class="channel-val">${escapeHtml(empresa.dominio_oficial)}</span>
         </div>
       </div>`;
@@ -219,7 +243,7 @@ export function renderVerifyHtml({ selo, empresa, statusPublico, statusClasse })
       <div class="channel-badge badge-registered">
         <span class="icon">–</span>
         <div class="channel-detail">
-          <span class="channel-type">Canal registado, ainda não verificado</span>
+          <span class="channel-type">Canal indicado sem validação marcada</span>
           <span class="channel-val">${escapeHtml(empresa.dominio_oficial)}</span>
         </div>
       </div>`;
@@ -232,9 +256,9 @@ export function renderVerifyHtml({ selo, empresa, statusPublico, statusClasse })
   if (empresa.email_verificado && empresa.email_oficial) {
     emailHtml = `
       <div class="channel-badge badge-verified">
-        <img src="/badges/canal-email-verificado.png" alt="Verificado" style="width: 28px; height: 28px; object-fit: contain; flex-shrink: 0;" />
+        <span aria-hidden="true" style="color: #10b981; font-weight: 800;">✓</span>
         <div class="channel-detail">
-          <span class="channel-type">Canal verificado</span>
+          <span class="channel-type">Validação indicada no registo</span>
           <span class="channel-val">${escapeHtml(empresa.email_oficial)}</span>
         </div>
       </div>`;
@@ -243,7 +267,7 @@ export function renderVerifyHtml({ selo, empresa, statusPublico, statusClasse })
       <div class="channel-badge badge-registered">
         <span class="icon">–</span>
         <div class="channel-detail">
-          <span class="channel-type">Canal registado, ainda não verificado</span>
+          <span class="channel-type">Canal indicado sem validação marcada</span>
           <span class="channel-val">${escapeHtml(empresa.email_oficial)}</span>
         </div>
       </div>`;
@@ -256,9 +280,9 @@ export function renderVerifyHtml({ selo, empresa, statusPublico, statusClasse })
   if (empresa.telefone_verificado && empresa.telefone_oficial) {
     telHtml = `
       <div class="channel-badge badge-verified">
-        <img src="/badges/canal-telefone-verificado.png" alt="Verificado" style="width: 28px; height: 28px; object-fit: contain; flex-shrink: 0;" />
+        <span aria-hidden="true" style="color: #10b981; font-weight: 800;">✓</span>
         <div class="channel-detail">
-          <span class="channel-type">Canal verificado</span>
+          <span class="channel-type">Validação indicada no registo</span>
           <span class="channel-val">${escapeHtml(empresa.telefone_oficial)}</span>
         </div>
       </div>`;
@@ -267,52 +291,12 @@ export function renderVerifyHtml({ selo, empresa, statusPublico, statusClasse })
       <div class="channel-badge badge-registered">
         <span class="icon">–</span>
         <div class="channel-detail">
-          <span class="channel-type">Canal registado, ainda não verificado</span>
+          <span class="channel-type">Canal indicado sem validação marcada</span>
           <span class="channel-val">${escapeHtml(empresa.telefone_oficial)}</span>
         </div>
       </div>`;
   } else {
     telHtml = `<div class="channel-empty">– Nenhum telefone registado</div>`;
-  }
-
-  // NIF / NIPC
-  let nifHtml = '';
-  if (empresa.nif) {
-    if (empresa.nif_verificado) {
-      nifHtml = `
-      <div class="channel-badge badge-verified">
-        <span class="icon" style="color: #10b981; font-weight: 800;">✓</span>
-        <div class="channel-detail">
-          <span class="channel-type">NIF / NIPC verificado</span>
-          <span class="channel-val" style="font-family: 'JetBrains Mono', monospace;">${escapeHtml(empresa.nif)}</span>
-        </div>
-      </div>`;
-    } else {
-      nifHtml = `
-      <div class="channel-badge badge-registered">
-        <span class="icon">–</span>
-        <div class="channel-detail">
-          <span class="channel-type">NIF registado, em validação</span>
-          <span class="channel-val" style="font-family: 'JetBrains Mono', monospace;">${escapeHtml(empresa.nif)}</span>
-        </div>
-      </div>`;
-    }
-  }
-
-  // IBAN OFICIAL (Apenas exibido se confirmado e verificado pelo administrador)
-  let ibanHtml = '';
-  if (empresa.iban && empresa.iban_verificado) {
-    ibanHtml = `
-      <div class="channel-box" style="border-left: 3px solid #10b981; background: rgba(16, 185, 129, 0.05);">
-        <div class="channel-label" style="color: #34d399;">IBAN OFICIAL DE PAGAMENTO</div>
-        <div class="channel-badge badge-verified">
-          <span class="icon" style="color: #10b981; font-weight: 800;">🔒</span>
-          <div class="channel-detail">
-            <span class="channel-type">Conta bancária oficial conferida</span>
-            <span class="channel-val" style="font-family: 'JetBrains Mono', monospace; letter-spacing: 0.5px;">${escapeHtml(empresa.iban)}</span>
-          </div>
-        </div>
-      </div>`;
   }
 
   return `<!DOCTYPE html>
@@ -560,66 +544,52 @@ export function renderVerifyHtml({ selo, empresa, statusPublico, statusClasse })
 <body>
   <div class="container">
     <div class="header">
-      <div class="brand-title">🛡️ CONFIRME, QUEM É?</div>
+      <div class="brand-title">CONFIRME, QUEM É? · CONSULTA DE REGISTO</div>
       <a href="/" class="btn btn-secondary" style="padding: 6px 14px; font-size: 0.8rem;">Página Inicial</a>
     </div>
 
     <article class="cert-card">
       ${(selo.is_teste || empresa.is_teste) ? `
       <div style="background: rgba(245, 158, 11, 0.15); border: 1px solid #f59e0b; color: #fbbf24; padding: 12px 16px; border-radius: 10px; margin-bottom: 24px; text-align: center; font-weight: 700; font-size: 0.9rem;">
-        🧪 PÁGINA DE TESTE — Esta entidade é fictícia e destina-se estritamente a demonstração interna.
+        Demonstração — este registo não tem validade e não deve ser usado para identificar uma entidade real.
       </div>` : ''}
       <div class="cert-header">
-        <div style="display: flex; justify-content: center; margin-bottom: 16px;">
-          <img src="/badges/badge-principal.png" alt="ZAP VERIFIED Selo Oficial" style="width: 140px; height: auto; filter: drop-shadow(0 10px 20px rgba(0, 0, 0, 0.5)); border-radius: 8px;" />
-        </div>
-        <span class="zap-verified-tag">ZAP VERIFIED</span>
         <h1 class="company-name">${nomeEmpresa}</h1>
-        <p class="company-desc">Esta página confirma os canais oficiais associados a esta empresa.</p>
+        <p class="company-desc">Esta página apresenta dados associados ao registo e o estado guardado no serviço. A validação indicada para um campo não confirma quem está a contactar nem a segurança de um pagamento.</p>
         <div>
           <span class="status-badge ${statusClasse}">${statusPublico}</span>
         </div>
       </div>
 
-      <div class="section-title">Canais Oficiais Registados</div>
+      <div class="section-title">Canais indicados no registo</div>
 
       <div class="channel-box">
-        <div class="channel-label">DOMÍNIO OFICIAL</div>
+        <div class="channel-label">DOMÍNIO</div>
         ${domHtml}
       </div>
 
       <div class="channel-box">
-        <div class="channel-label">EMAIL OFICIAL</div>
+        <div class="channel-label">EMAIL</div>
         ${emailHtml}
       </div>
 
       <div class="channel-box">
-        <div class="channel-label">TELEFONE OFICIAL</div>
+        <div class="channel-label">TELEFONE</div>
         ${telHtml}
       </div>
-
-      ${nifHtml ? `
-      <div class="channel-box">
-        <div class="channel-label">NIF / NIPC DA ORGANIZAÇÃO</div>
-        ${nifHtml}
-      </div>` : ''}
-
-      ${ibanHtml}
 
       <div class="meta-box">
         <div class="meta-item">CÓDIGO: <strong>${codigoSelo}</strong></div>
         <div class="meta-item">VALIDADE: <strong>${validadeTexto}</strong></div>
       </div>
 
-      <!-- Texto Público Obrigatório (Seção 5 e 17) -->
       <div class="disclaimer-box">
-        ⚠️ <strong>Aviso Oficial:</strong> O selo confirma a identidade e os contactos da empresa na data da verificação. Não garante que não existam tentativas de burla em seu nome.
+        ⚠️ <strong>Limites desta consulta:</strong> o estado ativo só descreve o registo neste serviço. Não certifica a empresa perante entidades públicas, não prova que uma pessoa ou mensagem controla os canais indicados e não valida contas, IBANs ou pedidos de pagamento. Confirme por um canal que já conhecia, sem usar links ou números recebidos na mensagem suspeita.
       </div>
 
-      <!-- Botões Obrigatórios (Seção 17) -->
       <div class="actions-grid">
-        <a href="/" class="btn btn-primary">Verificar uma mensagem suspeita</a>
-        <a href="/?denuncia=true" class="btn btn-secondary">Denunciar possível fraude</a>
+        <a href="/" class="btn btn-primary">Consultar uma mensagem suspeita</a>
+        <a href="/privacidade" class="btn btn-secondary">Privacidade e contacto</a>
       </div>
 
       <div style="margin-top: 24px; text-align: center; font-size: 0.75rem; color: var(--text-muted);">
@@ -638,7 +608,7 @@ function renderErrorHtml(titulo, mensagem) {
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ZAP VERIFIED — ${escapeHtml(titulo)}</title>
+  <title>Consulta de registo — ${escapeHtml(titulo)}</title>
   <meta name="robots" content="noindex, nofollow">
   <link rel="icon" type="image/png" href="/favicon.png">
   <style>

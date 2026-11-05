@@ -2,6 +2,8 @@
 # Documento: docs/ZAP_PRODUCTION_READINESS_REPORT.md
 # Gerado em: 2026-09-25 | Branch: main | Testes: 34/34 PASS | Modo: AUDIT ONLY
 
+> **Snapshot histórico, não é prova de prontidão atual.** A conclusão de produção abaixo antecede alterações posteriores e contém alegações que precisam de revalidação. Para a análise vigente, consultar `ANALISE_TECNICA_E_NEGOCIO_2026-11-05.md`. Os resultados de teste são os anotados em 25/09 e não foram repetidos nesta revisão.
+
 ---
 
 ## 1. Executive Summary

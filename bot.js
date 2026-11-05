@@ -24,8 +24,10 @@ import {
   renderFeedbackResponse,
   renderNoSessionResponse
 } from './lib/renderer.js';
-import { restoreSessionFromCloud, syncSessionToCloud, clearSessionFromCloud } from './lib/session_store.js';
+import { restoreSessionFromCloud, syncSessionToCloud, clearSessionFromCloud, claimIncomingMessage, allowWhatsAppMessage, checkSessionStoreHealth } from './lib/session_store.js';
+import { pruneRedisLeadFallback } from './lib/retention.js';
 import { registarFeedbackErroUtilizador } from './lib/golpes_novos.js';
+import { checkRateLimit, isAuthorizedSmsWebhook, isConfiguredSmsWebhook, secureEqual } from './lib/security.js';
 
 // Cache de conversação por chat (TTL: 24 horas) para comandos interativos (AJUDA, DETALHES, ÚTIL, ERRO)
 const chatSessions = new Map();
@@ -44,13 +46,17 @@ setInterval(cleanOldSessions, 30 * 60 * 1000);
 const logger = pino({ level: 'silent' });
 const AUTH_DIR = './auth_info_baileys';
 const PORT = process.env.PORT || 3333;
+const configuredMessageLimit = Number(process.env.WHATSAPP_MESSAGES_PER_MINUTE || 12);
+const WHATSAPP_MESSAGES_PER_MINUTE = Number.isInteger(configuredMessageLimit) && configuredMessageLimit >= 1 && configuredMessageLimit <= 120
+  ? configuredMessageLimit
+  : 12;
 
 let currentSock = null;
 let currentStatus = {
   version: '2.6.0-gemini20',
   connected: false,
   status: 'starting',
-  phone: process.env.WHATSAPP_PHONE || '351927618142',
+  phone: process.env.WHATSAPP_PHONE || '',
   pairingCode: null,
   pairingExpiresAt: null,
   qrBase64: null,
@@ -59,11 +65,49 @@ let currentStatus = {
 
 let lastSupabasePing = null;
 let supabaseStatus = 'unknown';
+let lastPairingRequestAt = 0;
+let qrUpdatedAt = null;
+let supabaseHealthCheck = null;
+let sessionStoreHealthCheck = null;
+let lastSessionStoreHealth = 'unknown';
+let lastSessionStoreHealthAt = 0;
+
+function isAdminRequest(req) {
+  const configured = process.env.ADMIN_SECRET_KEY;
+  const headerKey = req.headers['x-admin-key'];
+  const authHeader = req.headers.authorization || '';
+  const bearerKey = authHeader.toLowerCase().startsWith('bearer ') ? authHeader.slice(7).trim() : '';
+  const supplied = typeof headerKey === 'string' ? headerKey : bearerKey;
+  return Boolean(configured && secureEqual(supplied, configured));
+}
+
+function sendJson(res, statusCode, value) {
+  res.writeHead(statusCode, { 'Content-Type': 'application/json; charset=utf-8', 'Cache-Control': 'no-store' });
+  return res.end(JSON.stringify(value));
+}
+
+function readRequestBody(req, maxBytes = 16 * 1024) {
+  return new Promise((resolve, reject) => {
+    let data = '';
+    let tooLarge = false;
+    req.on('data', chunk => {
+      if (tooLarge) return;
+      data += chunk.toString('utf8');
+      if (Buffer.byteLength(data) > maxBytes) tooLarge = true;
+    });
+    req.on('end', () => tooLarge ? reject(new Error('BODY_TOO_LARGE')) : resolve(data));
+    req.on('error', reject);
+  });
+}
 
 async function checkSupabaseHealth() {
   const sUrl = process.env.SUPABASE_URL;
   const sKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-  if (!sUrl || !sKey) return { status: 'unconfigured' };
+  if (!sUrl || !sKey) {
+    supabaseStatus = 'unconfigured';
+    lastSupabasePing = new Date().toISOString();
+    return { status: supabaseStatus, lastPing: lastSupabasePing };
+  }
 
   try {
     const res = await fetch(`${sUrl}/rest/v1/empresas?select=id&limit=1`, {
@@ -80,143 +124,233 @@ async function checkSupabaseHealth() {
   }
 }
 
-// Background Keep-Alive automático para o Supabase nunca pausar por inatividade (a cada 10 min)
-setInterval(() => {
-  checkSupabaseHealth().catch(() => {});
-}, 10 * 60 * 1000);
+function refreshSupabaseHealth() {
+  if (!supabaseHealthCheck) {
+    supabaseHealthCheck = checkSupabaseHealth().finally(() => { supabaseHealthCheck = null; });
+  }
+  return supabaseHealthCheck;
+}
+
+async function getReadiness() {
+  if (!lastSupabasePing || Date.now() - new Date(lastSupabasePing).getTime() > 30000) {
+    await refreshSupabaseHealth();
+  }
+
+  const production = process.env.NODE_ENV === 'production';
+  const sessionStoreConfigured = Boolean(
+    process.env.UPSTASH_REDIS_REST_URL
+    && process.env.UPSTASH_REDIS_REST_TOKEN
+    && process.env.WHATSAPP_SESSION_ENCRYPTION_KEY?.length >= 32
+  );
+  let sessionPersistence = 'not_required';
+  if (production) {
+    if (!sessionStoreConfigured) {
+      sessionPersistence = 'misconfigured';
+    } else {
+      if (!lastSessionStoreHealthAt || Date.now() - lastSessionStoreHealthAt > 30000) {
+        if (!sessionStoreHealthCheck) {
+          sessionStoreHealthCheck = checkSessionStoreHealth()
+            .then(status => {
+              lastSessionStoreHealth = status;
+              lastSessionStoreHealthAt = Date.now();
+              return status;
+            })
+            .finally(() => { sessionStoreHealthCheck = null; });
+        }
+        await sessionStoreHealthCheck;
+      }
+      sessionPersistence = lastSessionStoreHealth;
+    }
+  }
+  const whatsapp = currentStatus.connected ? 'connected' : currentStatus.status;
+  const ready = currentStatus.connected && supabaseStatus === 'online'
+    && (!production || sessionPersistence === 'online');
+
+  return { ready, whatsapp, supabase: supabaseStatus, sessionPersistence };
+}
 
 // --------------------------------------------------------------------------
 // SERVIDOR WEB LOCAL (http://localhost:3333)
 // --------------------------------------------------------------------------
 const server = http.createServer(async (req, res) => {
-  const url = new URL(req.url, `http://${req.headers.host}`);
+  const url = new URL(req.url, 'http://localhost');
 
-  // CORS headers
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
-
-  if (req.method === 'OPTIONS') {
-    res.writeHead(200);
-    return res.end();
+  // Liveness confirma que o processo HTTP responde, sem depender de serviços externos.
+  if (url.pathname === '/ping' || url.pathname === '/health/live') {
+    if (req.method !== 'GET' && req.method !== 'HEAD') {
+      res.writeHead(405, { Allow: 'GET, HEAD' });
+      return res.end('Method Not Allowed');
+    }
+    return sendJson(res, 200, { ok: true, service: 'zapqueme-bot' });
   }
 
-  // 1. Status JSON (alimentado também pelos pings externos de 5 em 5 minutos)
-  if (url.pathname === '/status' || url.pathname === '/ping') {
-    // Se o último ping no Supabase tem mais de 30s ou nunca foi feito, renova o toque no banco
-    if (!lastSupabasePing || Date.now() - new Date(lastSupabasePing).getTime() > 30000) {
-      await checkSupabaseHealth();
+  // Readiness confirma que WhatsApp, Supabase e persistência de sessão estão operacionais.
+  if (url.pathname === '/health/ready' || url.pathname === '/status') {
+    if (req.method !== 'GET' && req.method !== 'HEAD') {
+      res.writeHead(405, { Allow: 'GET, HEAD' });
+      return res.end('Method Not Allowed');
     }
-
+    const health = await getReadiness();
     const payload = {
-      ...currentStatus,
-      supabase: supabaseStatus,
-      supabaseLastPing: lastSupabasePing
+      ok: health.ready,
+      service: 'zapqueme-bot',
+      whatsapp: health.whatsapp,
+      supabase: health.supabase,
+      sessionPersistence: health.sessionPersistence
     };
-
-    res.writeHead(200, { 'Content-Type': 'application/json' });
-    return res.end(JSON.stringify(payload, null, 2));
+    return sendJson(res, health.ready ? 200 : 503, payload);
   }
 
-  // 2. Imagem QR Code
+  if (url.pathname === '/admin/status') {
+    if (req.method !== 'GET') return sendJson(res, 405, { error: 'Método não permitido.' });
+    if (!isAdminRequest(req)) return sendJson(res, 401, { error: 'Acesso não autorizado.' });
+    if (currentStatus.pairingExpiresAt && Date.now() > currentStatus.pairingExpiresAt) {
+      currentStatus.pairingCode = null;
+      currentStatus.pairingExpiresAt = null;
+    }
+    return sendJson(res, 200, {
+      connected: currentStatus.connected,
+      status: currentStatus.status,
+      phone: currentStatus.phone,
+      pairingCode: currentStatus.pairingCode,
+      pairingExpiresAt: currentStatus.pairingExpiresAt,
+      qrUpdatedAt,
+      hasQr: Boolean(qrUpdatedAt),
+      lastError: currentStatus.lastError
+    });
+  }
+
+  // Pairing QR material is available only to an operator holding ADMIN_SECRET_KEY.
   if (url.pathname === '/qrcode.png') {
-    if (fs.existsSync('./qrcode.png')) {
-      const img = fs.readFileSync('./qrcode.png');
-      res.writeHead(200, { 'Content-Type': 'image/png', 'Cache-Control': 'no-cache' });
-      return res.end(img);
-    } else {
-      res.writeHead(404);
-      return res.end('QR not ready');
-    }
+    if (req.method !== 'GET') return sendJson(res, 405, { error: 'Método não permitido.' });
+    if (!isAdminRequest(req)) return sendJson(res, 401, { error: 'Acesso não autorizado.' });
+    if (!fs.existsSync('./qrcode.png')) return sendJson(res, 404, { error: 'QR ainda não disponível.' });
+    const image = fs.readFileSync('./qrcode.png');
+    res.writeHead(200, { 'Content-Type': 'image/png', 'Cache-Control': 'no-store, no-cache, must-revalidate' });
+    return res.end(image);
   }
 
-  // 3. Solicitar novo Código de Emparelhamento sob demanda
-  if (url.pathname === '/request-code' && (req.method === 'POST' || req.method === 'GET')) {
-    const phoneParam = url.searchParams.get('phone') || currentStatus.phone;
-    const cleanPhone = phoneParam.replace(/\D/g, '');
-
-    if (!cleanPhone || cleanPhone.length < 8) {
-      res.writeHead(400, { 'Content-Type': 'application/json' });
-      return res.end(JSON.stringify({ error: 'Número de telefone inválido' }));
+  if (url.pathname === '/request-code') {
+    if (req.method !== 'POST') {
+      res.writeHead(405, { Allow: 'POST' });
+      return res.end('Method Not Allowed');
+    }
+    if (!isAdminRequest(req)) return sendJson(res, 401, { error: 'Acesso não autorizado.' });
+    if (Date.now() - lastPairingRequestAt < 30000) {
+      return sendJson(res, 429, { error: 'Aguarda 30 segundos antes de pedir outro código.' });
     }
 
-    currentStatus.phone = cleanPhone;
-
-    if (!currentSock || currentStatus.connected) {
-      res.writeHead(400, { 'Content-Type': 'application/json' });
-      return res.end(JSON.stringify({ error: 'WhatsApp já conectado ou inicializando.' }));
-    }
-
+    let body;
     try {
-      console.log(`\n⏳ Solicitando Código de Emparelhamento via Painel para +${cleanPhone}...`);
+      body = JSON.parse(await readRequestBody(req, 2048) || '{}');
+    } catch (error) {
+      return sendJson(res, error.message === 'BODY_TOO_LARGE' ? 413 : 400, { error: 'Pedido inválido.' });
+    }
+    if (!body || typeof body !== 'object' || Array.isArray(body)) {
+      return sendJson(res, 400, { error: 'Pedido inválido.' });
+    }
+    const phoneParam = typeof body.phone === 'string' ? body.phone : '';
+    const cleanPhone = phoneParam.replace(/\D/g, '');
+    if (cleanPhone.length < 8 || cleanPhone.length > 15) {
+      return sendJson(res, 400, { error: 'Número de telefone inválido.' });
+    }
+    if (!currentSock || currentStatus.connected) {
+      return sendJson(res, 409, { error: 'WhatsApp já conectado ou ainda a inicializar.' });
+    }
+
+    lastPairingRequestAt = Date.now();
+    currentStatus.phone = cleanPhone;
+    try {
       const code = await currentSock.requestPairingCode(cleanPhone);
       const formattedCode = code?.match(/.{1,4}/g)?.join('-') || code;
-      
       currentStatus.pairingCode = formattedCode;
-      currentStatus.pairingExpiresAt = Date.now() + 60000; // 60 segundos
-      
-      console.log(`🔑 NOVO CÓDIGO GERADO: [ ${formattedCode} ] para +${cleanPhone}`);
-
-      res.writeHead(200, { 'Content-Type': 'application/json' });
-      return res.end(JSON.stringify({ success: true, code: formattedCode }));
-    } catch (err) {
-      console.error('Erro ao gerar código:', err.message);
-      res.writeHead(500, { 'Content-Type': 'application/json' });
-      return res.end(JSON.stringify({ error: err.message || 'Falha ao solicitar código' }));
+      currentStatus.pairingExpiresAt = Date.now() + 60000;
+      return sendJson(res, 200, { success: true, code: formattedCode });
+    } catch (error) {
+      console.warn('[Pairing] Code request failed:', error.message);
+      return sendJson(res, 503, { error: 'Não foi possível pedir o código. Tenta novamente mais tarde.' });
     }
   }
 
-  // 4. Teste de IA sob demanda
   if (url.pathname === '/test-ai') {
+    if (!isAdminRequest(req)) return sendJson(res, 401, { error: 'Acesso não autorizado.' });
+    if (req.method !== 'POST') return sendJson(res, 405, { error: 'Método não permitido.' });
+    let testBody;
     try {
-      const q = url.searchParams.get('q') || 'Chronopost: colis en attente https://mon-colis.top';
+      testBody = JSON.parse(await readRequestBody(req, 4096) || '{}');
+    } catch (error) {
+      return sendJson(res, error.message === 'BODY_TOO_LARGE' ? 413 : 400, { error: 'Pedido inválido.' });
+    }
+    if (!testBody || typeof testBody !== 'object' || Array.isArray(testBody)) {
+      return sendJson(res, 400, { error: 'Pedido inválido.' });
+    }
+    const limit = await checkRateLimit(req, 'bot-test-ai', 5, 60);
+    if (!limit.allowed) return sendJson(res, 429, { error: 'Limite de análises de diagnóstico atingido.' });
+    const q = typeof testBody.text === 'string' ? testBody.text : 'Mensagem demonstrativa para diagnóstico';
+    if (q.length > 2000) return sendJson(res, 413, { error: 'Texto demasiado longo.' });
+    try {
       const result = await analyzeContent({ texto: q });
-      res.writeHead(200, { 'Content-Type': 'application/json' });
-      return res.end(JSON.stringify({ success: true, input: q, result, formatted: formatWhatsAppMessage(result) }, null, 2));
-    } catch (err) {
-      res.writeHead(500, { 'Content-Type': 'application/json' });
-      return res.end(JSON.stringify({ success: false, error: err.message }));
+      return sendJson(res, 200, { success: true, result, formatted: formatWhatsAppMessage(result) });
+    } catch (error) {
+      console.warn('[Test AI] Analysis failed:', error.message);
+      return sendJson(res, 503, { success: false, error: 'A análise não está disponível.' });
     }
   }
 
-  // 5. Gateway e Webhook de SMS (Twilio / Gateway Telco / B2B)
   if (url.pathname === '/api/sms' || url.pathname === '/sms') {
-    let bodyData = '';
-    req.on('data', chunk => { bodyData += chunk; });
-    req.on('end', async () => {
-      try {
-        let parsedBody = {};
-        if (req.headers['content-type']?.includes('application/json')) {
-          try { parsedBody = JSON.parse(bodyData); } catch {}
-        } else {
-          parsedBody = Object.fromEntries(new URLSearchParams(bodyData));
-        }
-
-        const incomingText = (parsedBody.Body || parsedBody.text || url.searchParams.get('Body') || url.searchParams.get('text') || '').trim();
-        const sender = (parsedBody.From || parsedBody.sender || url.searchParams.get('From') || 'anonimo').trim();
-
-        if (!incomingText) {
-          res.writeHead(200, { 'Content-Type': 'text/xml; charset=utf-8' });
-          return res.end('<?xml version="1.0" encoding="UTF-8"?><Response><Message><Body>[ZAP VERIFICA] Reencaminhe para este numero qualquer SMS suspeito. Analisaremos na hora se e golpe ou autentico.</Body></Message></Response>');
-        }
-
-        const resultado = await analyzeContent({ texto: incomingText, canal: 'sms', remetente: sender });
-        const smsResposta = formatSmsMessage(resultado);
-
-        if (url.searchParams.get('format') === 'json' || req.headers['accept']?.includes('application/json')) {
-          res.writeHead(200, { 'Content-Type': 'application/json' });
-          return res.end(JSON.stringify({ success: true, canal: 'sms', veredito: resultado.veredito, risco_score: resultado.risco_score, sms_resposta: smsResposta, resultado }));
-        }
-
-        res.writeHead(200, { 'Content-Type': 'text/xml; charset=utf-8' });
-        const safeXml = smsResposta.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-        return res.end(`<?xml version="1.0" encoding="UTF-8"?><Response><Message><Body>${safeXml}</Body></Message></Response>`);
-      } catch (err) {
-        res.writeHead(500, { 'Content-Type': 'text/plain' });
-        return res.end('[ZAP ALERTA] Erro ao analisar SMS.');
+    if (req.method !== 'POST') {
+      res.writeHead(405, { Allow: 'POST' });
+      return res.end('Method Not Allowed');
+    }
+    if (!isConfiguredSmsWebhook()) return sendJson(res, 503, { error: 'O webhook SMS não está configurado.' });
+    let rawBody;
+    try {
+      rawBody = await readRequestBody(req, 16 * 1024);
+    } catch (error) {
+      return sendJson(res, error.message === 'BODY_TOO_LARGE' ? 413 : 400, { error: 'Pedido inválido.' });
+    }
+    const contentType = String(req.headers['content-type'] || '').toLowerCase();
+    let body = {};
+    try {
+      if (contentType.includes('application/x-www-form-urlencoded')) {
+        body = Object.fromEntries(new URLSearchParams(rawBody));
+      } else if (contentType.includes('application/json')) {
+        body = JSON.parse(rawBody || '{}');
+      } else {
+        return sendJson(res, 415, { error: 'Formato de pedido não suportado.' });
       }
-    });
-    return;
+    } catch {
+      return sendJson(res, 400, { error: 'Pedido inválido.' });
+    }
+    if (req.headers['x-twilio-signature'] && !contentType.includes('application/x-www-form-urlencoded')) {
+      return sendJson(res, 415, { error: 'Formato de webhook Twilio não suportado.' });
+    }
+    if (!isAuthorizedSmsWebhook(req, body)) return sendJson(res, 401, { error: 'Webhook não autorizado.' });
+    const limit = await checkRateLimit(req, 'bot-sms', 20, 60);
+    if (limit.unavailable && process.env.NODE_ENV === 'production') {
+      return sendJson(res, 503, { error: 'Análise SMS temporariamente indisponível.' });
+    }
+    if (!limit.allowed) return sendJson(res, 429, { error: 'Demasiados pedidos. Tenta mais tarde.' });
+
+    const incomingText = String(body.Body || body.text || body.message || '').trim();
+    const wantsJson = url.searchParams.get('format') === 'json' || String(req.headers.accept || '').includes('application/json');
+    if (incomingText.length > 5000) return sendJson(res, 413, { error: 'Mensagem demasiado longa.' });
+    if (!incomingText || ['ajuda', 'help', 'info', 'start', 'zap'].includes(incomingText.toLowerCase())) {
+      const help = '[ZAP VERIFICA] Reencaminhe o SMS suspeito para análise. Nunca partilhe códigos ou palavras-passe.';
+      if (wantsJson) return sendJson(res, 200, { success: true, sms_resposta: help });
+      return sendTwiml(res, help);
+    }
+    try {
+      const result = await analyzeContent({ texto: incomingText, canal: 'sms' });
+      const responseText = formatSmsMessage(result);
+      if (wantsJson) return sendJson(res, 200, { success: true, canal: 'sms', veredito: result.veredito, risco_score: result.risco_score, sms_resposta: responseText });
+      return sendTwiml(res, responseText);
+    } catch (error) {
+      console.warn('[SMS Gateway] Processing failed:', error.message);
+      const failure = '[ZAP ALERTA] Não foi possível analisar este SMS agora. Tenta novamente mais tarde.';
+      if (wantsJson) return sendJson(res, 503, { success: false, sms_resposta: failure });
+      return sendTwiml(res, failure);
+    }
   }
 
   // 6. Arquivos Estáticos & Painel Admin
@@ -261,8 +395,22 @@ const server = http.createServer(async (req, res) => {
   res.end('Not found');
 });
 
+function sendTwiml(res, message) {
+  const xml = String(message || '')
+    .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+    .replace(/\"/g, '&quot;').replace(/'/g, '&apos;');
+  res.writeHead(200, { 'Content-Type': 'text/xml; charset=utf-8' });
+  return res.end(`<?xml version="1.0" encoding="UTF-8"?><Response><Message><Body>${xml}</Body></Message></Response>`);
+}
+
 server.listen(PORT, '0.0.0.0', () => {
   console.log(`\n🌐 PAINEL DE CONEXÃO DISPONÍVEL EM: http://localhost:${PORT}\n`);
+  refreshSupabaseHealth();
+  const supabaseKeepAlive = setInterval(refreshSupabaseHealth, 10 * 60 * 1000);
+  supabaseKeepAlive.unref();
+  pruneRedisLeadFallback();
+  const retentionTimer = setInterval(pruneRedisLeadFallback, 24 * 60 * 60 * 1000);
+  retentionTimer.unref();
 });
 
 // --------------------------------------------------------------------------
@@ -478,7 +626,7 @@ function getDashboardHtml() {
       <div class="box">
         <div class="box-title">⚡ Opção 1: Conectar por Código (Sem Câmera)</div>
         <div class="input-row">
-          <input type="text" id="phoneInput" placeholder="Ex: 351927618142 (com DDI e DDD)" value="${currentStatus.phone || ''}">
+          <input type="text" id="phoneInput" placeholder="Ex: 351927618142 (com DDI e DDD)" value="${String(currentStatus.phone || '').replace(/\D/g, '')}">
           <button class="btn" id="btnRequestCode" onclick="requestCode()">Gerar Código</button>
         </div>
 
@@ -500,7 +648,7 @@ function getDashboardHtml() {
       <div class="box" style="text-align: center;">
         <div class="box-title" style="justify-content: center;">📷 Opção 2: Escanear com a Câmera</div>
         <div class="qr-container">
-          <img id="qrImg" src="/qrcode.png" alt="QR Code WhatsApp">
+          <img id="qrImg" src="data:," alt="QR Code WhatsApp">
         </div>
         <ol style="text-align: left; margin-top: 8px;">
           <li>No WhatsApp, vá em <b>Aparelhos Conectados</b></li>
@@ -512,6 +660,33 @@ function getDashboardHtml() {
   </div>
 
   <script>
+    let botAdminKey = sessionStorage.getItem('zap_bot_admin_key') || '';
+    let adminKeyPrompted = false;
+    let lastQrObjectUrl = '';
+    let lastQrUpdatedAt = null;
+
+    function ensureBotAdminKey() {
+      if (!botAdminKey && !adminKeyPrompted) {
+        adminKeyPrompted = true;
+        botAdminKey = prompt('Introduz a chave de administração do servidor:') || '';
+        if (botAdminKey) sessionStorage.setItem('zap_bot_admin_key', botAdminKey);
+      }
+      return botAdminKey;
+    }
+
+    async function adminFetch(url, options = {}) {
+      const key = ensureBotAdminKey();
+      if (!key) throw new Error('É necessária uma chave de administração. Atualiza a página para tentar novamente.');
+      const headers = { ...(options.headers || {}), 'x-admin-key': key };
+      const response = await fetch(url, { ...options, headers, cache: 'no-store' });
+      if (response.status === 401) {
+        sessionStorage.removeItem('zap_bot_admin_key');
+        botAdminKey = '';
+        throw new Error('Chave inválida. Atualiza a página e tenta novamente.');
+      }
+      return response;
+    }
+
     async function requestCode() {
       const phone = document.getElementById('phoneInput').value.trim();
       if (!phone) {
@@ -523,7 +698,11 @@ function getDashboardHtml() {
       btn.textContent = 'Gerando...';
 
       try {
-        const res = await fetch('/request-code?phone=' + encodeURIComponent(phone));
+        const res = await adminFetch('/request-code', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ phone })
+        });
         const data = await res.json();
         if (data.success && data.code) {
           showCode(data.code);
@@ -551,7 +730,7 @@ function getDashboardHtml() {
 
     async function pollStatus() {
       try {
-        const res = await fetch('/status?t=' + Date.now());
+        const res = await adminFetch('/admin/status?t=' + Date.now());
         if (!res.ok) return;
         const data = await res.json();
 
@@ -565,8 +744,22 @@ function getDashboardHtml() {
           showCode(data.pairingCode);
         }
 
-        document.getElementById('qrImg').src = '/qrcode.png?t=' + Date.now();
-      } catch (e) {}
+        if (data.hasQr && data.qrUpdatedAt !== lastQrUpdatedAt) {
+          const qrResponse = await adminFetch('/qrcode.png?t=' + Date.now());
+          if (qrResponse.ok) {
+            const imageBlob = await qrResponse.blob();
+            const nextObjectUrl = URL.createObjectURL(imageBlob);
+            const image = document.getElementById('qrImg');
+            image.src = nextObjectUrl;
+            if (lastQrObjectUrl) URL.revokeObjectURL(lastQrObjectUrl);
+            lastQrObjectUrl = nextObjectUrl;
+            lastQrUpdatedAt = data.qrUpdatedAt;
+          }
+        }
+      } catch (error) {
+        const statusText = document.getElementById('statusText');
+        if (statusText) statusText.textContent = error.message;
+      }
     }
 
     setInterval(pollStatus, 3000);
@@ -580,6 +773,25 @@ function getDashboardHtml() {
 // CONEXÃO BAILEYS
 // --------------------------------------------------------------------------
 let isStarting = false;
+let credentialsSyncQueue = Promise.resolve();
+let reconnectTimer = null;
+let reconnectAttempts = 0;
+
+function scheduleBotRestart() {
+  if (reconnectTimer) return;
+  const baseDelay = 3000;
+  const maxDelay = 60000;
+  const exponentialDelay = Math.min(maxDelay, baseDelay * (2 ** Math.min(reconnectAttempts, 5)));
+  const jitter = Math.floor(Math.random() * 1000);
+  const delay = exponentialDelay + jitter;
+  reconnectAttempts++;
+  currentStatus.status = 'reconnecting';
+  reconnectTimer = setTimeout(() => {
+    reconnectTimer = null;
+    startBot();
+  }, delay);
+  reconnectTimer.unref?.();
+}
 
 async function startBot() {
   if (isStarting) return;
@@ -592,8 +804,21 @@ async function startBot() {
   currentStatus.status = 'starting';
   currentStatus.connected = false;
 
+  try {
   // Restaura sessão salva no Redis (se estiver rodando na nuvem como Render)
   await restoreSessionFromCloud();
+
+  // Limpeza de salvaguarda: se houver credenciais locais com registered: false, limpa para evitar loop 408
+  const credsPath = path.join(AUTH_DIR, 'creds.json');
+  if (fs.existsSync(credsPath)) {
+    try {
+      const credsRaw = JSON.parse(fs.readFileSync(credsPath, 'utf8'));
+      if (credsRaw && credsRaw.registered === false) {
+        console.log('🧹 Limpando credenciais locais provisórias (registered: false) para permitir novo emparelhamento limpo...');
+        fs.rmSync(AUTH_DIR, { recursive: true, force: true });
+      }
+    } catch (_) {}
+  }
 
   const { state, saveCreds } = await useMultiFileAuthState(AUTH_DIR);
   const { version } = await fetchLatestBaileysVersion();
@@ -604,7 +829,7 @@ async function startBot() {
     logger,
     printQRInTerminal: false,
     auth: state,
-    browser: Browsers.ubuntu('Chrome'),
+    browser: Browsers.windows('Chrome'),
     generateHighQualityLinkPreview: true,
     connectTimeoutMs: 60000,
     keepAliveIntervalMs: 25000
@@ -612,9 +837,13 @@ async function startBot() {
 
   currentSock = sock;
 
-  sock.ev.on('creds.update', async () => {
-    await saveCreds();
-    await syncSessionToCloud();
+  sock.ev.on('creds.update', () => {
+    credentialsSyncQueue = credentialsSyncQueue
+      .then(async () => {
+        await saveCreds();
+        await syncSessionToCloud();
+      })
+      .catch(() => console.error('[WhatsApp] Falha ao guardar credenciais da sessão.'));
   });
 
   sock.ev.on('connection.update', async (update) => {
@@ -624,25 +853,29 @@ async function startBot() {
       currentStatus.status = 'awaiting_connection';
       try {
         await QRCodeImage.toFile('./qrcode.png', qr, { width: 400, margin: 2 });
+        qrUpdatedAt = new Date().toISOString();
       } catch (e) {}
 
-      console.log('\n=============================================================');
-      console.log('📲 QR CODE PRONTO!');
-      console.log(`👉 Abra no navegador:  http://localhost:${PORT}`);
-      console.log('=============================================================\n');
-      qrcode.generate(qr, { small: true });
+      if (process.env.NODE_ENV !== 'production') {
+        console.log('\n=============================================================');
+        console.log('📲 QR CODE PRONTO!');
+        console.log(`👉 Abra no navegador:  http://localhost:${PORT}`);
+        console.log('👉 No telemóvel: WhatsApp > Aparelhos conectados > Conectar');
+        console.log('=============================================================\n');
+        qrcode.generate(qr, { small: true });
+      }
 
-      // Se tiver número padrão configurado e não estiver pareado, gera pairing code inicial
-      if (!sock.authState.creds.registered && !currentStatus.pairingCode && currentStatus.phone) {
+      // Se solicitado via flag explícita AUTO_PAIRING, gera o código inicial.
+      // Por padrão, deixamos o QR Code livre para evitar bloqueios por excesso de requisições.
+      if (process.env.AUTO_PAIRING === 'true' && !sock.authState.creds.registered && !currentStatus.pairingCode && currentStatus.phone) {
         setTimeout(async () => {
           try {
-            console.log(`\n⏳ Solicitando Código de Emparelhamento inicial para +${currentStatus.phone}...`);
             const code = await sock.requestPairingCode(currentStatus.phone);
             const formattedCode = code?.match(/.{1,4}/g)?.join('-') || code;
             currentStatus.pairingCode = formattedCode;
-            console.log(`🔑 CÓDIGO INICIAL: [ ${formattedCode} ]  (Digite no celular ou veja em http://localhost:${PORT})\n`);
+            currentStatus.pairingExpiresAt = Date.now() + 60000;
           } catch (pairErr) {
-            // normal se já registrado ou se expirar
+            console.warn('Aviso pairing code:', pairErr.message);
           }
         }, 2000);
       }
@@ -651,28 +884,31 @@ async function startBot() {
     if (connection === 'close') {
       isStarting = false;
       currentStatus.connected = false;
+      if (currentSock === sock) currentSock = null;
       const statusCode = lastDisconnect?.error?.output?.statusCode;
       const shouldReconnect = statusCode !== DisconnectReason.loggedOut;
       
       console.log(`⚠️ Conexão encerrada (Status: ${statusCode || 'desconhecido'}).`);
 
-      if (statusCode === DisconnectReason.loggedOut) {
-        console.log('❌ Sessão desconectada pelo WhatsApp. Limpando credenciais...');
+      if (statusCode === DisconnectReason.loggedOut || (!sock.authState.creds.registered && (statusCode === 408 || statusCode === 401))) {
+        console.log('❌ Sessão desconectada ou não registrada. Limpando credenciais...');
         try {
           fs.rmSync(AUTH_DIR, { recursive: true, force: true });
         } catch (e) {}
         await clearSessionFromCloud();
         currentStatus.pairingCode = null;
-        setTimeout(startBot, 3000);
+        scheduleBotRestart();
       } else if (shouldReconnect) {
-        console.log('🔄 Reconectando ao WhatsApp em 5 segundos...');
-        currentStatus.status = 'reconnecting';
-        setTimeout(startBot, 5000);
+        scheduleBotRestart();
+      } else {
+        currentStatus.status = 'awaiting_connection';
       }
     } else if (connection === 'open') {
       isStarting = false;
+      reconnectAttempts = 0;
       currentStatus.connected = true;
       currentStatus.status = 'connected';
+      currentStatus.lastError = null;
       currentStatus.pairingCode = null;
 
       console.log('\n=============================================================');
@@ -688,34 +924,69 @@ async function startBot() {
     for (const msg of messages) {
       if (!msg.message || msg.key.fromMe) continue;
       const remoteJid = msg.key.remoteJid;
-      if (remoteJid.includes('@broadcast') || remoteJid.includes('status@broadcast')) continue;
+      if (!remoteJid || remoteJid.endsWith('@g.us') || remoteJid.endsWith('@broadcast') || remoteJid.endsWith('@newsletter')) continue;
+      if (msg.key.id && !(await claimIncomingMessage(remoteJid, msg.key.id))) continue;
+      if (!(await allowWhatsAppMessage(remoteJid, WHATSAPP_MESSAGES_PER_MINUTE))) {
+        console.warn('[WhatsApp] Mensagem ignorada: limite por remetente atingido.');
+        continue;
+      }
 
       try {
-        const messageType = Object.keys(msg.message)[0];
+        let messageContent = msg.message;
+        for (let depth = 0; depth < 4; depth++) {
+          const wrapper = messageContent?.ephemeralMessage
+            || messageContent?.viewOnceMessage
+            || messageContent?.viewOnceMessageV2
+            || messageContent?.documentWithCaptionMessage;
+          if (!wrapper?.message) break;
+          messageContent = wrapper.message;
+        }
+        const messageType = Object.keys(messageContent || {})[0];
         let incomingText = '';
         let imagemBase64 = null;
         let imagemTipo = null;
+        let mediaIssue = null;
 
         if (messageType === 'conversation') {
-          incomingText = msg.message.conversation || '';
+          incomingText = messageContent.conversation || '';
         } else if (messageType === 'extendedTextMessage') {
-          incomingText = msg.message.extendedTextMessage?.text || '';
+          incomingText = messageContent.extendedTextMessage?.text || '';
         } else if (messageType === 'imageMessage') {
-          incomingText = msg.message.imageMessage?.caption || '';
-          imagemTipo = msg.message.imageMessage?.mimetype || 'image/jpeg';
-          try {
-            const buffer = await downloadMediaMessage(
-              msg,
-              'buffer',
-              {},
-              { logger, reuploadRequest: sock.updateMediaMessage }
-            );
-            if (buffer) {
-              imagemBase64 = buffer.toString('base64');
+          incomingText = messageContent.imageMessage?.caption || '';
+          imagemTipo = messageContent.imageMessage?.mimetype || 'image/jpeg';
+          const advertisedSize = Number(messageContent.imageMessage?.fileLength?.toString?.() ?? messageContent.imageMessage?.fileLength);
+          if (!Number.isFinite(advertisedSize) || advertisedSize <= 0) {
+            mediaIssue = 'image_unavailable';
+          } else if (advertisedSize > 8 * 1024 * 1024) {
+            mediaIssue = 'image_too_large';
+          } else {
+            try {
+              const buffer = await downloadMediaMessage(
+                msg,
+                'buffer',
+                {},
+                { logger, reuploadRequest: sock.updateMediaMessage }
+              );
+              if (buffer && buffer.length <= 8 * 1024 * 1024) {
+                imagemBase64 = buffer.toString('base64');
+              } else {
+                mediaIssue = 'image_too_large';
+              }
+            } catch {
+              mediaIssue = 'image_unavailable';
             }
-          } catch (imgErr) {
-            console.warn('[Mídia] Falha ao baixar imagem:', imgErr.message);
           }
+        } else {
+          await sock.sendMessage(remoteJid, { text: 'Este formato ainda não é suportado. Envie texto ou uma imagem até 8 MB.' }, { quoted: msg });
+          continue;
+        }
+
+        if (mediaIssue) {
+          const text = mediaIssue === 'image_too_large'
+            ? 'A imagem excede o limite de 8 MB. Envie uma imagem mais pequena.'
+            : 'Não consegui abrir esta imagem. Tente enviá-la novamente ou cole o texto da mensagem.';
+          await sock.sendMessage(remoteJid, { text }, { quoted: msg });
+          continue;
         }
 
         incomingText = (incomingText || '').trim();
@@ -761,7 +1032,7 @@ async function startBot() {
           }
 
           if (cleanCmd === 'util' || cleanCmd === 'erro') {
-            console.log(`[Feedback] Remetente: ${remoteJid} | Comando: ${cleanCmd.toUpperCase()} | Análise ID: ${session.analise_id || 'N/A'}`);
+            console.log(`[Feedback] Comando ${cleanCmd.toUpperCase()} recebido.`);
             if (cleanCmd === 'erro') {
               registarFeedbackErroUtilizador(session).catch(() => {});
             }
@@ -791,8 +1062,7 @@ async function startBot() {
           continue;
         }
 
-        console.log(`\n📩 Mensagem recebida de ${remoteJid}: "${incomingText.slice(0, 60)}"`);
-        console.log('🤖 Analisando com IA (OpenRouter / Gemini)...');
+        console.log('[WhatsApp] Mensagem privada recebida; a iniciar análise.');
 
         const resultado = await analyzeContent({
           texto: incomingText || null,
@@ -810,19 +1080,27 @@ async function startBot() {
 
         const resposta = formatWhatsAppMessage(resultado, incomingText);
         await sock.sendMessage(remoteJid, { text: resposta }, { quoted: msg });
-        console.log(`✅ Resposta enviada para ${remoteJid} (Veredito: ${resultado.veredito}, Score: ${resultado.risco_score})`);
+        console.log('[WhatsApp] Análise concluída e resposta enviada.');
 
-      } catch (err) {
-        console.error('❌ Erro ao processar mensagem:', err);
+      } catch {
+        console.error('[WhatsApp] Falha ao processar ou responder à mensagem.');
         const erroMsg = renderWhatsAppResponse({ template: 'error', level: 'error' });
-        await sock.sendMessage(
-          remoteJid,
-          { text: erroMsg },
-          { quoted: msg }
-        );
+        try {
+          await sock.sendMessage(remoteJid, { text: erroMsg }, { quoted: msg });
+        } catch {
+          console.error('[WhatsApp] Não foi possível enviar a resposta de erro.');
+        }
       }
     }
   });
+  } catch (error) {
+    isStarting = false;
+    currentStatus.connected = false;
+    currentStatus.status = 'startup_error';
+    currentStatus.lastError = error?.code || error?.name || 'startup_failed';
+    console.error('[WhatsApp] Falha ao iniciar o cliente; será feita nova tentativa.');
+    scheduleBotRestart();
+  }
 }
 
-startBot().catch(console.error);
+startBot();

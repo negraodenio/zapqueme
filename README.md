@@ -1,99 +1,57 @@
-# É Golpe? — MVP
+﻿# Confirme, Quem É? — MVP
 
-Verificador instantâneo: cola texto ou manda print de mensagem suspeita, a IA diz
-se é golpe, porquê, e o que fazer.
+Aplicação para analisar mensagens suspeitas e permitir a consulta de canais empresariais submetidos para revisão manual. A análise automática é indicativa e pode falhar; não prova a identidade do remetente nem garante que uma mensagem é segura.
 
-## Deploy em 5 minutos (Vercel)
+## Componentes
 
-1. Cria conta grátis em https://vercel.com (login com GitHub é o mais rápido).
-2. Cria um repositório novo no GitHub e sobe esta pasta inteira para lá
-   (`git init && git add . && git commit -m "mvp" && git push`).
-3. Na Vercel: **Add New Project** → importa o repositório.
-4. Em **Settings → Environment Variables**, adiciona:
-   - `GEMINI_API_KEY` = chave gratuita criada em https://aistudio.google.com/app/apikey
-   - `UPSTASH_REDIS_REST_URL` e `UPSTASH_REDIS_REST_TOKEN` (opcional, mas recomendado — ver abaixo)
-   - `SUPABASE_URL` e `SUPABASE_SERVICE_ROLE_KEY` (opcional, para guardar histórico e métricas — ver abaixo)
-5. Clica **Deploy**. Em ~1 minuto tens um link tipo `e-golpe.vercel.app`.
+- `index.html` e `api/analyze.js`: verificador web de texto/imagens e função de análise.
+- `bot.js`: servidor do bot WhatsApp (Baileys) e webhook SMS. O Baileys é uma biblioteca não oficial; não basear compromissos de disponibilidade neste canal.
+- `api/empresa.js`: submissão e consulta de pedidos empresariais.
+- `api/admin.js` e `admin.html`: operações internas. A chave administrativa é segredo de servidor e nunca deve ser publicada no browser.
+- Supabase: metadados, CRM e feedback; Upstash Redis: limites, contadores, contingência de leads e sessão técnica.
 
-## WhatsApp (Baileys no Render)
+## Configuração
 
-O bot de WhatsApp corre em `bot.js` (Baileys) no Render (`render.yaml`, serviço `zapqueme-bot`).
-Liga-se como dispositivo associado a um número: abre o painel do bot, pede o código de emparelhamento e confirma no telemóvel.
-O site (`/api/analyze`) é o canal principal; o WhatsApp é complementar.
+1. Instala Node.js 22 e executa `npm install`.
+2. Copia `.env.example` para `.env.local` para desenvolvimento e preenche apenas os serviços que vais usar. Não partilhes nem comites esse ficheiro.
+3. Configura `OPENROUTER_API_KEY` e `OPENROUTER_MODEL` para análise via OpenRouter. A aplicação pede opções de privacidade por pedido, mas a disponibilidade depende do modelo e fornecedor escolhidos. Revê os termos e a configuração da conta antes de processar dados pessoais.
+4. O fallback direto para Gemini fica desativado por omissão em produção. Só ativa `ALLOW_GEMINI_FALLBACK=true` depois de confirmar o fornecedor, modalidade e condições aplicáveis.
+5. Configura `UPSTASH_REDIS_REST_URL` e `UPSTASH_REDIS_REST_TOKEN`. Em produção, limites de segurança dependem do Redis e as rotas relevantes recusam pedidos quando o serviço não está disponível.
+6. Para persistência, configura `SUPABASE_URL` e `SUPABASE_SERVICE_ROLE_KEY` apenas no servidor. Nunca uses a chave `service_role` no HTML ou numa aplicação cliente. Revê [a tabela de retenção](docs/RETENCAO_DADOS.md), executa `supabase/retention_preview.sql`, confirma um backup recuperável e aplica as migrações SQL, incluindo `20261105_retencao_rgpd.sql`. Depois confirma no Supabase Cron que `zapqueme-retencao-dados` está ativo. A primeira execução elimina registos vencidos.
+7. Configura uma chave aleatória de pelo menos 32 caracteres em `ADMIN_SECRET_KEY`. Para o Baileys em produção, configura também Redis e `WHATSAPP_SESSION_ENCRYPTION_KEY` com pelo menos 32 caracteres. Protege e guarda essa chave separadamente; sem Redis e cifragem, o estado de prontidão fica indisponível e a sessão pode perder-se num reinício do Render.
+8. O bot WhatsApp usa Baileys e não depende de Twilio. O limite inicial é 12 mensagens por remetente/minuto (`WHATSAPP_MESSAGES_PER_MINUTE`); imagens acima de 8 MB e conversas de grupo são ignoradas. O webhook SMS é um fluxo separado e opcional.
 
-Isto guarda cada análise (veredito, confiança, tipo de golpe) e cada feedback 👍/👎
-num banco de dados de verdade, para depois responder perguntas tipo "quantas análises
-tivemos essa semana" ou "qual tipo de golpe é mais comum".
+## Desenvolvimento local
 
-1. Cria conta grátis em https://supabase.com e cria um novo projeto (tier gratuito
-   é suficiente pro MVP).
-2. No painel do projeto, vai em **SQL Editor**, cola o conteúdo do ficheiro
-   `supabase.sql` (incluído aqui do lado) e clica **Run**. Isso cria as tabelas
-   `analises` e `feedback`.
-3. Vai em **Project Settings → API**. Copia:
-   - `Project URL` → cola como `SUPABASE_URL`
-   - `service_role` key (não a `anon` key — esta função roda no servidor,
-     não no navegador) → cola como `SUPABASE_SERVICE_ROLE_KEY`
-4. Cola essas duas variáveis nas Environment Variables da Vercel (passo 4 acima) e
-   faz redeploy.
-
-Depois disso, dá pra abrir o **Table Editor** do Supabase a qualquer momento e ver
-todas as análises e feedbacks em tempo real, ou usar o **SQL Editor** para consultas
-tipo:
-
-```sql
-select veredito, count(*) from analises group by veredito;
-select round(100.0 * sum(case when positivo then 1 else 0 end) / count(*), 1) as pct_positivo from feedback;
+```sh
+npm install
+npm run dev
 ```
 
-Se não configurar isso, o site continua funcionando normalmente — só não guarda
-histórico nenhum (a análise por IA não depende disso).
+Para o processo WhatsApp, executa `npm start` depois de preencher as variáveis necessárias. Mantém `AUTO_PAIRING=false` salvo quando estás a executar conscientemente o processo de emparelhamento.
 
-### Configurar o contador "já verificada N vezes" (Upstash Redis)
+## Deploy
 
-Esta feature mostra "esta mensagem já foi verificada X vezes por outras pessoas" — é o
-que mais deve viralizar, e funciona como proteção extra contra golpistas testando o
-mesmo texto em várias vítimas.
+O site e as funções `api/` podem ser publicados na Vercel. O serviço WhatsApp é configurado em `render.yaml` para o Render. Define as variáveis secretas nos painéis dos fornecedores, nunca no repositório. O plano atual do manifesto é gratuito; confirma os limites e a disponibilidade do teu plano antes de prometer continuidade.
 
-1. Cria conta grátis em https://upstash.com (tier gratuito é suficiente pro MVP).
-2. Cria uma database Redis (região mais perto do teu deploy da Vercel).
-3. Na aba **REST API** da database, copia `UPSTASH_REDIS_REST_URL` e `UPSTASH_REDIS_REST_TOKEN`.
-4. Cola essas duas variáveis nas Environment Variables da Vercel (passo 4 acima) e faz
-   redeploy.
+`GET /health/live` (também `GET /ping`) confirma apenas que o processo responde e é o health check do Render. `GET /health/ready` (também `GET /status`) devolve 200 apenas quando WhatsApp, Supabase e Redis estão operacionais e a persistência está cifrada/configurada; caso contrário devolve 503. O processo consulta Supabase a cada 10 minutos. Num plano gratuito, usa o monitor externo em `/health/live` para gerar tráfego de entrada e monitoriza `/health/ready` para alertas. Um pedido periódico não cria SLA nem confirma uma análise ponta a ponta.
 
-Se não configurar isso, o site continua funcionando normalmente — só não mostra o
-contador de "já verificada N vezes" (a análise por IA não depende disso).
+## Dados e privacidade
 
-Não precisas configurar mais nada — a Vercel detecta a pasta `api/` automaticamente
-como Serverless Functions.
+O conteúdo enviado para análise pode ser encaminhado a fornecedores externos de IA e reputação de links. A aplicação guarda metadados da análise, não o texto integral na tabela principal. A migração `20261105_retencao_rgpd.sql` aplica a tabela de conservação e agenda a limpeza diária no Supabase; até ser aplicada e confirmada no projeto de produção, não anuncies a eliminação automática. Consulta `privacidade.html` e [a tabela de retenção](docs/RETENCAO_DADOS.md) antes de publicar ou alterar os fluxos de dados.
 
-## Testar localmente (opcional)
+A sessão técnica WhatsApp contém credenciais sensíveis. As cópias cifradas no Redis expiram após 180 dias sem sincronização e são removidas no logout. Configura a chave de cifragem antes de reconectar e confirma a expiração das cópias antigas no Redis. Nunca copies credenciais de sessão para issues, mensagens ou logs.
 
-```bash
-npm i -g vercel
-vercel dev
-```
-Cria um ficheiro `.env.local` com `GEMINI_API_KEY=AIzaSy...` antes de correr.
+O processamento ignora grupos, deduplica IDs de mensagem durante 24 horas (Redis, com fallback local temporário) e limita o volume por remetente. O fallback local não oferece deduplicação nem limites entre reinícios; confirma que Redis está configurado e acessível em produção.
 
-## Custo
+## Custo e operação
 
-Zero! O modelo `gemini-2.0-flash` no Google AI Studio possui plano gratuito generoso (15 requisições por minuto e até 1.500 requisições por dia grátis), ideal para MVP com visão multimodal.
+Não existe um custo total fixo: depende do plano de alojamento, volume, fornecedor/modelo de IA, armazenamento, reputação de links e trabalho manual de revisão. Define limites de utilização e acompanha custos antes de abrir tráfego significativo.
 
-## Próximos passos e Funcionalidades
+## Dados de demonstração
 
-- [x] Bot WhatsApp via Baileys (`bot.js`, Render) - já implementado
-- [x] Termômetro visual de risco com barra de emojis (Score 0-100) — já implementado
-- [x] Deteção e alerta de links falsos / typosquatting — já implementado
-- [x] Protocolo de emergência "Fui Vítima" (guia imediato de MED/estorno e BO/queixa) — já implementado
-- [x] Contador social "já verificada N vezes" (Upstash Redis) — já implementado
-- [x] Backend de auditoria e métricas (Supabase) — já implementado
-- [ ] Rate limit por IP (reusando Upstash com `INCR` + `EXPIRE`)
-- [ ] Link de partilha com resultado anonimizado (`/r/abc123`)
-- [ ] Domínio próprio (ex: `zapqueme.com` ou `zapqueme.pt`)
-- [ ] Migração do Baileys (não oficial) para WhatsApp Cloud API oficial (quando validar)
+`scripts/seed_mock_demo.mjs` só executa fora de `NODE_ENV=production` e exige uma confirmação explícita do identificador do projeto Supabase. `scripts/limpar_mock_demo.mjs` é destrutivo: além da confirmação do projeto, exige a variável `ALLOW_MOCK_DEMO_CLEANUP=true` e a frase exata `DELETE MOCK DATA <identificador-do-projeto>`. Usa estes scripts apenas num projeto de demonstração isolado e confirma os resultados no Supabase. Não os executes contra produção.
 
-## Aviso legal a manter sempre visível
+## Aviso
 
-Este serviço dá um alerta automático, não substitui a polícia, o banco do utilizador,
-ou uma autoridade oficial de proteção ao consumidor. Não guarda nem usa as mensagens
-para treinar modelos.
+A ferramenta fornece sinais automatizados para apoio à decisão e não substitui confirmação direta com a empresa, banco, operadora, polícia ou autoridade competente. Não envies palavras-passe, códigos de autenticação, dados de cartão ou informação sensível.

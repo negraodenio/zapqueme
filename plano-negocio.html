@@ -53,9 +53,9 @@
   <div class="container">
     <div class="header-bar">
       <div>
-        <span class="badge-tag">Documento Estratégico & Modelo de Negócio 2026</span>
-        <h1>ZAP, QUEM É? — Tese de Disrupção B2B</h1>
-        <p style="color: var(--muted); font-size: 0.85rem; margin-top: 4px;">"O Waze do Cibercrime": Como transformar mensagens suspeitas em receita recorrente</p>
+        <span class="badge-tag">Plano de negócio — versão de validação</span>
+        <h1>Confirme, Quem É? — Plano de piloto B2B</h1>
+        <p style="color: var(--muted); font-size: 0.85rem; margin-top: 4px;">Hipóteses comerciais para testar com clientes</p>
       </div>
       <div class="actions" style="display: flex; gap: 10px;">
         <button onclick="window.print()" class="btn btn-primary">🖨️ Imprimir / Baixar PDF</button>
@@ -63,89 +63,58 @@
       </div>
     </div>
 
-    <h2>1. O Diagnóstico de Mercado & A Tese de Disrupção</h2>
-    <p>O mercado tradicional de cibersegurança falhou ao ignorar os canais móveis. Mais de <strong>80% das fraudes e burlas em Portugal chegam por SMS (Smishing) e WhatsApp</strong> (falsos avisos de CTT, Galp, EDP, MB WAY e bancos).</p>
-    <p>Ferramentas corporativas legadas demoram 24h a 72h para indexar novos domínios maliciosos. O <strong>Zap, quem é?</strong> inverte essa lógica: usa a população como uma rede de sensores distribuídos. No momento em que um cidadão reencaminha um SMS ou print, a IA detecta o golpe e alimenta o <strong>Threat Radar</strong> corporativo, alertando empresas até 48h antes das blacklists públicas.</p>
+        <div style="background:#422006;border:1px solid #b45309;border-radius:12px;padding:16px;margin:20px 0;color:#fde68a;">
+      <strong>Documento de trabalho — hipóteses, não resultados.</strong> Não há clientes, contratos, integração com operadoras, monitorização contínua, API de cliente ou cobrança automática demonstrados neste repositório. Todos os preços e cenários abaixo são indicativos e devem ser validados.
+    </div>
 
-    <h2>2. A Arquitetura Omnichannel (WhatsApp + SMS Nativo)</h2>
+    <h2>1. Problema e produto atual</h2>
+    <p>Uma pessoa pode receber mensagens que imitam uma empresa e não saber por onde confirmar um pedido. O produto atual ajuda a avaliar uma mensagem e permite a uma empresa publicar uma página para consultar canais oficiais.</p>
     <ul>
-      <li><strong>Canal WhatsApp (+351 927 618 142):</strong> Processamento rico com OCR de imagens/prints e IA de conversação.</li>
-      <li><strong>Canal SMS (LetsCall PT / Número Curto 35XX):</strong> Reencaminhamento direto de SMS pelo cidadão com resposta enxuta em 160 caracteres (GSM-7) sem gastar dados móveis.</li>
-      <li><strong>Gateway B2B:</strong> Endpoint ativo em <code>https://zapqueme.vercel.app/api/sms</code> pronto para receber webhooks de operadoras e parceiros.</li>
+      <li><strong>B2C:</strong> envio de texto/imagem para análise automática por site ou canais configurados. A classificação pode errar e não substitui confirmação humana.</li>
+      <li><strong>B2B:</strong> página pública de uma empresa, com contactos registados e estados de revisão manual.</li>
+      <li><strong>Sinais:</strong> o Radar trabalha com conteúdo submetido ao sistema e fontes externas. Não observa passivamente redes móveis nem confirma uma denúncia.</li>
     </ul>
 
-    <h2>3. As 4 Camadas de Monetização B2B</h2>
+    <h2>2. Cliente inicial e hipótese de valor</h2>
+    <p>Escolher um único segmento para os primeiros pilotos, por exemplo clínicas ou agências imobiliárias. Entrevistar responsáveis que recebem pedidos de pagamento por telefone, email ou WhatsApp. Validar se usam a página de consulta, qual informação querem manter atualizada e quanto tempo o processo manual consome.</p>
+    <p>A hipótese de valor é reduzir dúvidas sobre quais canais pertencem à empresa. Não anunciar aumento de conversão, prevenção de perdas ou redução de reclamações sem uma medição comparativa.</p>
+
+    <h2>3. Oferta e preços para validação</h2>
     <table>
-      <thead>
-        <tr>
-          <th>Camada</th>
-          <th>Produto</th>
-          <th>Cliente Alvo</th>
-          <th>Ticket Médio</th>
-          <th>Ciclo de Venda</th>
-        </tr>
-      </thead>
+      <thead><tr><th>Oferta piloto</th><th>Escopo inicial</th><th>Preço de referência</th><th>Estado</th></tr></thead>
       <tbody>
-        <tr>
-          <td><strong>Fase 1 (0-6m)</strong></td>
-          <td>Zap Verified Self-Serve</td>
-          <td>PMEs, Clínicas, Advogados, E-commerces</td>
-          <td>€29 – €49 / mês</td>
-          <td>Dias (Self-serve)</td>
-        </tr>
-        <tr>
-          <td><strong>Fase 1 (0-6m)</strong></td>
-          <td>API Pay-Per-Check</td>
-          <td>Marketplaces, apps e bots</td>
-          <td>€0,002 – €0,01 / req</td>
-          <td>Dias / Semanas</td>
-        </tr>
-        <tr>
-          <td><strong>Fase 2 (6-15m)</strong></td>
-          <td>Brand Threat Intelligence</td>
-          <td>Transportadoras (CTT, DPD), Galp, EDP, Bancos</td>
-          <td>€490 – €990 / mês</td>
-          <td>1 a 3 meses</td>
-        </tr>
-        <tr>
-          <td><strong>Fase 2 (6-15m)</strong></td>
-          <td>Takedown de Domínios</td>
-          <td>As mesmas grandes empresas</td>
-          <td>€75 – €150 / domínio</td>
-          <td>Add-on recorrente</td>
-        </tr>
-        <tr>
-          <td><strong>Fase 3 (12-24m)</strong></td>
-          <td>Feed SIEM & Telco Partner</td>
-          <td>Operadoras (MEO, NOS, Vodafone)</td>
-          <td>€2.500 – €5.000 / mês</td>
-          <td>3 a 6 meses</td>
-        </tr>
+        <tr><td>Página de canais oficiais</td><td>Uma empresa, canais revistos manualmente e página pública com validade</td><td>€49/mês indicativo</td><td>Proposta manual; sem checkout ou cobrança automática</td></tr>
+        <tr><td>Acompanhamento manual</td><td>Revisão de sinais segundo cadência e limites definidos por escrito</td><td>Definir após estimar horas</td><td>Sem 24/7, API de feed ou SLA até serem contratados e implementados</td></tr>
       </tbody>
     </table>
+    <p>Antes de contratar, fechar condições de renovação, cancelamento, faturação, dados exibidos, prova de verificação, validade, suporte e responsabilidade. O preço de €49 é uma hipótese; pode não justificar uma subscrição sem atualização recorrente que o cliente valorize.</p>
 
-    <h2>4. Mapeamento de Órgãos Públicos em Portugal</h2>
-    <p>Em Portugal, entidades públicas tratam de crimes informáticos e fraudes económicas:</p>
+    <h2>4. Cenários aritméticos, não previsão</h2>
+    <table>
+      <thead><tr><th>Clientes</th><th>Preço indicativo</th><th>Receita mensal bruta</th><th>O que não está descontado</th></tr></thead>
+      <tbody>
+        <tr><td>3</td><td>€49</td><td>€147</td><td>IVA, impostos, aquisição, suporte, operação e infraestrutura</td></tr>
+        <tr><td>10</td><td>€49</td><td>€490</td><td>IVA, impostos, aquisição, suporte, operação e infraestrutura</td></tr>
+        <tr><td>30</td><td>€49</td><td>€1.470</td><td>IVA, impostos, aquisição, suporte, operação e infraestrutura</td></tr>
+      </tbody>
+    </table>
+    <p>Estes valores multiplicam clientes por preço e não estimam procura, margem, conversão, churn ou capacidade de entrega. Registar horas de onboarding e manutenção antes de propor recorrência.</p>
+
+    <h2>5. Diferenciação e limites</h2>
+    <p>IA e reputação de links são substituíveis. A vantagem potencial depende de uma revisão manual consistente, canais empresariais corretos e distribuição da página nos pontos de contacto da empresa. O benchmark documentado é pequeno e sintético; não suporta uma alegação de precisão geral.</p>
     <ul>
-      <li><strong>CNCS / CERT.PT:</strong> Órgão governamental de cibersegurança. Estratégia: Protocolo de partilha de telemetria e contratação de feeds de ameaças.</li>
-      <li><strong>ASAE (Segurança Alimentar e Económica):</strong> Fiscalização de fraudes económicas e burlas de consumo. Estratégia: Cooperação em dossiês de redes de burla online.</li>
-      <li><strong>Polícia Judiciária (UNC3T - Cibercrime):</strong> Autoridade criminal. Estratégia: Envio de relatórios forenses técnicos estruturados para suporte a inquéritos.</li>
-      <li><strong>ANACOM:</strong> Regulação de telecomunicações. Estratégia: Apresentação da solução de número curto anti-smishing para operadoras móveis.</li>
+      <li>Não anunciar telemetria móvel, deteção “zero-day”, prioridade sobre listas públicas, feed SIEM, API em lote ou takedown automático.</li>
+      <li>Não chamar os relatórios de perícia; tratá-los como resumos preliminares sujeitos a revisão.</li>
+      <li>Não identificar uma marca como vítima de fraude com base apenas em amostras demonstrativas.</li>
     </ul>
 
-    <h2>5. Projeção de Faturamento (Roadmap de 24 Meses)</h2>
-    <pre>
-Mês 01-03: 50 PMEs no Zap Verified                    => €1.950 / mês
-Mês 04-09: 180 PMEs + 4 Grandes Marcas (Threat Intel) => €11.680 / mês  (~€140k ARR)
-Mês 10-18: 400 PMEs + 12 Marcas + 1 Operadora Telco    => €30.980 / mês  (~€371k ARR)
-    </pre>
-
-    <h2>6. Próximos Passos de Execução</h2>
-    <ol style="margin-left: 20px;">
-      <li>Ativar número curto +351 na <strong>LetsCall</strong> apontando o webhook para <code>https://zapqueme.vercel.app/api/sms</code>.</li>
-      <li>Utilizar o <strong>Gerador de Dossiê CISO</strong> no painel de administração (<code>/admin</code>) para prospectar os primeiros tomadores de decisão no LinkedIn.</li>
-      <li>Oferecer o piloto gratuito de 14 dias com prova técnica real.</li>
-    </ol>
-  </div>
+    <h2>6. Plano de validação</h2>
+    <ol style="margin-left:20px;">
+      <li>Concluir segurança, privacidade e procedimento operacional de verificação dos canais.</li>
+      <li>Escolher um segmento e falar com dez potenciais clientes antes de desenvolver integrações.</li>
+      <li>Fechar três pilotos pagos com escopo e condições por escrito.</li>
+      <li>Medir pedidos, conversão, horas por cliente, uso da página, atualizações, custo por análise, renovação e cancelamento.</li>
+      <li>Expandir só se o benefício e a margem permanecerem positivos após contabilizar trabalho humano e custos comerciais.</li>
+    </ol>  </div>
 </body>
 </html>

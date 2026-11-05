@@ -11,6 +11,12 @@ if (!url || !key) {
   process.exit(1);
 }
 
+const projectRef = new URL(url).hostname.split('.')[0];
+if (process.env.NODE_ENV === 'production' || process.env.ALLOW_MOCK_DEMO_SEED !== 'true' || process.env.CONFIRM_SUPABASE_PROJECT_REF !== projectRef) {
+  console.error('Seed cancelado. Use apenas num projeto de demonstração: defina ALLOW_MOCK_DEMO_SEED=true e CONFIRM_SUPABASE_PROJECT_REF igual ao identificador do projeto. NODE_ENV=production é sempre recusado.');
+  process.exit(1);
+}
+
 const headers = {
   'Content-Type': 'application/json',
   apikey: key,
@@ -46,7 +52,7 @@ async function seed() {
       preco_acordado: 49,
       codigo_selo: 'MADALENA-7821',
       status: 'ativo',
-      is_teste: false,
+      is_teste: true,
       notas: `${MOCK_TAG} Empresa com selo ativo para apresentação.`
     },
     {
@@ -70,7 +76,7 @@ async function seed() {
       preco_acordado: 49,
       codigo_selo: 'LUSITANA-3942',
       status: 'ativo',
-      is_teste: false,
+      is_teste: true,
       notas: `${MOCK_TAG} Empresa com selo ativo para apresentação.`
     },
     {
@@ -94,7 +100,7 @@ async function seed() {
       preco_acordado: 49,
       codigo_selo: 'ALMEIDA-5510',
       status: 'ativo',
-      is_teste: false,
+      is_teste: true,
       notas: `${MOCK_TAG} Sociedade de advogados com selo anti-impersonation ativo.`
     },
     {
@@ -118,7 +124,7 @@ async function seed() {
       preco_acordado: 290,
       codigo_selo: 'TECHLOG-9901',
       status: 'ativo',
-      is_teste: false,
+      is_teste: true,
       notas: `${MOCK_TAG} Cliente acompanhamento Threat Radar ativo.`
     },
     {
@@ -142,7 +148,7 @@ async function seed() {
       preco_acordado: 49,
       codigo_selo: null,
       status: 'inativo',
-      is_teste: false,
+      is_teste: true,
       notas: `${MOCK_TAG} Em processo de validação do número de WhatsApp.`
     },
     {
@@ -161,7 +167,7 @@ async function seed() {
       preco_acordado: 49,
       codigo_selo: null,
       status: 'inativo',
-      is_teste: false,
+      is_teste: true,
       notas: `${MOCK_TAG} Proposta enviada após contacto comercial.`
     }
   ];
@@ -186,7 +192,7 @@ async function seed() {
       ativo: true,
       monitorizacao_impersonation: true,
       valido_ate: new Date(Date.now() + 365 * 24 * 3600 * 1000).toISOString(),
-      is_teste: false
+      is_teste: true
     },
     {
       id: '00000000-0000-4000-8000-100000000002',
@@ -196,7 +202,7 @@ async function seed() {
       ativo: true,
       monitorizacao_impersonation: true,
       valido_ate: new Date(Date.now() + 365 * 24 * 3600 * 1000).toISOString(),
-      is_teste: false
+      is_teste: true
     },
     {
       id: '00000000-0000-4000-8000-100000000003',
@@ -206,7 +212,7 @@ async function seed() {
       ativo: true,
       monitorizacao_impersonation: true,
       valido_ate: new Date(Date.now() + 365 * 24 * 3600 * 1000).toISOString(),
-      is_teste: false
+      is_teste: true
     },
     {
       id: '00000000-0000-4000-8000-100000000004',
@@ -216,7 +222,7 @@ async function seed() {
       ativo: true,
       monitorizacao_impersonation: true,
       valido_ate: new Date(Date.now() + 365 * 24 * 3600 * 1000).toISOString(),
-      is_teste: false
+      is_teste: true
     }
   ];
 
@@ -253,7 +259,7 @@ async function seed() {
   }
 
   // 4. PAGAMENTOS
-  console.log('4. Inserindo pagamentos confirmados...');
+  console.log('4. Inserindo pagamentos fictícios associados a registos de teste...');
   const agora = new Date();
   const mesQueVem = new Date(Date.now() + 30 * 24 * 3600 * 1000);
   const pagamentosMock = [
@@ -485,10 +491,10 @@ async function seed() {
 
   console.log('\n✅ SEED CONCLUÍDO COM SUCESSO!');
   console.log('Métricas geradas para a demonstração:');
-  console.log('- 4 Empresas Ativas com Selos e Pagamento Confirmado (€437 MRR / €5.244 ARR)');
+  console.log('- Registos fictícios marcados como teste (não representam clientes nem pagamentos reais)');
   console.log('- 1 Empresa Em Verificação + 1 Empresa Lead comercial no funil');
   console.log('- 3 Leads captados no CRM');
-  console.log('- 7 Alertas de Impersonation alimentando o Threat Radar (CTT, MB WAY, EDP, TechLog, etc.)');
+  console.log('- 7 indicadores fictícios para demonstração interna, sem validação de incidentes reais');
   console.log('Todos os dados possuem IDs padronizados de teste e podem ser removidos a qualquer momento via:');
   console.log('  node scripts/limpar_mock_demo.mjs');
 }

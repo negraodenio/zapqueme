@@ -110,92 +110,77 @@
     <header>
       <a href="/" class="brand-link">← Voltar ao Zap, Quem É?</a>
       <h1>Política de Privacidade & Proteção de Dados (RGPD)</h1>
-      <div class="date-badge">Conformidade com o Regulamento (UE) 2016/679 (RGPD) • Em vigor desde Outubro de 2026</div>
+      <div class="date-badge">Última atualização: 5 de novembro de 2026</div>
     </header>
 
     <div class="section-card">
-      <h2>1. Compromisso e Princípios de Minimização</h2>
-      <p>
-        O <strong>Zap, Quem É?</strong> foi concebido segundo o princípio de <em>Privacy by Design</em> e <em>Privacy by Default</em>. O nosso propósito é neutralizar burlas informáticas e esquemas de engenharia social, sem recolher nem comercializar dados pessoais de vítimas ou utilizadores.
-      </p>
-      <div class="highlight-box">
-        <strong>Regra de Minimização de Dados:</strong> Quando um cidadão submete uma mensagem, texto ou imagem para verificação, o sistema normaliza o conteúdo. Nomes de pessoas físicas, quantias particulares e identificadores pessoais são descaracterizados. Apenas os <strong>indicadores técnicos de ameaça</strong> (links suspeitos, domínios maliciosos e números de contacto do suposto agressor) são processados para alimentar a inteligência defensiva.
-      </div>
+      <h2>1. Responsável pelo tratamento</h2>
+      <p><strong>Denio Negrão</strong> é o responsável pelo tratamento dos dados associados ao serviço Confirme, Quem É?.</p>
+      <p>NIF: <strong>304 618 713</strong><br>Morada: <strong>Av Don Pedro V, 33 - 351</strong><br>Telefone: <a href="tel:+351921389999">+351 921 389 999</a><br>Email para privacidade e contacto: <a href="mailto:sales@confirmequeme.pt">sales@confirmequeme.pt</a></p>
     </div>
 
     <div class="section-card">
-      <h2>2. Base Legal para o Tratamento de Dados</h2>
-      <p>O tratamento de dados operado pela plataforma apoia-se nas seguintes bases jurídicas nos termos do Artigo 6.º do RGPD:</p>
+      <h2>2. Dados tratados e finalidades</h2>
       <ul>
-        <li><strong>Interesse Legítimo (Art. 6.º, n.º 1, al. f do RGPD):</strong> Prevenção de fraude, cibersegurança e proteção de redes e sistemas de informação contra esquemas fraudulentos e ataques de engenharia social;</li>
-        <li><strong>Execução de Contrato (Art. 6.º, n.º 1, al. b do RGPD):</strong> No caso de empresas assinantes do Selo Zap Verified e serviços corporativos de Threat Radar;</li>
-        <li><strong>Consentimento (Art. 6.º, n.º 1, al. a do RGPD):</strong> Ao submeter espontaneamente mensagens ou imagens para análise no canal de verificação pública.</li>
+        <li><strong>Análise de mensagens:</strong> o texto e as imagens que submete, links e outros indicadores extraídos, o resultado de risco e dados técnicos da análise. Servem para produzir a resposta, investigar sinais relacionados e melhorar a segurança do serviço.</li>
+        <li><strong>Pedido empresarial:</strong> nome, empresa, email, telefone/WhatsApp e site, quando fornecidos. Servem para responder ao pedido de proposta.</li>
+        <li><strong>Registo empresarial:</strong> nome, canais de contacto e dados comerciais que a empresa entrega para gestão interna e consulta pública. O estado de revisão de um canal é marcado manualmente.</li>
+        <li><strong>Operação e segurança:</strong> pedidos ao servidor, limites de utilização, contadores e dados técnicos necessários para prevenir abuso, manter o serviço e diagnosticar falhas.</li>
       </ul>
+      <p>Não vendemos dados pessoais. Não pedimos que envie palavras-passe, códigos de autenticação, dados de cartão ou informação que não seja necessária para a análise.</p>
     </div>
 
     <div class="section-card">
-      <h2>3. Dados de Denúncias e Tratamento Não-Acusatório</h2>
-      <p>
-        O Zap, Quem É? opera estritamente com base em <strong>sinais e indicadores técnicos</strong>. Uma denúncia recebida ou um número sinalizado como suspeito representa um indicador de risco no tráfego de mensagens, e não uma condenação jurídica individual.
-      </p>
+      <h2>3. Bases de tratamento</h2>
+      <p>Consoante o pedido e o contexto, o tratamento pode ser necessário para prestar a análise solicitada ou preparar uma proposta a pedido da pessoa (artigo 6.º, n.º 1, alínea b, do RGPD), para interesses legítimos de segurança e prevenção de abuso (alínea f), ou para cumprir obrigações legais aplicáveis (alínea c). A base aplicável deve ser avaliada para cada finalidade. O simples envio de uma mensagem não é descrito aqui como consentimento genérico para todos os usos.</p>
+    </div>
+
+    <div class="section-card">
+      <h2>4. Como funciona a análise automática</h2>
+      <p>O conteúdo original de texto e imagem pode ser enviado ao fornecedor de inferência escolhido pela configuração do servidor. A normalização de nomes e indicadores ocorre depois da análise do modelo; não existe uma etapa que elimine esses dados antes do primeiro envio. Por isso, não submeta informação sensível ou que não tenha autorização para partilhar.</p>
+      <p>Quando a análise encontra um link, o sistema pode consultar serviços externos de reputação ou registo de domínios. Dependendo do indicador, podem ser enviados o URL ou o domínio a Google Safe Browsing/Web Risk, Cloudflare, URLhaus, OpenPhish ou serviços RDAP.</p>
+      <p>Em pedidos encaminhados pelo OpenRouter, a aplicação solicita fornecedores com recolha de dados recusada e endpoints com Zero Data Retention. A disponibilidade destes endpoints depende do modelo, do fornecedor e das definições da conta; o pedido não garante a localização do processamento nem elimina a retenção estritamente necessária a segurança/abuso. O envio direto para Google Gemini só é permitido em produção quando o responsável ativa essa opção no servidor. Os termos e a localização de cada fornecedor aplicável devem ser consultados antes de enviar conteúdo sensível.</p>
+      <p>O resultado é automatizado, indicativo e sujeito a falsos positivos e falsos negativos. Um indicador ou repetição não prova autoria, identidade, crime ou intenção. Não utilizamos o resultado como decisão automática com efeitos jurídicos ou de importância semelhante para uma pessoa.</p>
+    </div>
+
+    <div class="section-card">
+      <h2>5. Prestadores e armazenamento</h2>
+      <p>Para alojar e operar as funcionalidades, o serviço pode utilizar Vercel (site e funções), Render (bot e webhook), Supabase (base de dados), Upstash Redis (limites, contadores, cópias de leads e sessão técnica do WhatsApp) e fornecedores de IA e reputação de links descritos acima. Os dados necessários são partilhados com cada prestador para a finalidade correspondente.</p>
+      <p>Os dados da sessão técnica do WhatsApp são necessários enquanto o canal estiver ligado. As novas cópias sincronizadas com o Redis são cifradas com AES-256-GCM e expiram 180 dias após a última sincronização; a sessão é removida do Redis e do servidor quando o WhatsApp termina a sessão. Uma cópia legada sem cifragem recebe esse prazo quando o serviço a restaura; depois da migração, as cópias seguintes são cifradas. As localizações, períodos de retenção de cópias de segurança e mecanismos de transferência internacional dependem das contas efetivamente configuradas.</p>
+    </div>
+
+    <div class="section-card">
+      <h2>6. Conservação</h2>
+      <p>Aplicamos o princípio da limitação da conservação: os dados pessoais são mantidos apenas pelo tempo necessário para cada finalidade. A lei não fixa um prazo único para todos os dados. A conservação depende da finalidade e de obrigações legais concretas.</p>
       <ul>
-        <li><strong>Dados de Vítimas:</strong> Não mantemos registos públicos que associem denúncias ao utilizador particular que efetuou a consulta;</li>
-        <li><strong>Dados de Contacto Suspeitos:</strong> Números e domínios associados a fraudes são tratados como dados técnicos de segurança de rede para efeitos de bloqueio e alerta preventivo;</li>
-        <li><strong>Deduplicação Criptográfica:</strong> O reconhecimento de campanhas massivas é realizado através de assinaturas criptográficas (<em>hashes</em> normalizados), reduzindo a retenção de textos em bruto.</li>
+        <li><strong>Texto, imagem e links submetidos para análise:</strong> usados durante o pedido e não guardados como conteúdo integral na base de dados da aplicação. Podem ser processados pelos fornecedores de IA e reputação descritos nesta política, segundo as respetivas condições e retenções.</li>
+        <li><strong>Metadados da análise e feedback:</strong> até 90 dias após a análise; o feedback associado é eliminado quando a análise é eliminada.</li>
+        <li><strong>Pedidos de contacto comercial sem contrato:</strong> até 12 meses após a última alteração registada no sistema, ou após a receção se não houver alteração. Cópias de contingência no Redis têm o mesmo limite e expiração automática.</li>
+        <li><strong>Fila de revisão:</strong> até 90 dias. <strong>Agrupamentos de ameaças e amostras de teste:</strong> até 12 meses após a última ocorrência/criação. <strong>Alertas de fontes e métricas de utilização associadas a uma empresa:</strong> até 24 meses.</li>
+        <li><strong>Registo empresarial ativo:</strong> enquanto a validade do registo ou a prestação contratada o justificar. Após expiração, desativação ou arquivo, os canais de contacto e a evidência de verificação são removidos da operação após 90 dias. Um registo expirado deixa de apresentar esses canais ao público.</li>
+        <li><strong>Pagamentos, correspondência comercial, histórico de operações e documentos que suportem obrigações contabilísticas:</strong> até 10 anos quando se aplique a obrigação de arquivo comercial/fiscal portuguesa. Um prazo legal específico mais longo, uma inspeção ou um litígio pode exigir conservação adicional apenas dos registos necessários.</li>
+        <li><strong>Credenciais técnicas do WhatsApp:</strong> enquanto a sessão estiver ligada; as cópias no Redis expiram após 180 dias sem sincronização e são eliminadas no logout.</li>
       </ul>
+      <p>A rotina de eliminação da base de dados está definida para correr diariamente, após aplicação da migração <code>20261105_retencao_rgpd.sql</code> no projeto Supabase de produção. A rotina permite bloquear registos específicos quando existe fundamento legal documentado. Os prestadores podem manter cópias de segurança e registos técnicos durante os períodos próprios; a eliminação da base ativa não significa eliminação instantânea dessas cópias.</p>
+      <p>Estes prazos refletem o <a href="https://eur-lex.europa.eu/legal-content/PT/TXT/?uri=CELEX:32016R0679" target="_blank" rel="noopener noreferrer">RGPD, artigo 5.º, n.º 1, alínea e)</a>, a <a href="https://diariodarepublica.pt/dr/detalhe/lei/58-2019-123815982" target="_blank" rel="noopener noreferrer">Lei n.º 58/2019, artigo 21.º</a> e, quando aplicável, o artigo 40.º do Código Comercial e o artigo 19.º do <a href="https://diariodarepublica.pt/dr/detalhe/decreto-lei/28-2019-119622094" target="_blank" rel="noopener noreferrer">Decreto-Lei n.º 28/2019</a>. A aplicação de um prazo legal depende da natureza do registo e da situação do responsável.</p>
     </div>
 
     <div class="section-card">
-      <h2>4. Subprocessadores de Inteligência Artificial & Transferências Internacionais</h2>
-      <p>
-        Para efetuar a análise preditiva de engenharia social, o sistema recorre a fornecedores de infraestrutura e inferência de modelos de linguagem (especificamente Google LLC e plataformas de API com suporte corporativo):
-      </p>
-      <ul>
-        <li><strong>Finalidade Estrita:</strong> O envio do conteúdo destina-se exclusivamente à inferência contextual temporária (classificação de veredito de risco, identificação de marca e extração de conselhos práticos);</li>
-        <li><strong>Proteção Contra Treino:</strong> As configurações de API empresarial utilizadas estipulam que o conteúdo submetido <u>não é utilizado para treino ou refinamento dos modelos fundacionais</u> dos fornecedores;</li>
-        <li><strong>Transferência Fora do EEE:</strong> Eventuais transferências de dados necessárias para a execução do processamento apoiam-se no Data Privacy Framework UE-EUA e nas Cláusulas Contratuais-Tipo (SCCs) aprovadas pela Comissão Europeia.</li>
-      </ul>
+      <h2>7. Informação empresarial pública</h2>
+      <p>Num registo ativo, a consulta pública apresenta o nome da empresa, código, validade e canais de contacto indicados. O operador pode marcar manualmente o estado de revisão de cada canal. Registos expirados, inativos ou de teste não publicam os canais antigos. A consulta pública atual não apresenta NIF/NIPC nem IBAN. A empresa deve confirmar o conteúdo e comunicar alterações para correção ou desativação do registo.</p>
     </div>
 
     <div class="section-card">
-      <h2>5. Período de Retenção de Dados</h2>
-      <p>Os dados tratados respeitam os seguintes prazos de conservação:</p>
-      <ul>
-        <li><strong>Imagens e Prints Submetidos:</strong> São processados pelo motor de IA em memória volátil e eliminados imediatamente após a extração textual dos indicadores técnicos de fraude;</li>
-        <li><strong>Registos de Auditoria de Ameaças:</strong> Mantidos por até 24 meses para monitorização de campanhas sazonais de phishing e elaboração de estatísticas defensivas agregadas;</li>
-        <li><strong>Dados Comerciais de Clientes B2B:</strong> Mantidos durante a vigência da relação contratual e pelos prazos legalmente exigidos para obrigações fiscais e contabilísticas (10 anos nos termos da lei portuguesa).</li>
-      </ul>
+      <h2>8. Direitos e reclamações</h2>
+      <p>Nos termos e dentro das condições previstas no RGPD, pode pedir acesso, retificação, apagamento, limitação ou oposição ao tratamento, e exercer o direito de portabilidade quando aplicável. Contacte <a href="mailto:sales@confirmequeme.pt">sales@confirmequeme.pt</a>; poderá ser solicitada informação proporcional para confirmar a identidade.</p>
+      <p>Também pode apresentar reclamação à <a href="https://www.cnpd.pt/cidadaos/direitos/" target="_blank" rel="noopener noreferrer">Comissão Nacional de Proteção de Dados (CNPD)</a>. A CNPD não substitui o contacto direto com o responsável quando esse contacto for apropriado.</p>
     </div>
-
-    <div class="section-card">
-      <h2>6. Direitos dos Titulares de Dados</h2>
-      <p>
-        Nos termos dos artigos 15.º a 22.º do RGPD, qualquer titular de dados pode exercer os seus direitos de:
-      </p>
-      <ul>
-        <li>Acesso e confirmação sobre a existência de tratamento de dados;</li>
-        <li>Retificação de dados incorretos ou desatualizados;</li>
-        <li>Eliminação de dados ("direito a ser esquecido");</li>
-        <li>Oposição ou limitação ao tratamento de dados;</li>
-        <li>Canal de Contestação: Se uma empresa ou titular considerar que o seu canal legítimo foi incorretamente sinalizado por engano ("falso positivo"), dispõe de prioridade de revisão técnica humana no prazo máximo de 48 horas úteis.</li>
-      </ul>
-    </div>
-
-    <div class="section-card">
-      <h2>7. Encarregado de Proteção de Dados e Contacto</h2>
-      <p>Para exercer quaisquer direitos de privacidade ou submeter pedidos de retificação, contacte o nosso responsável de conformidade:</p>
-      <p>
-        📧 Correio Eletrónico: <strong>privacidade@zapqueme.pt</strong> / <strong>suporte@zapqueme.pt</strong><br>
-        📍 Jurisdição: Portugal / União Europeia
-      </p>
-    </div>
-
     <footer>
       <p>© 2026 Zap, Quem É? • Todos os direitos reservados.</p>
       <p style="margin-top: 8px;">
         <a href="/">Página Inicial</a> • 
         <a href="/empresas">Para Empresas</a> • 
-        <a href="/benchmark">Benchmark Forense</a> • 
+        <a href="/benchmark">Estado da validação</a> •
         <a href="/termos">Termos de Utilização</a> • 
         <a href="/privacidade">Política de Privacidade (RGPD)</a>
       </p>

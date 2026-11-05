@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Certificado de Autenticidade Oficial — Confirme, Quem É?</title>
-  <meta name="description" content="Verifique a autenticidade de empresas, lojas online, domínios e canais de atendimento oficiais certificados pelo Confirme, Quem É?">
+  <title>Consulta de registo empresarial — Confirme, Quem É?</title>
+  <meta name="description" content="Consulte os dados e o estado publicados no registo do Confirme, Quem É? A consulta não garante a identidade de quem contacta nem a segurança de um pagamento.">
   <link rel="icon" type="image/png" href="favicon.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -106,7 +106,7 @@
       border-color: rgba(255, 255, 255, 0.3);
     }
 
-    /* CARD DO CERTIFICADO */
+    /* CARTÃO DO REGISTO */
     .cert-card {
       background: var(--card-bg);
       backdrop-filter: blur(16px);
@@ -225,6 +225,14 @@
       word-break: break-all;
     }
 
+    .detail-value small {
+      display: block;
+      margin-top: 5px;
+      color: var(--text-muted);
+      font-size: 0.7rem;
+      font-weight: 500;
+    }
+
     .detail-value a {
       color: #25d366;
       text-decoration: none;
@@ -244,6 +252,7 @@
 
     .domain-title {
       display: flex;
+      flex-wrap: wrap;
       align-items: center;
       gap: 8px;
       font-weight: 700;
@@ -355,7 +364,7 @@
         <img src="logo.jpg" alt="Confirme, Quem É? Logo" class="brand-logo">
         <div>
           <span class="brand-name">Confirme, Quem É?</span>
-          <span class="brand-sub">Selo Oficial de Autenticidade</span>
+          <span class="brand-sub">Consulta de registos publicados</span>
         </div>
       </a>
       <a href="/" class="btn-outline">🔍 Verificar Mensagem Suspeita</a>
@@ -364,10 +373,10 @@
     <!-- ESTADO DE CARREGANDO -->
     <div id="loadingState">
       <div class="spinner"></div>
-      <p style="color: var(--text-muted); font-size: 0.95rem;">A consultar registo de autenticidade oficial...</p>
+      <p style="color: var(--text-muted); font-size: 0.95rem;">A consultar o registo...</p>
     </div>
 
-    <!-- CERTIFICADO OFICIAL -->
+    <!-- REGISTO PÚBLICO -->
     <main id="certContainer" style="display: none;">
       <article class="cert-card">
         <div class="cert-header">
@@ -377,19 +386,19 @@
               <path d="m9 12 2 2 4-4"/>
             </svg>
           </div>
-          <div class="badge-status status-active" id="badgeStatus">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"/></svg>
-            Selo Oficial Ativo & Verificado
+          <div class="badge-status status-invalid" id="badgeStatus">
+            Estado por consultar
           </div>
           <h1 class="company-title" id="empresaNome">Nome da Empresa</h1>
-          <p class="cert-subtitle">Esta entidade foi verificada e possui canais oficiais de comunicação e atendimento autenticados.</p>
+          <p class="cert-subtitle">Esta página mostra informação associada a um registo. Consulte o estado e a validação de cada campo abaixo.</p>
         </div>
 
-        <!-- DOMÍNIO OFICIAL EM DESTAQUE -->
+        <!-- DOMÍNIO INDICADO EM DESTAQUE -->
         <div class="domain-verified-box" style="margin-bottom: 24px;">
           <div class="domain-title">
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"/><path d="M2 12h20"/></svg>
-            Domínio Oficial Verificado: <a id="dominioOficial" href="#" target="_blank" rel="noopener noreferrer" style="color: #fff; text-decoration: underline;">exemplo.pt</a>
+            Domínio indicado: <a id="dominioOficial" href="#" target="_blank" rel="noopener noreferrer" style="color: #fff; text-decoration: underline;">Não disponibilizado</a>
+            <span id="domainValidation" style="font-size: 0.8rem; color: var(--text-muted);">Validação não indicada</span>
           </div>
           <p class="domain-warning">
             ⚠️ <strong>Atenção anti-burla:</strong> Certifique-se de que a barra de endereços do seu navegador corresponde <strong>exatamente</strong> ao domínio acima. Burlões criam frequentemente sites com nomes parecidos (ex: <code>exemplo-oferta.top</code> ou <code>exemplo-pagamento.com</code>) para desviar pagamentos.
@@ -399,59 +408,59 @@
         <!-- GRID DE DADOS DA EMPRESA -->
         <div class="details-grid">
           <div class="detail-item">
-            <div class="detail-label">NIF / Registo Legal</div>
-            <div class="detail-value" id="cnpjValor">Verificado</div>
+            <div class="detail-label">Identificação apresentada</div>
+            <div class="detail-value" id="cnpjValor">Não disponibilizada</div>
           </div>
 
           <div class="detail-item">
-            <div class="detail-label">Telefone / WhatsApp Oficial</div>
+            <div class="detail-label">Telefone indicado</div>
             <div class="detail-value" id="whatsappValor">
               <span style="color: var(--text-muted);">Não registado</span>
             </div>
           </div>
 
           <div class="detail-item">
-            <div class="detail-label">E-mail Oficial Verificado</div>
+            <div class="detail-label">E-mail indicado</div>
             <div class="detail-value" id="instagramValor">
               <span style="color: var(--text-muted);">Não registado</span>
             </div>
           </div>
 
           <div class="detail-item">
-            <div class="detail-label">Data de Validade da Certificação</div>
-            <div class="detail-value" id="validadeValor">Válido até 2027</div>
+            <div class="detail-label">Validade do registo</div>
+            <div class="detail-value" id="validadeValor">Não indicada</div>
           </div>
         </div>
 
         <!-- DICAS ANTI-FRAUDE -->
         <div class="security-tips">
           <h3 class="tips-title">
-            🛡️ Como este selo o protege contra burlas
+            🛡️ Como interpretar esta consulta
           </h3>
           <div class="tip-row">
             <span class="tip-bullet">✓</span>
-            <div><strong>Canais Oficiais Confirmados:</strong> Apenas os domínios, e-mails e números listados neste certificado foram validados para esta entidade.</div>
+            <div><strong>Validação por campo:</strong> veja no registo se o domínio, telefone ou e-mail têm validação indicada. Um campo registado sem validação não foi confirmado.</div>
           </div>
           <div class="tip-row">
             <span class="tip-bullet">✓</span>
-            <div><strong>Pagamentos MB WAY, Multibanco e IBAN:</strong> Antes de transferir qualquer valor ou sinal, confirme se o contacto que lhe enviou os dados corresponde ao canal oficial acima.</div>
+            <div><strong>Pagamentos:</strong> esta consulta não confirma o titular de uma conta, destinatário MB WAY, IBAN ou pedido de pagamento.</div>
           </div>
           <div class="tip-row">
             <span class="tip-bullet">✓</span>
-            <div><strong>Nota Importante:</strong> Este selo confirma os contactos oficiais registados pela empresa, mas não substitui a verificação do destinatário bancário no momento do pagamento.</div>
+            <div><strong>Limite:</strong> um estado ativo não prova que a pessoa que o contactou controla um canal indicado, nem garante que uma mensagem ou oferta é legítima.</div>
           </div>
         </div>
 
         <div class="cert-footer-meta">
-          <span>CÓDIGO SELO: <span id="certId">ZQV-0000-0000</span></span>
-          <span>ESTADO: <span id="viewsCount">VERIFICADO</span></span>
+          <span>CÓDIGO DO REGISTO: <span id="certId">—</span></span>
+          <span>ESTADO: <span id="viewsCount">Por consultar</span></span>
         </div>
       </article>
 
       <div class="action-cta">
         <a href="/" class="btn-main">
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
-          Recebeu uma mensagem suspeita? Analisar com IA no Confirme, Quem É?
+          Recebeu uma mensagem suspeita? Pode pedir uma análise indicativa.
         </a>
       </div>
     </main>
@@ -459,12 +468,12 @@
     <!-- ESTADO DE ERRO -->
     <div id="errorState" style="display: none; text-align: center; padding: 40px 20px;">
       <div style="font-size: 3rem; margin-bottom: 12px;">⚠️</div>
-      <h2 style="font-size: 1.5rem; margin-bottom: 8px;">Certificado Não Encontrado</h2>
-      <p style="color: var(--text-muted); max-width: 500px; margin: 0 auto 24px; font-size: 0.95rem;">
-        Esta empresa ou domínio ainda não possui certificação ativa no <strong>Confirme, Quem É?</strong>. Se é o responsável pela empresa, solicite o seu selo oficial.
+      <h2 style="font-size: 1.5rem; margin-bottom: 8px;">Registo Não Encontrado</h2>
+        <p style="color: var(--text-muted); max-width: 500px; margin: 0 auto 24px; font-size: 0.95rem;">
+        Não foi encontrado um registo para estes dados. Isto não permite concluir se a empresa ou o contacto são legítimos ou ilegítimos.
       </p>
       <div style="display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;">
-        <a href="/empresas.html" class="btn-main">Quero Certificar a Minha Empresa</a>
+        <a href="/empresas.html" class="btn-main">Consultar informação para empresas</a>
         <a href="/" class="btn-outline">Voltar ao Início</a>
       </div>
     </div>
@@ -489,76 +498,98 @@
 
       const DEMO_COMPANIES = {
         lojaprotegida: {
-          id: 'ZQV-DEMO-PT2026',
-          codigo: 'ZQV-DEMO-PT2026',
-          nome: 'Loja Protegida Portugal, Lda. (Demonstração)',
-          dominio_oficial: 'lojaprotegida.pt',
-          nif: '516 842 910 (NIF Verificado)',
-          telefone_oficial: '+351 921 389 999',
-          email_oficial: 'contacto@lojaprotegida.pt',
-          status: 'ativo',
-          valido_ate: '2027-12-31T23:59:59Z',
+          codigo: 'EXEMPLO-SEM-VALIDADE',
+          nome: 'Empresa de demonstração (fictícia)',
+          dominio_oficial: 'lojaprotegida.example',
+          status: 'teste',
+          selo_valido: false,
           is_demo: true
         }
       };
 
       function renderCertificado(data) {
-        const nome = data.nome || 'Empresa Verificada';
-        const dom = data.dominio_oficial || data.dominio || 'confirmequeme.pt';
-        const tel = data.telefone_oficial || data.whatsapp_oficial || null;
-        const email = data.email_oficial || data.instagram_oficial || null;
-        const nifText = data.nif || data.cnpj_nif || 'NIF Verificado via Dossiê B2B';
+        const nome = typeof data.nome === 'string' ? data.nome : 'Empresa sem nome publicado';
+        const dom = typeof data.dominio_oficial === 'string' ? data.dominio_oficial : '';
+        const tel = typeof data.telefone_oficial === 'string' ? data.telefone_oficial : '';
+        const email = typeof data.email_oficial === 'string' ? data.email_oficial : '';
 
         document.getElementById('empresaNome').textContent = nome;
-        document.title = `${nome} — Selo Oficial Verificado | Confirme, Quem É?`;
+        document.title = `${nome} — Consulta de registo | Confirme, Quem É?`;
 
         const domEl = document.getElementById('dominioOficial');
-        domEl.textContent = dom;
-        domEl.href = `https://${dom.replace(/^https?:\/\//, '')}`;
+        domEl.textContent = dom || 'Não disponibilizado';
+        domEl.removeAttribute('href');
+        if (dom) {
+          try {
+            const domainUrl = new URL(/^https?:\/\//i.test(dom) ? dom : `https://${dom}`);
+            if (['http:', 'https:'].includes(domainUrl.protocol)) {
+              domEl.href = domainUrl.href;
+              domEl.target = '_blank';
+              domEl.rel = 'noopener noreferrer';
+            }
+          } catch { /* Mantém o valor como texto sem criar ligação. */ }
+        }
+        document.getElementById('domainValidation').textContent = data.dominio_verificado
+          ? 'Validação indicada no registo'
+          : 'Validação não indicada';
 
-        document.getElementById('cnpjValor').textContent = nifText;
+        document.getElementById('cnpjValor').textContent = typeof data.nif === 'string' ? data.nif : 'Não disponibilizada';
 
+        const phoneEl = document.getElementById('whatsappValor');
+        phoneEl.replaceChildren();
         if (tel) {
-          const cleanPhone = String(tel).replace(/[^0-9]/g, '');
-          document.getElementById('whatsappValor').innerHTML = `
-            <a href="https://wa.me/${cleanPhone}" target="_blank" rel="noopener noreferrer">
-              ${tel} ↗
-            </a>
-          `;
-        }
-
-        if (email) {
-          if (String(email).includes('@') && !String(email).startsWith('@')) {
-            document.getElementById('instagramValor').innerHTML = `
-              <a href="mailto:${email}" style="color: #25d366;">${email}</a>
-            `;
+          const cleanPhone = tel.replace(/\D/g, '');
+          if (cleanPhone.length >= 7 && cleanPhone.length <= 15) {
+            const phoneLink = document.createElement('a');
+            phoneLink.href = `https://wa.me/${cleanPhone}`;
+            phoneLink.target = '_blank';
+            phoneLink.rel = 'noopener noreferrer';
+            phoneLink.textContent = tel;
+            phoneEl.append(phoneLink);
           } else {
-            const cleanInsta = String(email).replace('@', '');
-            document.getElementById('instagramValor').innerHTML = `
-              <a href="https://instagram.com/${cleanInsta}" target="_blank" rel="noopener noreferrer">
-                @${cleanInsta} ↗
-              </a>
-            `;
+            phoneEl.textContent = tel;
           }
+        } else {
+          phoneEl.textContent = 'Não disponibilizado';
         }
+        const phoneNote = document.createElement('small');
+        phoneNote.textContent = data.telefone_verificado ? 'Validação indicada no registo' : 'Validação não indicada';
+        phoneEl.append(phoneNote);
+
+        const emailEl = document.getElementById('instagramValor');
+        emailEl.replaceChildren();
+        if (email && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+          const emailLink = document.createElement('a');
+          emailLink.href = `mailto:${email}`;
+          emailLink.textContent = email;
+          emailEl.append(emailLink);
+        } else {
+          emailEl.textContent = email || 'Não disponibilizado';
+        }
+        const emailNote = document.createElement('small');
+        emailNote.textContent = data.email_verificado ? 'Validação indicada no registo' : 'Validação não indicada';
+        emailEl.append(emailNote);
 
         if (data.valido_ate) {
           const date = new Date(data.valido_ate);
-          document.getElementById('validadeValor').textContent = date.toLocaleDateString('pt-PT', {
-            day: '2-digit',
-            month: 'long',
-            year: 'numeric'
-          });
+          if (!Number.isNaN(date.getTime())) {
+            document.getElementById('validadeValor').textContent = date.toLocaleDateString('pt-PT', {
+              day: '2-digit', month: 'long', year: 'numeric'
+            });
+          }
         }
 
-        document.getElementById('certId').textContent = data.codigo || ('ZQV-' + (data.id ? String(data.id).substring(0, 8).toUpperCase() : 'OFICIAL'));
-        document.getElementById('viewsCount').textContent = data.is_demo ? 'DEMONSTRAÇÃO OFICIAL' : 'ATIVO & AUDITADO';
-
+        document.getElementById('certId').textContent = data.codigo || 'Não disponibilizado';
+        const isDemo = Boolean(data.is_demo || data.is_teste || data.status === 'teste');
+        const isActive = data.selo_valido === true;
         const badgeStatus = document.getElementById('badgeStatus');
-        if (data.status && data.status !== 'ativo' && !data.is_demo) {
-          badgeStatus.className = 'badge-status status-invalid';
-          badgeStatus.innerHTML = '⚠️ Certificação Suspensa / Inativa';
-        }
+        badgeStatus.className = `badge-status ${isActive ? 'status-active' : 'status-invalid'}`;
+        badgeStatus.textContent = isDemo
+          ? 'Demonstração fictícia — sem validade'
+          : (isActive ? 'Registo ativo' : 'Sem selo ativo ou validação');
+        document.getElementById('viewsCount').textContent = isDemo
+          ? 'EXEMPLO FICTÍCIO'
+          : (isActive ? 'Ativo no registo' : 'Sem validade ativa');
 
         loading.style.display = 'none';
         certContainer.style.display = 'block';
@@ -576,14 +607,11 @@
           : (slug ? `slug=${encodeURIComponent(slug)}` : `dominio=${encodeURIComponent(dominio)}`);
         const res = await fetch(`/api/empresa?${query}`);
 
-        if (!res.ok) {
-          throw new Error('Empresa não registada');
-        }
+        if (!res.ok) throw new Error('Registo não encontrado');
 
         const data = await res.json();
         renderCertificado(data);
-      } catch (err) {
-        console.error(err);
+      } catch {
         loading.style.display = 'none';
         errorState.style.display = 'block';
       }

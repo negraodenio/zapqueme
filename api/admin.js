@@ -8,7 +8,6 @@ import {
   gerarPacoteTakedown
 } from '../lib/radar.js';
 import {
-  limparTextoVitima,
   estruturarRelatorioMensal,
   renderRelatorioHtml
 } from '../lib/report_generator.js';
@@ -35,6 +34,7 @@ import {
   validarConjuntoBenchmarkRotativo,
   executarBenchmarkRotativo
 } from '../lib/golpes_novos.js';
+import { checkRateLimit, secureEqual } from '../lib/security.js';
 
 // Campos de verificação comercial e CRM (migração 20261016, 20261015 e 20261019).
 const CAMPOS_VERIFICACAO = [
@@ -193,8 +193,8 @@ export default async function handler(req, res) {
     return res.status(500).json({ error: 'ADMIN_SECRET_KEY não configurada no servidor. Painel bloqueado.' });
   }
 
-  // Autenticação: aceita apenas header x-admin-key, Authorization Bearer ou campo secret no body (não via query string)
-  let secret = req.headers['x-admin-key'] || (req.body && req.body.secret);
+  // A chave só é aceite em headers; segredos em corpos de POST podem acabar em logs/replays.
+  let secret = req.headers['x-admin-key'];
   if (!secret && req.headers['authorization']) {
     const authHeader = req.headers['authorization'];
     if (authHeader.toLowerCase().startsWith('bearer ')) {
@@ -202,7 +202,12 @@ export default async function handler(req, res) {
     }
   }
 
-  if (!secret || secret !== adminSecret) {
+  if (!secureEqual(typeof secret === 'string' ? secret : '', adminSecret)) {
+    const attempts = await checkRateLimit(req, 'admin-auth', 10, 60);
+    if (attempts.unavailable && process.env.NODE_ENV === 'production') {
+      return res.status(503).json({ error: 'Autenticação temporariamente indisponível.' });
+    }
+    if (!attempts.allowed) return res.status(429).json({ error: 'Demasiadas tentativas. Tenta novamente mais tarde.' });
     return res.status(401).json({ error: 'Acesso não autorizado. Chave administrativa inválida.' });
   }
 
@@ -437,10 +442,42 @@ export default async function handler(req, res) {
           if (redisResp.ok) {
             const rData = await redisResp.json();
             if (Array.isArray(rData.result)) {
-              leads = rData.result.map(item => {
-                try { return typeof item === 'string' ? JSON.parse(item) : item; }
-                catch { return null; }
+              const refs = rData.result.map(item => {
+                if (item && typeof item === 'object') return { type: 'lead', value: item };
+                const raw = String(item || '');
+                if (raw.trimStart().startsWith('{')) {
+                  try { return { type: 'lead', value: JSON.parse(raw) }; }
+                  catch { return null; }
+                }
+                return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(raw)
+                  ? { type: 'id', value: raw }
+                  : null;
               }).filter(Boolean);
+
+              const ids = refs.filter(ref => ref.type === 'id').map(ref => ref.value);
+              const byId = new Map();
+              if (ids.length) {
+                const leadPipeline = await fetch(`${redisUrl}/pipeline`, {
+                  method: 'POST',
+                  headers: {
+                    Authorization: `Bearer ${redisToken}`,
+                    'Content-Type': 'application/json'
+                  },
+                  body: JSON.stringify(ids.map(id => ['HGET', `zapqueme:lead:${id}`, 'data'])),
+                  signal: AbortSignal.timeout(5000)
+                });
+                if (leadPipeline.ok) {
+                  const values = await leadPipeline.json();
+                  values.forEach((entry, index) => {
+                    try {
+                      const value = typeof entry?.result === 'string' ? JSON.parse(entry.result) : null;
+                      if (value) byId.set(ids[index], value);
+                    } catch {}
+                  });
+                }
+              }
+
+              leads = refs.map(ref => ref.type === 'lead' ? ref.value : byId.get(ref.value)).filter(Boolean);
             }
           }
         } catch (rErr) {
@@ -1440,33 +1477,26 @@ export default async function handler(req, res) {
         });
 
         const totalSinais = sinaisMarca.length;
-        const canais = [...new Set(sinaisMarca.map(s => s.canal || 'SMS/WhatsApp'))].join(', ') || 'SMS / WhatsApp';
-        const vetoresDetectados = [...new Set(sinaisMarca.map(s => s.canal_mencionado).filter(Boolean))].slice(0, 3);
+        const canais = [...new Set(sinaisMarca.map(s => s.canal || 'canal não identificado'))].join(', ') || 'Canal não identificado';
 
-        const exemplos = sinaisMarca.slice(0, 3).map(s => {
-          const limpo = limparTextoVitima(s.texto_original || s.alerta_link || s.resumo || `Tentativa de fraude (${s.tipo || 'phishing'}) com canal não oficial (${s.canal_mencionado || 'link externo'}).`);
-          return limpo.length > 110 ? limpo.slice(0, 107) + '...' : limpo;
-        });
-
-        const draftAssunto = `Alerta Preventivo de Segurança: Sinais de personificação da marca ${marcaNome}`;
+        const draftAssunto = `Rascunho para revisão: registos que mencionam ${marcaNome}`;
         const draftCorpo = `Exma. Equipa de Segurança / CSIRT / Comunicação de ${marcaNome},
 
-No âmbito da monitorização contínua do Threat Radar da rede Confirme, Quem É? (confirmequeme.pt), detetámos recentemente ${totalSinais || 1} sinal(is) de mensagens fraudulentas em circulação utilizando o nome da vossa marca antes da consumação de transações.
+Foi preparado este rascunho com base num recorte dos até 100 registos mais recentes disponíveis no sistema. O número abaixo não representa necessariamente a totalidade de submissões e as classificações automáticas não confirmam fraude, autoria ou que a marca tenha sido imitada.
 
-Resumo da inteligência intercetada:
-• Total de ocorrências detetadas: ${totalSinais || 1}
-• Canais de propagação: ${canais}
-${vetoresDetectados.length ? `• Indicadores / Canais não oficiais (IOCs): ${vetoresDetectados.join(' | ')}\n` : ''}• Exemplos higienizados (Art. 5.º RGPD — zero dados pessoais de cidadãos):
-${exemplos.map(e => `  - "${e}"`).join('\n') || '  - "Mensagem simulando comunicação oficial com link ou referência de pagamento externa."'}
+Resumo para revisão:
+• Registos no recorte consultado que mencionam a marca: ${totalSinais}
+• Canais de entrada registados: ${canais}
+• Texto original, URLs, números, IBANs e outros identificadores foram omitidos deste rascunho.
 
-Recomendação preventiva:
-Sugerimos avaliar a publicação de um aviso preventivo nos vossos canais oficiais e a submissão dos indicadores acima para bloqueio técnico (Takedown / SIBS / CERT.PT).
+Próximo passo possível:
+Confirmar de forma independente se estes registos são relevantes e atuais. Só depois dessa revisão deverá ser considerada qualquer comunicação ou pedido de remoção pelos canais apropriados.
 
-Nota de integridade e utilidade pública:
-Este alerta é estritamente informativo e faz parte da nossa missão de proteção do ecossistema digital português. Caso desejem receber o Dossiê Pericial completo (com Hash SHA-256) ou ativar a monitorização contínua da vossa marca, estamos inteiramente ao dispor.
+Nota:
+Este rascunho não é uma notificação oficial, relatório pericial ou resultado de monitorização contínua. Foi gerado automaticamente e deve ser revisto antes de qualquer utilização externa.
 
 Atenciosamente,
-Equipa de Threat Intelligence & Verificação — Confirme, Quem É?
+Confirme, Quem É?
 https://confirmequeme.pt`;
 
         const draftTextoCompleto = `Assunto: ${draftAssunto}\n\n${draftCorpo}`;
@@ -1479,7 +1509,7 @@ https://confirmequeme.pt`;
               empresa_id,
               tipo: 'alerta_gratuito',
               canal: 'email',
-              resumo: `Alerta gratuito gerado com ${totalSinais} sinais detetados`,
+              resumo: `Rascunho para revisão gerado com base em até 100 registos recentes (${totalSinais} correspondências)`,
               resposta: 'Rascunho preparado para envio executivo'
             })
           });
@@ -1576,7 +1606,7 @@ https://confirmequeme.pt`;
           empresa_id,
           acao: 'geracao_relatorio_mensal',
           depois: { periodo, versao, hash: dadosRelatorio.hash_sha256 },
-          motivo: `Relatório mensal pericial gerado para ${periodo}`
+          motivo: `Resumo mensal automático gerado para ${periodo}; requer revisão humana`
         });
 
         return res.status(200).json({
@@ -1737,7 +1767,7 @@ https://confirmequeme.pt`;
         email_oficial,
         telefone_oficial,
         representante_nome,
-        plano = 'radar',
+        plano = 'selo',
         notas,
         por = 'admin'
       } = req.body;
@@ -1748,8 +1778,6 @@ https://confirmequeme.pt`;
 
       try {
         const nomeLimpo = String(marca).trim();
-        const precoDefault = plano === 'radar' ? 290.00 : 49.00;
-
         const empInsert = await fetchComFallback(`${url}/rest/v1/empresas`, {
           method: 'POST',
           headers: { ...headers, Prefer: 'return=representation' }
@@ -1764,10 +1792,10 @@ https://confirmequeme.pt`;
           apelidos_marca: [nomeLimpo],
           marca_aliases: [nomeLimpo],
           plano,
-          preco_acordado: precoDefault,
+          preco_acordado: null,
           estado: 'lead',
           status: 'inativo',
-          notas: notas || 'Convertido diretamente a partir do Threat Radar / Solicitações B2B'
+          notas: notas || 'Lead criado manualmente a partir de nome mencionado em registos submetidos; menção não confirma incidente. Preço por definir.'
         });
 
         if (!empInsert.ok) throw new Error(await empInsert.text());
@@ -1781,7 +1809,7 @@ https://confirmequeme.pt`;
           acao: 'conversao_radar_lead',
           depois: { nome: nomeLimpo, plano, estado: 'lead' },
           por,
-          motivo: 'Marca convertida em Lead no Pipeline B2B a partir do Threat Radar'
+          motivo: 'Lead criado manualmente a partir de nome mencionado em registos submetidos; menção não confirmada'
         });
 
         return res.status(200).json({ success: true, empresa: novaEmpresa });
@@ -1790,7 +1818,7 @@ https://confirmequeme.pt`;
       }
     }
 
-    // 2.16 GERAR PACOTE PERICIAL DE TAKEDOWN & NOTIFICAÇÃO DE ABUSO (SIBS / CERT.PT / DECO / Seguradoras)
+    // 2.16 GERAR RESUMO TÉCNICO PRELIMINAR PARA REVISÃO HUMANA
     if (action === 'gerar_pacote_takedown') {
       const {
         marca = 'Marca Vigiada',
@@ -1818,15 +1846,6 @@ https://confirmequeme.pt`;
           return (marcaLower && m.includes(marcaLower)) || (indLower && c.includes(indLower));
         });
 
-        const exemplosLimpos = relacionados.slice(0, 3).map(s => {
-          const txt = limparTextoVitima(
-            s.texto_original ||
-            s.alerta_link ||
-            `Deteção no canal ${s.canal || 'WhatsApp/SMS'} (${s.tipo || 'fraude'}) com indicador ${s.canal_mencionado || indicador} — Score ${s.risco_score || s.confianca || 90}/100.`
-          );
-          return txt.length > 140 ? txt.slice(0, 137) + '...' : txt;
-        });
-
         const pacote = gerarPacoteTakedown({
           marca,
           indicador: indicador || 'Indicador em análise',
@@ -1834,16 +1853,15 @@ https://confirmequeme.pt`;
           tatica_nome,
           ocorrencias_total: Math.max(ocorrencias_total, relacionados.length, 1),
           primeira_deteccao,
-          ultima_deteccao,
-          exemplos_limpos: exemplosLimpos
+          ultima_deteccao
         });
 
         if (empresa_id) {
           await registrarHistorico(url, headers, {
             empresa_id,
-            acao: 'geracao_pacote_takedown',
+            acao: 'geracao_resumo_sinais',
             depois: { indicador, tipo_ioc, hash: pacote.hash_sha256 },
-            motivo: `Pacote técnico de Takedown/Abuso gerado para ${indicador}`
+            motivo: `Resumo automático de sinais gerado para revisão: ${indicador}`
           });
         }
 
@@ -1852,7 +1870,7 @@ https://confirmequeme.pt`;
           pacote
         });
       } catch (err) {
-        return res.status(500).json({ error: 'Falha ao gerar pacote de takedown: ' + err.message });
+        return res.status(500).json({ error: 'Falha ao gerar resumo de sinais: ' + err.message });
       }
     }
 

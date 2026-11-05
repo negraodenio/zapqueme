@@ -62,3 +62,6 @@
 | PT-18 | Burla Investimento Crypto WhatsApp | `Golpe` | `golpe` (98) | `golpe` (98) | `golpe` (95) | **IA** | OpenRouter (google/gemini-3.8-flash) | `google/gemini-3.8-flash` |
 | PT-19 | Saudação Comercial Comum | `Legítimo` | `legitimo` (5) | `legitimo` (5) | `legitimo` (10) | **IA** | OpenRouter (google/gemini-3.8-flash) | `google/gemini-3.8-flash` |
 | PT-20 | Phishing Galp Energia | `Golpe` | `golpe` (95) | `golpe` (95) | `golpe` (95) | **Regra** | Dicionário de Marcas Oficiais (Typosquatting) | `google/gemini-3.8-flash` |
+# Arquivo interno — métricas não validadas
+
+Este relatório contém resultados de uma execução histórica em amostras pequenas e não documenta proveniência, avaliação cega independente ou reprodutibilidade suficiente para sustentar uma medida de desempenho. **Não usar as percentagens, rótulos ou conclusões abaixo em vendas, imprensa ou decisões de segurança.** A página pública de benchmark foi substituída por uma nota de estado da validação.

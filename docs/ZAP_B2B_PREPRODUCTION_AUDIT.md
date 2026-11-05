@@ -1,6 +1,8 @@
 ﻿# ZAP, QUEM É? — B2B PRE-PRODUCTION AUDIT
 # Gerado em: 2026-09-24 | Branch: main (a765e72) | Testes: 27/27 PASS
 
+> **Snapshot histórico, não é o estado atual nem uma aprovação para produção.** As alterações e o ambiente mudaram desde esta auditoria. Para os riscos vigentes, consultar `ANALISE_TECNICA_E_NEGOCIO_2026-11-05.md`. Os resultados abaixo são os reportados na data de geração e não foram repetidos nesta revisão.
+
 ---
 
 ## RESUMO EXECUTIVO
@@ -24,9 +26,9 @@ Stack:
 - Threat Intel: lib/threat_intel.js — Google Safe Browsing, Cloudflare DNS, RDAP
 - Deduplicação: Upstash Redis REST (hash SHA-256 de mensagem)
 - Base de Dados: Supabase (PostgreSQL REST API)
-- Sessão WhatsApp: Upstash Redis (bundle Baileys em base64)
+- Sessão WhatsApp: Upstash Redis (bundle cifrado com AES-256-GCM)
 - Hosting: Vercel (Serverless Functions + static assets)
-- Badge Assets: badges/ — 14 PNGs estáticos
+- Badges: SVG dinâmico servido por `api/badge.js`
 
 Routing (vercel.json):
   /               → index.html       (B2C)

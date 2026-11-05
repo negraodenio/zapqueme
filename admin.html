@@ -840,7 +840,7 @@
           <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
             <div>
               <h3>Empresas & Funil Comercial B2B</h3>
-              <p style="color: var(--text-muted); font-size: 0.8rem; margin-top: 2px;">Gestão de pipeline comercial, checklist dos 4 pilares, pagamentos e relatórios periciais</p>
+              <p style="color: var(--text-muted); font-size: 0.8rem; margin-top: 2px;">Gestão do pipeline, revisão manual, registos de pagamentos e resumos automáticos</p>
             </div>
             <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
               <label style="display: inline-flex; align-items: center; gap: 8px; font-size: 0.82rem; color: #cbd5e1; cursor: pointer; background: rgba(255,255,255,0.06); padding: 6px 12px; border-radius: 8px; border: 1px solid var(--card-border);">
@@ -885,7 +885,7 @@
         <div class="table-header">
           <div>
             <h3>Selos ZAP VERIFIED</h3>
-            <p style="color: var(--text-muted); font-size: 0.8rem; margin-top: 2px;">Verificação oficial de canais empresariais</p>
+            <p style="color: var(--text-muted); font-size: 0.8rem; margin-top: 2px;">Consulta do estado e dos campos indicados no registo</p>
           </div>
           <button onclick="openNewSeloModal()" class="btn-action" style="padding: 6px 14px; font-size: 0.8rem;">+ Criar Selo</button>
         </div>
@@ -908,40 +908,40 @@
       </div>
     </div>
 
-    <!-- TAB 3: THREAT RADAR ENTERPRISE (SIBS / MB WAY / DECO / SEGURADORAS) -->
+    <!-- TAB 3: SINAIS SUBMETIDOS E INDICADORES PARA REVISÃO -->
     <div id="tab-radar" class="tab-pane" style="display: none;">
       <!-- KPIs Executivos do Threat Radar -->
       <div class="kpi-grid" style="margin-bottom: 20px;">
         <div class="kpi-card" style="border-color: rgba(239, 68, 68, 0.35);">
-          <div class="kpi-header"><span class="kpi-title">🚨 Surtos / Campanhas Ativas</span></div>
+          <div class="kpi-header"><span class="kpi-title">🚨 Clusters de sinais repetidos</span></div>
           <div class="kpi-value danger" id="radarKpiSurtos">0</div>
-          <div class="kpi-sub">Clusters de ataque com mesmo IOC ou vetor</div>
+          <div class="kpi-sub">Agrupamentos automáticos; requerem revisão humana</div>
         </div>
         <div class="kpi-card" style="border-color: rgba(245, 158, 11, 0.35);">
-          <div class="kpi-header"><span class="kpi-title">💳 IOCs Financeiros (SIBS / MB WAY)</span></div>
+          <div class="kpi-header"><span class="kpi-title">💳 Indicadores financeiros mencionados</span></div>
           <div class="kpi-value warning" id="radarKpiIocsFin">0</div>
-          <div class="kpi-sub">Entidades MB, Referências, IBANs e Números de Burla</div>
+          <div class="kpi-sub">Extraídos de submissões; titularidade não confirmada</div>
         </div>
         <div class="kpi-card" style="border-color: rgba(56, 189, 248, 0.35);">
           <div class="kpi-header"><span class="kpi-title">🌐 Domínios & Phishing</span></div>
           <div class="kpi-value highlight" id="radarKpiDominios">0</div>
-          <div class="kpi-sub">URLs e domínios maliciosos para takedown CERT.PT</div>
+          <div class="kpi-sub">URLs e domínios submetidos para revisão</div>
         </div>
         <div class="kpi-card" style="border-color: rgba(16, 185, 129, 0.35);">
-          <div class="kpi-header"><span class="kpi-title">🎯 Marcas em Shadow Radar</span></div>
+          <div class="kpi-header"><span class="kpi-title">🎯 Marcas mencionadas em sinais</span></div>
           <div class="kpi-value primary" id="radarKpiShadow">0</div>
-          <div class="kpi-sub">Marcas atacadas ainda não clientes (Oportunidade B2B)</div>
+          <div class="kpi-sub">Menções associadas a registos; não confirmam ataque nem relação comercial</div>
         </div>
       </div>
 
-      <!-- 1. DETETOR DE SURTOS & ONDAS DE ATAQUE (OUTBREAK ENGINE) -->
+      <!-- 1. AGRUPAMENTO DE SUBMISSÕES POR INDICADOR -->
       <div class="table-container" style="margin-bottom: 24px; border-color: rgba(239, 68, 68, 0.3);">
         <div class="table-header" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
           <div>
-            <h3 style="color: #fca5a5;">🚨 Detetor de Surtos & Campanhas Coordenadas (Early-Warning Engine)</h3>
-            <p style="font-size: 0.8rem; color: var(--text-muted); margin-top: 2px;">Agrupamento automático por Entidade Multibanco, Referência, IBAN, Telefone de Burla ou Domínio de Phishing</p>
+            <h3 style="color: #fca5a5;">🚨 Agrupamento de sinais submetidos</h3>
+            <p style="font-size: 0.8rem; color: var(--text-muted); margin-top: 2px;">Agrupamento automático de indicadores extraídos; não confirma campanhas, fraude ou titularidade.</p>
           </div>
-          <button class="btn-xs btn-xs-primary" onclick="exportarIocsFinanceirosCSV()">⬇ Exportar Feed IOCs (CSV SIBS / CERT.PT)</button>
+          <button class="btn-xs btn-xs-primary" onclick="exportarIocsFinanceirosCSV()">⬇ Exportar indicadores submetidos (CSV)</button>
         </div>
         <table>
           <thead>
@@ -950,32 +950,32 @@
               <th>Setor</th>
               <th>Vetor / Modus Operandi</th>
               <th>Indicador Técnico (IOC)</th>
-              <th>Volume</th>
-              <th>Última Deteção</th>
-              <th>Estado</th>
-              <th>Ação Rápida</th>
+              <th>Registos</th>
+              <th>Submissão mais recente</th>
+              <th>Classificação automática</th>
+              <th>Revisão</th>
             </tr>
           </thead>
           <tbody id="surtosTableBody">
-            <tr><td colspan="8" style="text-align: center; color: var(--text-muted); padding: 24px;">A analisar padrões de campanha em tempo real...</td></tr>
+            <tr><td colspan="8" style="text-align: center; color: var(--text-muted); padding: 24px;">A carregar agrupamentos de sinais submetidos...</td></tr>
           </tbody>
         </table>
       </div>
 
-      <!-- 2. FEED DE IOCs FINANCEIROS & TELECOM (SIBS / MB WAY / BANCOS / SEGURADORAS) -->
+      <!-- 2. INDICADORES EXTRAÍDOS DE SUBMISSÕES -->
       <div class="table-container" style="margin-bottom: 24px; border-color: rgba(245, 158, 11, 0.3);">
         <div class="table-header" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
           <div>
-            <h3 style="color: #fde68a;">💳 Feed de Inteligência Financeira & Telecom (IOCs Extraídos)</h3>
-            <p style="font-size: 0.8rem; color: var(--text-muted); margin-top: 2px;">Entidades Multibanco, Referências, IBANs de contas mula, telemóveis MB WAY e domínios fraudulentos intercetados antes do pagamento</p>
+            <h3 style="color: #fde68a;">💳 Indicadores financeiros e de telecomunicações</h3>
+            <p style="font-size: 0.8rem; color: var(--text-muted); margin-top: 2px;">Padrões extraídos automaticamente de submissões; podem conter erros e não confirmam uma conta, pessoa ou fraude.</p>
           </div>
           <select id="filtroTipoIocRadar" class="form-select" style="width: auto; padding: 6px 12px; font-size: 0.8rem;" onchange="renderRadar(dashboardState.radar || [])">
             <option value="todos">Todos os IOCs</option>
             <option value="ENTIDADE_MB">Entidade Multibanco</option>
             <option value="REFERENCIA_MB">Referência Multibanco</option>
-            <option value="IBAN">IBAN (Conta Mula)</option>
-            <option value="TELEFONE_BURLA">Telefone / MB WAY</option>
-            <option value="DOMINIO_PHISHING">Domínio Phishing</option>
+            <option value="IBAN">IBAN mencionado</option>
+            <option value="TELEFONE_BURLA">Telefone mencionado</option>
+            <option value="DOMINIO_PHISHING">Domínio ou URL mencionado</option>
           </select>
         </div>
         <table>
@@ -983,16 +983,16 @@
             <tr>
               <th>Tipo de IOC</th>
               <th>Valor do Indicador</th>
-              <th>Marca Impersonada</th>
+              <th>Marca mencionada</th>
               <th>Setor</th>
-              <th>Tática Detetada</th>
-              <th>Repetições</th>
-              <th>Última Vez Visto</th>
-              <th>Ação Forense</th>
+              <th>Categoria automática</th>
+              <th>Registos associados</th>
+              <th>Registo mais recente</th>
+              <th>Ação</th>
             </tr>
           </thead>
           <tbody id="iocsFinanceirosTableBody">
-            <tr><td colspan="8" style="text-align: center; color: var(--text-muted); padding: 24px;">Nenhum IOC financeiro ou domínio técnico catalogado.</td></tr>
+            <tr><td colspan="8" style="text-align: center; color: var(--text-muted); padding: 24px;">Não há indicadores submetidos para este filtro.</td></tr>
           </tbody>
         </table>
       </div>
@@ -1001,8 +1001,8 @@
       <div class="table-container">
         <div class="table-header" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;">
           <div>
-            <h3>📡 Threat Radar & Shadow Radar — Marcas Sob Ataque</h3>
-            <p style="font-size: 0.8rem; color: var(--text-muted); margin-top: 2px;">Visão unificada de clientes verificados, marcas no funil comercial e marcas externas vigiadas passivamente</p>
+            <h3>📡 Marcas mencionadas em registos submetidos</h3>
+            <p style="font-size: 0.8rem; color: var(--text-muted); margin-top: 2px;">Visão agrupada de nomes mencionados e registos empresariais; não representa vigilância passiva nem confirma ataque.</p>
           </div>
           <select id="filtroSetorRadar" class="form-select" style="width: auto; padding: 6px 12px; font-size: 0.8rem;" onchange="renderRadar(dashboardState.radar || [])">
             <option value="todos">Todos os Setores</option>
@@ -1085,7 +1085,7 @@
         <!-- CONTEÚDO DO DOSSIÊ -->
         <div id="dossieConteudo" style="padding: 24px; background: rgba(0, 0, 0, 0.3); border-radius: 10px; font-family: 'Plus Jakarta Sans', sans-serif;">
           <div style="text-align: center; color: var(--text-muted); padding: 40px;">
-            Selecione uma marca no menu acima para gerar o dossiê executivo com dados em tempo real.
+            Selecione uma marca para gerar um resumo dos registos disponíveis. Os dados podem estar incompletos e exigem revisão.
           </div>
         </div>
       </div>
@@ -1095,7 +1095,7 @@
         <div class="table-header">
           <div>
             <h3>Leads Comerciais Recebidos (Interessados no Selo Zap Verified)</h3>
-            <p style="color: var(--text-muted); font-size: 0.8rem; margin-top: 2px;">Contatos preenchidos na landing page /empresas.html prontos para fechar vendas</p>
+              <p style="color: var(--text-muted); font-size: 0.8rem; margin-top: 2px;">Pedidos de contacto recebidos em /empresas.html para revisão e seguimento comercial</p>
           </div>
         </div>
         <table>
@@ -1250,7 +1250,7 @@
             <tr>
               <th>Ref. Análise (Hash) & Data</th>
               <th>Motivo de Entrada</th>
-              <th>Resumo Anonimizado (Sinais & Indicadores)</th>
+              <th>Resumo submetido (revisto manualmente)</th>
               <th>Veredito & Pontuação</th>
               <th>Grupo (Cluster)</th>
               <th>Estado & Decisão</th>
@@ -1442,7 +1442,7 @@
           <thead>
             <tr>
               <th>Semana & Origem</th>
-              <th>Resumo Anonimizado (Sem PII)</th>
+              <th>Resumo submetido (não verificado automaticamente)</th>
               <th>Tipo Real (Humano)</th>
               <th>Golpe Novo (&lt; 14d)</th>
               <th>Classificado Por & Data</th>
@@ -1468,7 +1468,7 @@
         </div>
         <h2 style="font-size: 1.8rem; font-weight: 800; margin: 0 0 10px; color: #f8fafc; letter-spacing: -0.02em;">Manual Operacional & Curso de Domínio do Painel Admin</h2>
         <p style="color: #cbd5e1; font-size: 0.95rem; max-width: 860px; line-height: 1.6; margin: 0 0 20px;">
-          Este programa instrucional foi estruturado para capacitar operadores, analistas de ameaças e gestores de negócio a utilizarem 100% dos recursos do ecossistema ZapQuemÉ. Aprenda o funcionamento prático de cada tela, as regras de segurança contra fraudes e como transformar dados técnicos em receita recorrente e proteção real para empresas portuguesas.
+          Este guia descreve as funções disponíveis no painel, os limites dos dados e os passos de revisão manual. Os registos e classificações automáticos não confirmam incidentes nem garantem receita ou proteção contra fraudes.
         </p>
 
         <!-- SUMÁRIO RÁPIDO DE MÓDULOS -->
@@ -1503,13 +1503,13 @@
             <div style="background: rgba(0,0,0,0.2); padding: 16px; border-radius: 8px; border-left: 3px solid #10b981;">
               <strong style="color: #34d399; font-size: 0.85rem; display: block; margin-bottom: 6px;">🎯 Objetivo de Aprendizagem</strong>
               <p style="font-size: 0.85rem; color: var(--text-muted); line-height: 1.5; margin: 0;">
-                Saber auditar em tempo real a saúde financeira (MRR), o total de empresas reais ativas, o volume de surtos em andamento e a integridade da base contra dados corrompidos ou desatualizados.
+                Consultar os registos carregados no painel, rever dados comerciais e identificar falhas que exijam confirmação na base de dados.
               </p>
             </div>
             <div style="background: rgba(0,0,0,0.2); padding: 16px; border-radius: 8px; border-left: 3px solid #38bdf8;">
               <strong style="color: #38bdf8; font-size: 0.85rem; display: block; margin-bottom: 6px;">💡 Ganhos & Benefícios de Negócio</strong>
               <p style="font-size: 0.85rem; color: var(--text-muted); line-height: 1.5; margin: 0;">
-                Elimina a "gestão por palpites". Apenas empresas com faturas liquidadas compõem a receita recorrente. Alertas imediatos de inadimplência e surtos em curso antes de virarem crise.
+                Mostra os registos disponíveis no painel. Confirme pagamentos, estados e incidentes com as respetivas fontes antes de tomar decisões.
               </p>
             </div>
           </div>
@@ -1517,13 +1517,13 @@
           <div style="font-size: 0.9rem; line-height: 1.6; color: #cbd5e1;">
             <h4 style="color: #f8fafc; font-size: 1rem; margin: 16px 0 8px;">⚙️ Guia Passo a Passo dos Indicadores do Topo:</h4>
             <ul style="padding-left: 20px; margin-bottom: 16px;">
-              <li><strong>MRR Real (Receita Recorrente Mensal):</strong> Calculado apenas com clientes reais no estado <code>ativo</code> e com registo de pagamento <code>pago</code> no banco. Empresas de teste (<code>is_teste: true</code>) e arquivadas são rigorosamente excluídas para não inflacionar números.</li>
-              <li><strong>Empresas Reais & Pagantes:</strong> Mostra a taxa de conversão entre contas cadastradas e contas pagantes.</li>
-              <li><strong>Surtos Ativos (Threat Radar):</strong> Contabiliza marcas portuguesas sob campanhas ativas de smishing/phishing nas últimas 24h a 7 dias.</li>
-              <li><strong>Benchmark Acurácia (Wilson 95%):</strong> Taxa estatística comprovada do motor contra golpes novos sem falsos positivos.</li>
+              <li><strong>MRR registado:</strong> Calculado a partir de empresas marcadas como ativas e pagamentos marcados como pagos no painel. Não substitui reconciliação contabilística.</li>
+              <li><strong>Empresas e pagamentos:</strong> Conta os registos existentes; não confirma que o pagamento foi conciliado ou recebido fora do sistema.</li>
+              <li><strong>Clusters de sinais:</strong> Conta agrupamentos automáticos de submissões; não confirma campanhas ou incidentes.</li>
+              <li><strong>Benchmark:</strong> Resume as amostras carregadas no painel; conjuntos pequenos ou sintéticos não medem precisão em produção.</li>
             </ul>
             <div style="background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.3); border-radius: 8px; padding: 12px 16px; font-size: 0.82rem; color: #fca5a5;">
-              ⚠️ <strong>Atenção Operacional:</strong> Se o indicador de "Empresas de Teste" ou "Arquivadas" estiver a crescer sem revisão, faça a higienização dos registos para manter os tempos de consulta do painel instantâneos.
+              ⚠️ <strong>Atenção Operacional:</strong> Confirme os registos e estados diretamente na base de dados quando os totais forem usados para decisões financeiras ou comerciais.
             </div>
           </div>
         </div>
@@ -1560,8 +1560,8 @@
               <li>Preencha a identidade empresarial: <strong>Nome Comercial</strong>, <strong>Nome Legal</strong>, <strong>NIF</strong> (9 dígitos em Portugal), <strong>Domínio Oficial</strong> (ex: <code>clinica.pt</code>) e <strong>Telefone Oficial</strong> com indicativo (ex: <code>+351 21...</code> ou telemóvel).</li>
               <li>Defina o Plano de Venda:
                 <ul>
-                  <li><strong>Selo Básico (€49/mês):</strong> Para clínicas, escritórios de advocacia e PMEs que precisam do selo no site e página de verificação oficial.</li>
-                  <li><strong>Threat Radar (€290/mês):</strong> Para marcas com presença digital crítica ou logística, incluindo acompanhamento em tempo real de tentativas de clonagem no Radar.</li>
+                  <li><strong>Registo empresarial (preço indicativo: €49/mês):</strong> valor sujeito a validação comercial e acordo escrito. A página apresenta dados indicados no registo; não é certificação pública nem garantia de proteção.</li>
+                  <li><strong>Acompanhamento manual (preço e âmbito por definir):</strong> Só oferecer após acordar fontes, frequência, limites, capacidade e prazo de resposta. Os sinais não são monitorizados continuamente.</li>
                 </ul>
               </li>
               <li>Após salvar, o registo entra no estado <code>lead</code> ou <code>em_verificacao</code> até a conclusão do checklist de segurança.</li>
@@ -1583,40 +1583,40 @@
             <div style="background: rgba(0,0,0,0.2); padding: 16px; border-radius: 8px; border-left: 3px solid #f59e0b;">
               <strong style="color: #fbbf24; font-size: 0.85rem; display: block; margin-bottom: 6px;">🎯 Objetivo de Aprendizagem</strong>
               <p style="font-size: 0.85rem; color: var(--text-muted); line-height: 1.5; margin: 0;">
-                Compreender e executar a validação documental e técnica obrigatória que impede que burlões adquiram selos legítimos para ludibriar cidadãos.
+                Checklist manual proposto. Regista a fonte e a evidência consultada antes de marcar um campo como validado; o painel não confirma automaticamente documentos, titularidade de domínio ou posse de telefone.
               </p>
             </div>
             <div style="background: rgba(0,0,0,0.2); padding: 16px; border-radius: 8px; border-left: 3px solid #10b981;">
               <strong style="color: #34d399; font-size: 0.85rem; display: block; margin-bottom: 6px;">💡 Ganhos & Benefícios de Negócio</strong>
               <p style="font-size: 0.85rem; color: var(--text-muted); line-height: 1.5; margin: 0;">
-                Blindagem jurídica e reputacional total. O selo do ZapQuemÉ torna-se uma chancela de confiança institucional inquestionável junto de telcos, bancos e autoridades policiais.
+                O histórico pode apoiar a revisão operacional. Não constitui blindagem jurídica, endosso institucional ou parceria com bancos, operadoras ou autoridades.
               </p>
             </div>
           </div>
 
           <div style="font-size: 0.9rem; line-height: 1.6; color: #cbd5e1;">
-            <h4 style="color: #f8fafc; font-size: 1rem; margin: 16px 0 8px;">🛡️ Os 4 Pilares Inegociáveis (Dossiê B2B):</h4>
+            <h4 style="color: #f8fafc; font-size: 1rem; margin: 16px 0 8px;">Checklist manual de revisão (não automatizado):</h4>
             <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 14px; margin-bottom: 16px;">
               <div style="background: rgba(255,255,255,0.03); padding: 14px; border-radius: 8px; border: 1px solid var(--card-border);">
-                <strong style="color: #38bdf8;">1. NIF Empresarial</strong>
-                <p style="font-size: 0.8rem; color: var(--text-muted); margin: 6px 0 0;">Verificação da certidão permanente, atividade aberta na Autoridade Tributária e ausência de encerramento fiscal.</p>
+                <strong style="color: #38bdf8;">1. Identificação da entidade</strong>
+                <p style="font-size: 0.8rem; color: var(--text-muted); margin: 6px 0 0;">Se aplicável, consulte fontes adequadas e registe a data e a evidência. O painel não consulta a Autoridade Tributária nem o registo comercial.</p>
               </div>
               <div style="background: rgba(255,255,255,0.03); padding: 14px; border-radius: 8px; border: 1px solid var(--card-border);">
-                <strong style="color: #38bdf8;">2. Domínio DNS Oficial</strong>
-                <p style="font-size: 0.8rem; color: var(--text-muted); margin: 6px 0 0;">Consulta WHOIS/RDAP, titularidade compatível com o NIF, servidores DNS seguros e presença de HTTPS.</p>
+                <strong style="color: #38bdf8;">2. Domínio indicado</strong>
+                <p style="font-size: 0.8rem; color: var(--text-muted); margin: 6px 0 0;">Registe como foi associado à entidade e que validação manual foi feita. DNS e HTTPS, por si só, não provam a identidade da empresa.</p>
               </div>
               <div style="background: rgba(255,255,255,0.03); padding: 14px; border-radius: 8px; border: 1px solid var(--card-border);">
-                <strong style="color: #38bdf8;">3. Telefone Comercial / WhatsApp</strong>
-                <p style="font-size: 0.8rem; color: var(--text-muted); margin: 6px 0 0;">Teste ativo do número por chamada ou mensagem oficial para atestar a posse física pela equipa do cliente.</p>
+                <strong style="color: #38bdf8;">3. Telefone indicado</strong>
+                <p style="font-size: 0.8rem; color: var(--text-muted); margin: 6px 0 0;">Registe o método de confirmação e a data. Uma resposta a chamada/mensagem não prova que futuras mensagens vêm da mesma pessoa.</p>
               </div>
               <div style="background: rgba(255,255,255,0.03); padding: 14px; border-radius: 8px; border: 1px solid var(--card-border);">
-                <strong style="color: #38bdf8;">4. Representante Legal</strong>
-                <p style="font-size: 0.8rem; color: var(--text-muted); margin: 6px 0 0;">Validação de poderes de gerência ou procuração com poderes bastantes para contratar o serviço.</p>
+                <strong style="color: #38bdf8;">4. Pessoa de contacto</strong>
+                <p style="font-size: 0.8rem; color: var(--text-muted); margin: 6px 0 0;">Documente que confirmação foi obtida para a pessoa que pede a alteração. Não guardar cópias excessivas de documentos de identificação.</p>
               </div>
             </div>
 
             <div style="background: rgba(59, 130, 246, 0.1); border: 1px solid rgba(59, 130, 246, 0.3); border-radius: 8px; padding: 14px; font-size: 0.85rem; color: #93c5fd;">
-              🔒 <strong>A Trava do Sistema:</strong> Se tentar ativar uma empresa sem os 4 pilares em estado <code>ok</code> e sem pagamento registado, o servidor rejeita o comando com erro 400. Ninguém consegue "burlar" as regras no sistema.
+              🔒 <strong>Verificação da API de ativação:</strong> exige campos marcados como concluídos e um pagamento registado ou isenção justificada. A API não valida as fontes por si só nem reconcilia a liquidação com o banco.
             </div>
           </div>
         </div>
@@ -1641,7 +1641,7 @@
             <div style="background: rgba(0,0,0,0.2); padding: 16px; border-radius: 8px; border-left: 3px solid #10b981;">
               <strong style="color: #34d399; font-size: 0.85rem; display: block; margin-bottom: 6px;">💡 Ganhos & Benefícios de Negócio</strong>
               <p style="font-size: 0.85rem; color: var(--text-muted); line-height: 1.5; margin: 0;">
-                Entrega tangível imediata. Quando o cliente final vê o selo no site da clínica e clica, cai na página oficial <code>/verify/CODIGO</code> que lista todos os canais legítimos validados pela ZapQuemÉ.
+                A ligação abre a página <code>/verify/CODIGO</code> com o estado do registo e os canais indicados. A página não certifica a entidade nem prova que uma mensagem ou chamada recebida foi enviada por esses canais.
               </p>
             </div>
           </div>
@@ -1671,32 +1671,32 @@
               <span style="font-size: 0.72rem; font-weight: 800; color: #ef4444; text-transform: uppercase; letter-spacing: 0.05em;">Módulo 05 · Threat Intelligence</span>
               <h3 style="font-size: 1.4rem; margin: 4px 0;">Threat Radar: O Coração do Sistema</h3>
             </div>
-            <span style="background: rgba(239, 68, 68, 0.15); color: #f87171; padding: 4px 10px; border-radius: 6px; font-size: 0.75rem; font-weight: 700;">Inteligência em Tempo Real</span>
+              <span style="background: rgba(239, 68, 68, 0.15); color: #f87171; padding: 4px 10px; border-radius: 6px; font-size: 0.75rem; font-weight: 700;">Sinais automáticos para revisão</span>
           </div>
 
           <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; margin-bottom: 20px;">
             <div style="background: rgba(0,0,0,0.2); padding: 16px; border-radius: 8px; border-left: 3px solid #ef4444;">
               <strong style="color: #f87171; font-size: 0.85rem; display: block; margin-bottom: 6px;">🎯 Objetivo de Aprendizagem</strong>
               <p style="font-size: 0.85rem; color: var(--text-muted); line-height: 1.5; margin: 0;">
-                Interpretar o mapa de calor de marcas sob ataque em Portugal, identificar surtos ativos e antecipar campanhas massivas de engenharia social.
+                Interpretar agrupamentos de submissões por marca e indicador. Um agrupamento não confirma campanha nem atividade criminosa.
               </p>
             </div>
             <div style="background: rgba(0,0,0,0.2); padding: 16px; border-radius: 8px; border-left: 3px solid #38bdf8;">
               <strong style="color: #38bdf8; font-size: 0.85rem; display: block; margin-bottom: 6px;">💡 Ganhos & Benefícios de Negócio</strong>
               <p style="font-size: 0.85rem; color: var(--text-muted); line-height: 1.5; margin: 0;">
-                Permite vender o plano de €290/mês (Acompanhamento Radar) com autoridade técnica máxima. O cliente não compra uma promessa: ele vê no gráfico a data e a hora exatas em que tentaram enganar o seu público.
+                Usar os registos como ponto de partida para revisão manual. Não apresentar estes dados como monitorização contínua, prova de ataque ou promessa comercial.
               </p>
             </div>
           </div>
 
           <div style="font-size: 0.9rem; line-height: 1.6; color: #cbd5e1;">
             <h4 style="color: #f8fafc; font-size: 1rem; margin: 16px 0 8px;">📡 Como Funciona o Threat Radar:</h4>
-            <p>O Radar consome denúncias enviadas pelos cidadãos via WhatsApp e cruza em tempo real com feeds internacionais (OpenPhish, IANA RDAP) e nacionais (CNCS, SIBS/MB WAY):</p>
+            <p>O painel agrupa sinais submetidos e indicadores encontrados pelo analisador. As consultas a fontes externas de reputação ocorrem durante análises específicas; não existe uma integração contínua com CNCS, SIBS ou MB WAY.</p>
             <ul style="padding-left: 20px; margin-bottom: 16px;">
-              <li><strong style="color: #f87171;">Severidade Crítica (Vermelho):</strong> Surtos com mais de 10 denúncias num curto intervalo (ex: vagas massivas de "encomenda CTT alfândega" ou "corte de luz EDP").</li>
-              <li><strong style="color: #fbbf24;">Severidade Alta (Amarelo):</strong> Golpes em propagação média (3 a 9 denúncias). Campanha a ganhar força.</li>
-              <li><strong style="color: #60a5fa;">Severidade Monitorar (Azul):</strong> Tentativas pontuais ou novos domínios suspeitos detectados pelos scanners.</li>
-              <li><strong>Shadow Radar:</strong> Monitoriza marcas de interesse nacional que ainda não são clientes pagantes (ex: CTT, MB WAY, Bancos). Isto serve de base para o Dossiê CISO e prospeção ativa.</li>
+              <li><strong style="color: #f87171;">Contagem elevada:</strong> vários registos correspondem ao mesmo agrupamento automático; a contagem pode incluir repetições e não representa pessoas únicas.</li>
+              <li><strong style="color: #fbbf24;">Contagem intermédia:</strong> agrupamento repetido que merece revisão, sem inferir propagação ou coordenação.</li>
+              <li><strong style="color: #60a5fa;">Registo isolado:</strong> indicador encontrado numa submissão; pode ser falso positivo.</li>
+              <li><strong>Marcas mencionadas:</strong> nomes extraídos ou submetidos, sem vigilância passiva e sem confirmar que a marca foi atacada.</li>
             </ul>
           </div>
         </div>
@@ -1705,23 +1705,23 @@
         <div id="mod-ocorrencias" style="background: var(--card-bg); border: 1px solid var(--card-border); border-radius: var(--radius); padding: 28px;">
           <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 16px;">
             <div>
-              <span style="font-size: 0.72rem; font-weight: 800; color: #f97316; text-transform: uppercase; letter-spacing: 0.05em;">Módulo 06 · Evidências Forenses</span>
-              <h3 style="font-size: 1.4rem; margin: 4px 0;">Ocorrências de Impersonation & Takedown</h3>
+              <span style="font-size: 0.72rem; font-weight: 800; color: #f97316; text-transform: uppercase; letter-spacing: 0.05em;">Módulo 06 · Revisão de ocorrências</span>
+              <h3 style="font-size: 1.4rem; margin: 4px 0;">Indicadores e resumos preliminares</h3>
             </div>
-            <span style="background: rgba(249, 115, 22, 0.15); color: #fb923c; padding: 4px 10px; border-radius: 6px; font-size: 0.75rem; font-weight: 700;">Provas Forenses</span>
+            <span style="background: rgba(249, 115, 22, 0.15); color: #fb923c; padding: 4px 10px; border-radius: 6px; font-size: 0.75rem; font-weight: 700;">Não é prova pericial</span>
           </div>
 
           <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; margin-bottom: 20px;">
             <div style="background: rgba(0,0,0,0.2); padding: 16px; border-radius: 8px; border-left: 3px solid #f97316;">
               <strong style="color: #fb923c; font-size: 0.85rem; display: block; margin-bottom: 6px;">🎯 Objetivo de Aprendizagem</strong>
               <p style="font-size: 0.85rem; color: var(--text-muted); line-height: 1.5; margin: 0;">
-                Auditar os detalhes forenses de cada tentativa de impersonation: canais maliciosos, números falsos, URLs encurtados e links diretos para pedido de takedown.
+                Rever indicadores extraídos automaticamente de sinais submetidos. A origem, titularidade e contexto não são autenticados pelo sistema.
               </p>
             </div>
             <div style="background: rgba(0,0,0,0.2); padding: 16px; border-radius: 8px; border-left: 3px solid #10b981;">
               <strong style="color: #34d399; font-size: 0.85rem; display: block; margin-bottom: 6px;">💡 Ganhos & Benefícios de Negócio</strong>
               <p style="font-size: 0.85rem; color: var(--text-muted); line-height: 1.5; margin: 0;">
-                Fornece subsídios técnicos imediatos aos clientes para que as suas equipas jurídicas ou de TI possam submeter pedidos de derrube (takedown) contra domínios falsos a empresas registrars (GoDaddy, Namecheap, Cloudflare).
+                O resumo pode apoiar uma investigação interna após confirmação independente. Não envia pedidos de remoção e não comprova que um domínio ou canal é fraudulento.
               </p>
             </div>
           </div>
@@ -1729,11 +1729,11 @@
           <div style="font-size: 0.9rem; line-height: 1.6; color: #cbd5e1;">
             <h4 style="color: #f8fafc; font-size: 1rem; margin: 16px 0 8px;">⚙️ O que Inspecionar na Tabela de Ocorrências:</h4>
             <ul style="padding-left: 20px; margin-bottom: 16px;">
-              <li><strong>Marca Mencionada:</strong> Nome da entidade que o burlão tentou imitar.</li>
+              <li><strong>Marca mencionada:</strong> Nome extraído de uma mensagem; não prova que a entidade foi imitada.</li>
               <li><strong>Canal Utilizado:</strong> Se a abordagem ocorreu via SMS (smishing), WhatsApp ou e-mail de phishing.</li>
-              <li><strong>Veredito & Confiança:</strong> Probabilidade calculada pelo motor (ex: <code>golpe (98%)</code>).</li>
+              <li><strong>Veredito & confiança:</strong> Classificação e pontuação automáticas; não interpretar como probabilidade calibrada sem validação específica.</li>
               <li><strong>Risco Score (0 a 100):</strong> Pontuação de periculosidade baseada no pedido de dados bancários, dinheiro imediato ou roubo de credenciais.</li>
-              <li><strong>Alerta / Link:</strong> O endereço do site malicioso capturado para que seja bloqueado na rede do cliente.</li>
+              <li><strong>Alerta / link:</strong> Endereço extraído para revisão. Confirmar o destino e o contexto antes de bloquear ou comunicar.</li>
             </ul>
           </div>
         </div>
@@ -1752,13 +1752,13 @@
             <div style="background: rgba(0,0,0,0.2); padding: 16px; border-radius: 8px; border-left: 3px solid #06b6d4;">
               <strong style="color: #22d3ee; font-size: 0.85rem; display: block; margin-bottom: 6px;">🎯 Objetivo de Aprendizagem</strong>
               <p style="font-size: 0.85rem; color: var(--text-muted); line-height: 1.5; margin: 0;">
-                Gerar com um único clique relatórios técnicos de inteligência e modelos de contacto executivo para diretores de segurança (CISO) e gestores de marcas sob ataque.
+                Gerar resumos de registos e rascunhos de contacto para revisão pelo operador.
               </p>
             </div>
             <div style="background: rgba(0,0,0,0.2); padding: 16px; border-radius: 8px; border-left: 3px solid #10b981;">
               <strong style="color: #34d399; font-size: 0.85rem; display: block; margin-bottom: 6px;">💡 Ganhos & Benefícios de Negócio</strong>
               <p style="font-size: 0.85rem; color: var(--text-muted); line-height: 1.5; margin: 0;">
-                Abordagem de vendas com fricção zero. Você não liga a pedir para comprar: envia primeiro um dossiê gratuito demonstrando exatamente quantos clientes deles foram atacados na última semana, posicionando o ZapQuemÉ como parceiro indispensável.
+                Usar um resumo de sinais submetidos apenas como ponto de partida para revisão. Não o apresentar como prova de que clientes foram atacados nem como validação independente.
               </p>
             </div>
           </div>
@@ -1766,16 +1766,16 @@
           <div style="font-size: 0.9rem; line-height: 1.6; color: #cbd5e1;">
             <h4 style="color: #f8fafc; font-size: 1rem; margin: 16px 0 8px;">⚙️ O Roteiro de Prospeção em 3 Passos:</h4>
             <ol style="padding-left: 20px; margin-bottom: 16px;">
-              <li>Na aba <strong>"Dossiê CISO & Leads"</strong>, selecione a marca que registou denúncias no banco (ex: CTT, DPD, Banco, Clínica).</li>
-              <li>Escolha a janela temporal (7, 30 ou 90 dias) e clique em <strong>"Gerar Dossiê"</strong>. O sistema compila automaticamente:
+              <li>Na aba <strong>"Dossiê CISO & Leads"</strong>, selecione o nome da marca associado a registos submetidos.</li>
+              <li>Escolha a janela temporal (7, 30 ou 90 dias) e clique em <strong>"Gerar resumo"</strong>. O sistema compila:
                 <ul>
-                  <li>Total de denúncias recebidas pelo ZapQuemÉ.</li>
-                  <li>Percentagem de golpes confirmados vs suspeitos.</li>
+                  <li>Total de registos submetidos que mencionam a marca.</li>
+                  <li>Contagens por classificação automática (não confirmam fraude).</li>
                   <li>Canais de disseminação mais comuns (SMS vs WhatsApp).</li>
-                  <li>Lista dos domínios falsos capturados com data e hora.</li>
+                  <li>Indicadores de domínio extraídos, ainda não validados, com data do registo.</li>
                 </ul>
               </li>
-              <li>Role até a caixa <strong>"Email de Prospeção Consultiva"</strong>: o sistema redige um e-mail pronto, em tom institucional sóbrio para o CISO ou Diretor de TI, com o dossiê em anexo e o link para adesão ao plano de monitorização.</li>
+              <li>Reveja o texto proposto antes de o copiar. Não envie indicadores pessoais ou acusações sem validar contexto, destinatário, base para partilha e autorização.</li>
             </ol>
           </div>
         </div>
@@ -1787,20 +1787,20 @@
               <span style="font-size: 0.72rem; font-weight: 800; color: #eab308; text-transform: uppercase; letter-spacing: 0.05em;">Módulo 08 · IA, Agrupamento & Regressão</span>
               <h3 style="font-size: 1.4rem; margin: 4px 0;">Centro de Golpes Novos: Fases 1 a 4</h3>
             </div>
-            <span style="background: rgba(234, 179, 8, 0.15); color: #fde047; padding: 4px 10px; border-radius: 6px; font-size: 0.75rem; font-weight: 700;">Inteligência Contínua</span>
+            <span style="background: rgba(234, 179, 8, 0.15); color: #fde047; padding: 4px 10px; border-radius: 6px; font-size: 0.75rem; font-weight: 700;">Revisão e benchmark manual</span>
           </div>
 
           <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px; margin-bottom: 20px;">
             <div style="background: rgba(0,0,0,0.2); padding: 16px; border-radius: 8px; border-left: 3px solid #eab308;">
               <strong style="color: #fde047; font-size: 0.85rem; display: block; margin-bottom: 6px;">🎯 Objetivo de Aprendizagem</strong>
               <p style="font-size: 0.85rem; color: var(--text-muted); line-height: 1.5; margin: 0;">
-                Operar o pipeline contínuo de aprendizado: revisão humana de novos padrões, agrupamento em clusters, governança do dicionário de domínios e execução de benchmarks sem quebra de acurácia.
+                Rever padrões, agrupamentos, dicionário de domínios e resultados do benchmark. Estas tarefas não atualizam o modelo automaticamente nem garantem precisão.
               </p>
             </div>
             <div style="background: rgba(0,0,0,0.2); padding: 16px; border-radius: 8px; border-left: 3px solid #10b981;">
               <strong style="color: #34d399; font-size: 0.85rem; display: block; margin-bottom: 6px;">💡 Ganhos & Benefícios de Negócio</strong>
               <p style="font-size: 0.85rem; color: var(--text-muted); line-height: 1.5; margin: 0;">
-                Garante que o motor do ZapQuemÉ nunca fica obsoleto quando os burlões inventam pretextos inéditos, mantendo ao mesmo tempo zero falsos positivos em marcas legítimas.
+                A fila e o benchmark ajudam operadores a rever exemplos. Não garantem atualização automática do motor nem ausência de falsos positivos.
               </p>
             </div>
           </div>
@@ -1810,7 +1810,7 @@
             <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 14px; margin-bottom: 16px;">
               <div style="background: rgba(255,255,255,0.03); padding: 14px; border-radius: 8px; border: 1px solid var(--card-border);">
                 <strong style="color: #fde047;">Fase 1: Fila de Revisão</strong>
-                <p style="font-size: 0.8rem; color: var(--text-muted); margin: 6px 0 0;">Mensagens anómalas com vocabulário inédito caem aqui. O operador humano analisa o texto anonimizado e decide se é golpe novo, falso positivo ou variação.</p>
+                <p style="font-size: 0.8rem; color: var(--text-muted); margin: 6px 0 0;">Exemplos para revisão humana. O texto pode conter dados pessoais; confirme que foi minimizado antes de guardar ou classificar.</p>
               </div>
               <div style="background: rgba(255,255,255,0.03); padding: 14px; border-radius: 8px; border: 1px solid var(--card-border);">
                 <strong style="color: #fde047;">Fase 2: Clusters de Ataque</strong>
@@ -1848,7 +1848,7 @@
             <div style="background: rgba(0,0,0,0.2); padding: 16px; border-radius: 8px; border-left: 3px solid #38bdf8;">
               <strong style="color: #38bdf8; font-size: 0.85rem; display: block; margin-bottom: 6px;">💡 Ganhos & Benefícios de Negócio</strong>
               <p style="font-size: 0.85rem; color: var(--text-muted); line-height: 1.5; margin: 0;">
-                Garante que nenhum cliente usufrui do selo oficial ativo sem estar em dia com a mensalidade (€49) ou anuidade (€490). Alertas visuais avisam quando faltam 30 dias para a renovação.
+                O painel guarda pagamentos introduzidos pelo operador e pode atualizar a validade conforme a ação escolhida. Não cobra automaticamente, não confirma a liquidação junto do banco e não garante que todos os registos estejam conciliados.
               </p>
             </div>
           </div>
@@ -1857,7 +1857,7 @@
             <h4 style="color: #f8fafc; font-size: 1rem; margin: 16px 0 8px;">⚙️ Procedimento de Registo Financeiro:</h4>
             <ol style="padding-left: 20px; margin-bottom: 16px;">
               <li>Ao receber o comprovativo (MB WAY, Transferência SEPA ou Multibanco), abra o modal de <strong>Registar Pagamento</strong> na empresa correspondente.</li>
-              <li>Insira o valor liquidado (€49,00 para mensal ou valor de plano acordado), o método e a referência da transação.</li>
+              <li>Insira o valor efetivamente conferido no comprovativo e o método. €49/mês é apenas um valor indicativo até haver preço e condições acordados por escrito.</li>
               <li>O sistema atualiza a validade do selo e recalcula instantaneamente os KPIs de MRR no Cockpit Geral.</li>
               <li><strong>Isenções Especiais:</strong> Se conceder uma isenção promocional ou institucional, o sistema exige obrigatoriamente a justificação no campo de notas para efeitos de auditoria interna.</li>
             </ol>
@@ -1878,13 +1878,13 @@
             <div style="background: rgba(0,0,0,0.2); padding: 16px; border-radius: 8px; border-left: 3px solid #ec4899;">
               <strong style="color: #f472b6; font-size: 0.85rem; display: block; margin-bottom: 6px;">🎯 Objetivo de Aprendizagem</strong>
               <p style="font-size: 0.85rem; color: var(--text-muted); line-height: 1.5; margin: 0;">
-                Saber alternar entre a base de dados de demonstração (para apresentações a investidores) e a base de dados de produção estritamente limpa com um comando de terminal.
+                Usar registos fictícios apenas num projeto Supabase isolado para demonstração e confirmar manualmente os dados após a limpeza.
               </p>
             </div>
             <div style="background: rgba(0,0,0,0.2); padding: 16px; border-radius: 8px; border-left: 3px solid #10b981;">
               <strong style="color: #34d399; font-size: 0.85rem; display: block; margin-bottom: 6px;">💡 Ganhos & Benefícios de Negócio</strong>
               <p style="font-size: 0.85rem; color: var(--text-muted); line-height: 1.5; margin: 0;">
-                Segurança técnica e visual impecável. Permite fazer demonstrações ao vivo com métricas ricas (€437 MRR, marcas nacionais no Radar) e, ao entrar em produção real, deixar o banco completamente virgem em 2 segundos.
+                Os registos de demonstração servem apenas para avaliar o painel. Confirme o ambiente e o destino antes de usar qualquer ferramenta de limpeza; nunca utilize uma rotina de demonstração para apagar dados de produção.
               </p>
             </div>
           </div>
@@ -1892,15 +1892,15 @@
           <div style="font-size: 0.9rem; line-height: 1.6; color: #cbd5e1;">
             <h4 style="color: #f8fafc; font-size: 1rem; margin: 16px 0 8px;">⚙️ Comandos de Manutenção no Terminal:</h4>
             <div style="background: #090d16; border: 1px solid var(--card-border); border-radius: 8px; padding: 16px; margin-bottom: 16px; font-family: 'JetBrains Mono', monospace; font-size: 0.82rem;">
-              <div style="color: #94a3b8; margin-bottom: 8px;"># 1. Popular base com dados de demonstração (apresentação a clientes/investidores):</div>
+              <div style="color: #94a3b8; margin-bottom: 8px;"># 1. Seed apenas num projeto Supabase isolado; o script exige confirmação explícita do identificador do projeto:</div>
               <div style="color: #38bdf8;">node scripts/seed_mock_demo.mjs</div>
-              <div style="color: #94a3b8; margin: 12px 0 8px;"># 2. Limpar todos os dados mock e restaurar o banco virgem de produção:</div>
+              <div style="color: #94a3b8; margin: 12px 0 8px;"># 2. Remover registos mock. Requer confirmação do projeto e da frase DELETE MOCK DATA; não usar em produção:</div>
               <div style="color: #f43f5e;">node scripts/limpar_mock_demo.mjs</div>
               <div style="color: #94a3b8; margin: 12px 0 8px;"># 3. Rodar bateria completa de testes de regressão do motor:</div>
               <div style="color: #34d399;">npm test</div>
             </div>
             <p style="font-size: 0.85rem; color: var(--text-muted); margin: 0;">
-              Estes scripts utilizam chaves com UUIDs determinísticos de teste, garantindo que nenhuma análise real de utilizadores do WhatsApp seja apagada durante a limpeza.
+              O seed marca empresas e selos como teste e recusa execução com <code>NODE_ENV=production</code>. A limpeza filtra IDs de demonstração, exige confirmação do projeto e termina se algum pedido de remoção falhar. Ainda assim, confirme sempre o URL e a seleção no Supabase antes de executar e verifique manualmente as contagens depois.
             </p>
           </div>
         </div>
@@ -2203,7 +2203,7 @@
       </div>
       <form onsubmit="submeterNovaAmostra(event)">
         <div style="background: rgba(99, 102, 241, 0.08); border: 1px solid rgba(99, 102, 241, 0.3); border-radius: 8px; padding: 10px 12px; margin-bottom: 14px; font-size: 0.78rem; color: #c7d2fe;">
-          🔒 <strong>Anonimização Obrigatória:</strong> Nunca guarde números de telemóvel, emails, NIF ou IBAN. Resumos serão limpos automaticamente.
+          🔒 <strong>Minimização de dados:</strong> Não introduza números de telefone, emails, NIF, IBAN ou outros dados pessoais. O formulário não garante anonimização automática; reveja o texto antes de o guardar.
         </div>
         <div class="form-row">
           <div class="form-group">
@@ -2213,14 +2213,14 @@
           <div class="form-group">
             <label class="form-label">Origem *</label>
             <select id="amostraModalOrigem" class="form-select">
-              <option value="real">Real (anonimizada com consentimento)</option>
+              <option value="real">Real (revista e minimizada manualmente)</option>
               <option value="alerta_oficial">Alerta Oficial (exemplo oficial)</option>
               <option value="sintetico">Sintético (baseado em alerta)</option>
             </select>
           </div>
         </div>
         <div class="form-group">
-          <label class="form-label">Resumo Anonimizado / Padrão da Mensagem *</label>
+          <label class="form-label">Resumo sem dados pessoais (revisão manual obrigatória) *</label>
           <textarea id="amostraModalResumo" class="form-input" rows="3" required placeholder="Ex: SMS em nome dos CTT com aviso de encomenda retida na alfandega e link para pagar taxa"></textarea>
         </div>
         <div class="form-row">
@@ -2345,9 +2345,9 @@
           <div class="form-group">
             <label class="form-label">Plano Comercial</label>
             <select id="modalPlano" class="form-select">
-              <option value="selo" selected>Selo Verificado (€49/mês)</option>
-              <option value="radar">Radar de Marca (€290/mês)</option>
-              <option value="enterprise">Enterprise / SIBS / Seguradoras</option>
+              <option value="selo" selected>Registo empresarial (preço indicativo €49/mês)</option>
+              <option value="radar">Acompanhamento manual (preço por definir)</option>
+              <option value="enterprise">Outro âmbito (por definir)</option>
               <option value="business">Business (Legado)</option>
               <option value="pro">Pro (Legado)</option>
             </select>
@@ -2480,9 +2480,9 @@
           <div class="form-group">
             <label class="form-label">Plano Comercial</label>
             <select id="editPlano" class="form-select">
-              <option value="selo">Selo Verificado (€49/mês)</option>
-              <option value="radar">Radar de Marca (€290/mês)</option>
-              <option value="enterprise">Enterprise / SIBS / Seguradoras</option>
+              <option value="selo">Registo empresarial (preço indicativo €49/mês)</option>
+              <option value="radar">Acompanhamento manual (preço por definir)</option>
+              <option value="enterprise">Outro âmbito (por definir)</option>
               <option value="business">Business (Legado)</option>
               <option value="pro">Pro (Legado)</option>
             </select>
@@ -2564,8 +2564,8 @@
     <div class="modal-content" style="max-width: 860px;">
       <div class="modal-title">
         <div>
-          <span style="font-size: 1.2rem; font-weight: 800; color: #fff;">Dossiê B2B & Verificação Oficial</span>
-          <div style="font-size: 0.8rem; color: var(--text-muted); font-weight: 500;">Gestão do selo, checklist pericial, pagamentos e relatórios</div>
+          <span style="font-size: 1.2rem; font-weight: 800; color: #fff;">Ficha da empresa e checklist manual</span>
+          <div style="font-size: 0.8rem; color: var(--text-muted); font-weight: 500;">Gestão do selo, revisão de dados, pagamentos e resumos</div>
         </div>
         <button class="close-modal" onclick="closeModals()">×</button>
       </div>
@@ -2610,7 +2610,7 @@
       <div class="detail-section" style="background: rgba(16, 185, 129, 0.03); border-color: rgba(16, 185, 129, 0.2);">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;">
           <div>
-            <h4 style="font-size: 0.85rem; text-transform: uppercase; color: #34d399; margin: 0;">2. Checklist Oficial de Verificação (4 Pilares)</h4>
+            <h4 style="font-size: 0.85rem; text-transform: uppercase; color: #34d399; margin: 0;">2. Campos de revisão manual (4 áreas)</h4>
             <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 2px;">Todos os 4 pilares devem estar validados com prova antes da ativação do selo.</div>
           </div>
           <span id="detChecklistResumo" class="badge badge-pendente">0 / 4 Concluídos</span>
@@ -2716,8 +2716,8 @@
       <div class="detail-section" style="background: rgba(59, 130, 246, 0.03); border-color: rgba(59, 130, 246, 0.2);">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; flex-wrap: wrap; gap: 10px;">
           <div>
-            <h4 style="font-size: 0.85rem; text-transform: uppercase; color: #60a5fa; margin: 0;">5. Relatórios Mensais Periciais (Hash SHA-256)</h4>
-            <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 2px;">Relatório pericial mensal com dados sanitizados e integridade criptográfica.</div>
+            <h4 style="font-size: 0.85rem; text-transform: uppercase; color: #60a5fa; margin: 0;">5. Resumos Mensais de Sinais (SHA-256)</h4>
+            <div style="font-size: 0.75rem; color: var(--text-muted); margin-top: 2px;">Resumo automático para revisão. O hash identifica o resumo e não valida a origem dos registos.</div>
           </div>
           <div style="display: flex; gap: 8px; align-items: center;">
             <select id="relatorioMesSelect" class="form-select" style="width: auto; padding: 4px 8px; font-size: 0.8rem;">
@@ -2870,14 +2870,14 @@
     <div class="modal-content" style="max-width: 680px;">
       <div class="modal-title">
         <div>
-          <span style="font-size: 1.15rem; font-weight: 800; color: #fff;">✉️ Alerta Preventivo de Segurança</span>
-          <div style="font-size: 0.75rem; color: var(--text-muted);">Mensagem neutra de alerta com dados de vítimas estritamente ofuscados</div>
+          <span style="font-size: 1.15rem; font-weight: 800; color: #fff;">✉️ Rascunho de contacto para revisão</span>
+          <div style="font-size: 0.75rem; color: var(--text-muted);">Não enviar antes de rever destinatário, conteúdo e dados pessoais.</div>
         </div>
         <button class="close-modal" onclick="document.getElementById('alertaGratuitoModal').style.display='none'">×</button>
       </div>
 
       <div style="background: rgba(245, 158, 11, 0.08); border: 1px solid rgba(245, 158, 11, 0.25); border-radius: 8px; padding: 12px; margin-bottom: 16px; font-size: 0.8rem; color: #fbbf24;">
-        🛡️ <strong>Escudo de Privacidade & Legal:</strong> Este rascunho utiliza apenas a expressão "sinais detetados" e remove automaticamente quaisquer contactos ou dados pessoais de cidadãos.
+        ⚠️ <strong>Revisão obrigatória:</strong> este rascunho pode conter indicadores extraídos automaticamente. Não assume que os dados pessoais foram removidos; reveja antes de copiar ou partilhar.
       </div>
 
       <div class="form-group">
@@ -2902,24 +2902,24 @@
     </div>
   </div>
 
-  <!-- MODAL: PACOTE FORENSE DE TAKEDOWN & NOTIFICAÇÃO (SIBS / CERT.PT / SEGURADORAS / DECO) -->
+  <!-- MODAL: RESUMO PRELIMINAR PARA REVISÃO HUMANA -->
   <div id="pacoteTakedownModal" class="modal-overlay">
     <div class="modal-content" style="max-width: 760px;">
       <div class="modal-title">
         <div>
-          <span style="font-size: 1.15rem; font-weight: 800; color: #fff;">⚡ Pacote Forense de Takedown & Notificação de Abuso</span>
-          <div style="font-size: 0.75rem; color: var(--text-muted);" id="takedownDestinatariosSub">Pronto para SIBS / MB WAY Fraud Desk, CERT.PT / DNS.PT, CISO e DECO Proteste</div>
+          <span style="font-size: 1.15rem; font-weight: 800; color: #fff;">⚡ Resumo técnico preliminar</span>
+          <div style="font-size: 0.75rem; color: var(--text-muted);" id="takedownDestinatariosSub">Destinatário possível; confirmar canal e contexto antes de partilhar.</div>
         </div>
         <button class="close-modal" onclick="document.getElementById('pacoteTakedownModal').style.display='none'">×</button>
       </div>
 
       <div style="background: rgba(56, 189, 248, 0.08); border: 1px solid rgba(56, 189, 248, 0.28); border-radius: 8px; padding: 12px; margin-bottom: 14px; font-size: 0.8rem; color: #7dd3fc; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
-        <span>🔒 <strong>Integridade Pericial (RGPD Safe):</strong> Inclui IOCs técnicos e Hash SHA-256 sem expor dados pessoais de cidadãos.</span>
+        <span>⚠️ <strong>Revisão obrigatória:</strong> os indicadores podem conter dados pessoais ou erros. O SHA-256 identifica este resumo; não valida a fonte nem prova fraude.</span>
         <span style="font-family: 'JetBrains Mono', monospace; font-size: 0.72rem; color: #38bdf8;" id="takedownHashBadge">SHA-256: -</span>
       </div>
 
       <div class="form-group">
-        <label class="form-label">Assunto Oficial da Notificação</label>
+        <label class="form-label">Assunto sugerido para revisão</label>
         <div style="display: flex; gap: 8px;">
           <input type="text" id="takedownAssuntoInput" class="form-input" readonly>
           <button class="btn-xs btn-xs-primary" onclick="copiarTakedownAssunto()">Copiar Assunto</button>
@@ -2928,8 +2928,8 @@
 
       <div class="form-group">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
-          <label class="form-label" style="margin: 0;">Relatório Técnico Forense (SIBS / CERT.PT / CISO)</label>
-          <button class="btn-xs btn-xs-primary" onclick="copiarTakedownCorpo()">📋 Copiar Pacote Completo</button>
+          <label class="form-label" style="margin: 0;">Resumo automático — rever antes de qualquer partilha</label>
+          <button class="btn-xs btn-xs-primary" onclick="copiarTakedownCorpo()">📋 Copiar resumo</button>
         </div>
         <textarea id="takedownCorpoTextarea" class="form-input" rows="14" readonly style="font-family: 'JetBrains Mono', monospace; font-size: 0.8rem; line-height: 1.45;"></textarea>
       </div>
@@ -2940,12 +2940,12 @@
     </div>
   </div>
 
-  <!-- MODAL: PRÉ-VISUALIZAÇÃO DE RELATÓRIO MENSAL PERICIAL (CRITÉRIOS 5 & 6) -->
+  <!-- MODAL: PRÉ-VISUALIZAÇÃO DO RESUMO MENSAL -->
   <div id="verRelatorioModal" class="modal-overlay">
     <div class="modal-content" style="max-width: 900px; height: 90vh; display: flex; flex-direction: column;">
       <div class="modal-title" style="flex-shrink: 0;">
         <div>
-          <span style="font-size: 1.15rem; font-weight: 800; color: #fff;">Relatório Mensal Pericial — <span id="verRelatorioTitulo"></span></span>
+          <span style="font-size: 1.15rem; font-weight: 800; color: #fff;">Resumo Mensal de Sinais — <span id="verRelatorioTitulo"></span></span>
           <div style="font-size: 0.75rem; color: var(--text-muted); font-family: 'JetBrains Mono', monospace;" id="verRelatorioHash">-</div>
         </div>
         <div style="display: flex; gap: 8px; align-items: center;">
@@ -3043,7 +3043,7 @@
     <div class="modal-content" style="max-width: 500px; text-align: center;">
       <div style="font-size: 2.5rem; margin-bottom: 8px;">🛡️</div>
       <h3 style="font-size: 1.3rem; font-weight: 800; color: #fff; margin-bottom: 4px;">ZAP VERIFIED criado</h3>
-      <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 20px;">O selo de verificação oficial foi emitido com sucesso.</p>
+      <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 20px;">O registo de consulta foi criado. Confirme os campos, a validade e a página pública antes de partilhar a ligação.</p>
 
       <div class="detail-section" style="text-align: left;">
         <div class="detail-row"><span class="detail-label">Código:</span> <span id="createdSeloCodigo" class="detail-value" style="font-family: 'JetBrains Mono', monospace; color: var(--primary);">-</span></div>
@@ -3066,8 +3066,8 @@
         <div style="display: flex; align-items: center; gap: 10px;">
           <span style="color: var(--primary); font-size: 1.4rem;">🛡️</span>
           <div>
-            <div style="font-size: 1.15rem; font-weight: 800; color: #fff;">ZAP VERIFIED — Kit Comercial</div>
-            <div style="font-size: 0.75rem; color: var(--text-muted); font-weight: 600;">Verificação oficial de canais empresariais</div>
+            <div style="font-size: 1.15rem; font-weight: 800; color: #fff;">Consulta do registo empresarial</div>
+            <div style="font-size: 0.75rem; color: var(--text-muted); font-weight: 600;">Estado e campos indicados no serviço</div>
           </div>
         </div>
         <button class="close-modal" onclick="closeModals()">×</button>
@@ -3079,7 +3079,7 @@
           <div>
             <span style="font-size: 0.72rem; font-weight: 800; color: var(--primary); letter-spacing: 0.1em; text-transform: uppercase;">ZAP VERIFIED</span>
             <h3 id="kitEmpresaNome" style="font-size: 1.3rem; font-weight: 800; color: #fff; margin: 2px 0 6px;">-</h3>
-            <div id="kitEstadoBadge" class="badge badge-ativo">● VERIFICAÇÃO ATIVA</div>
+            <div id="kitEstadoBadge" class="badge badge-ativo">● REGISTO ATIVO</div>
           </div>
           <div style="text-align: right;">
             <div style="font-size: 0.72rem; color: var(--text-muted); font-weight: 700; text-transform: uppercase;">Válido até</div>
@@ -3139,7 +3139,7 @@
       <!-- Ações Finais (Seção 8 e 10) -->
       <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 20px; border-top: 1px solid var(--card-border); padding-top: 16px;">
         <div style="font-size: 0.75rem; color: var(--text-muted); max-width: 320px; line-height: 1.3;">
-          🛡️ O badge aponta para a verificação oficial dos canais da empresa.
+          🛡️ O emblema dinâmico aponta para a consulta do registo e mostra o estado atual no serviço.
         </div>
         <div style="display: flex; gap: 8px;">
           <button id="kitBtnDownload" type="button" class="btn-secondary" onclick="baixarKitAsset()">⬇ Baixar Imagem</button>
@@ -3153,7 +3153,7 @@
   <div id="toastCopy" class="toast-copy">Copiado com sucesso!</div>
 
   <script>
-    let globalAdminSecret = localStorage.getItem('zap_admin_key') || '';
+    let globalAdminSecret = sessionStorage.getItem('zap_admin_key') || '';
     let dashboardState = { empresas: [], selos: [], radar: [], ocorrencias: [] };
     let currentKitSelo = null;
     let currentKitEmpresa = null;
@@ -3176,7 +3176,7 @@
         const res = await fetch('/api/admin', { headers: { 'x-admin-key': val } });
         if (res.ok) {
           globalAdminSecret = val;
-          localStorage.setItem('zap_admin_key', val);
+          sessionStorage.setItem('zap_admin_key', val);
           document.getElementById('authOverlay').style.display = 'none';
           loadDashboardData();
         } else {
@@ -3188,7 +3188,7 @@
     }
 
     function logout() {
-      localStorage.removeItem('zap_admin_key');
+      sessionStorage.removeItem('zap_admin_key');
       globalAdminSecret = '';
       window.location.reload();
     }
@@ -3403,34 +3403,28 @@
       container.innerHTML = `
         <div style="border-bottom:1px solid rgba(148,163,184,0.35); padding-bottom:16px; margin-bottom:18px;">
           <div style="font-size:0.75rem; color:#94a3b8; font-family:'JetBrains Mono', monospace;">${refId}</div>
-          <h2 style="font-size:1.4rem; margin:4px 0;">Relatório de Denúncias — ${escapeHtml(marca)}</h2>
+          <h2 style="font-size:1.4rem; margin:4px 0;">Resumo de Registos Submetidos — ${escapeHtml(marca)}</h2>
           <div style="font-size:0.85rem; color:#94a3b8;">Período: ${fmtData(inicio)} a ${hoje} (${dias} dias) · Gerado em ${hoje} · Zap, Quem É?</div>
         </div>
 
         <div style="border:1px solid rgba(245,158,11,0.45); border-radius:8px; padding:12px 14px; font-size:0.8rem; line-height:1.55;">
-          <strong>Como ler este relatório:</strong> resume mensagens enviadas por utilizadores ao verificador gratuito Zap, Quem É? que mencionam esta marca e foram classificadas automaticamente como <em>golpe</em> ou <em>suspeito</em>.
-          São denúncias, não fraudes confirmadas. Não inclui dados pessoais de quem denunciou. Os contactos listados foram citados nas mensagens e não foram verificados de forma independente.
+          <strong>Como ler este resumo:</strong> agrega registos que mencionam esta marca e classificações automáticas de mensagens submetidas. Não confirma fraude, autoria ou titularidade de contactos. O texto original e os identificadores de contacto são omitidos deste resumo; a classificação pode conter erros.
         </div>
 
         <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(160px, 1fr)); gap:12px; margin-top:18px;">
-          ${kpi('Denúncias no período', total)}
+          ${kpi('Registos submetidos no período', total)}
           ${kpi('Classificadas como golpe', nGolpe)}
           ${kpi('Classificadas como suspeitas', nSuspeito)}
           ${kpi('Contactos distintos citados', contar(casos, c => c.canal_mencionado).length)}
           ${empresa ? kpi('Contactos fora dos canais oficiais', nForaOficial) : ''}
         </div>
 
-        ${total ? `<div style="font-size:0.8rem; color:#94a3b8; margin-top:10px;">Primeira denúncia: ${fmtDataHora(primeira)} · Última: ${fmtDataHora(ultima)}</div>` : `<div style="margin-top:14px; font-size:0.9rem;">Nenhuma denúncia registada com o nome desta empresa neste período.</div>`}
+        ${total ? `<div style="font-size:0.8rem; color:#94a3b8; margin-top:10px;">Primeiro registo: ${fmtDataHora(primeira)} · Mais recente: ${fmtDataHora(ultima)}</div>` : `<div style="margin-top:14px; font-size:0.9rem;">Nenhum registo encontrado com o nome desta empresa neste período.</div>`}
 
         ${total ? seccao('Tipos de burla identificados', tabela(['Tipo', 'Denúncias'], tipos.map(([t, n]) => [escapeHtml(t), n]))) : ''}
-        ${total ? seccao('Contactos citados nas mensagens', tabela(
-          empresa ? ['Contacto', 'Denúncias', 'Situação'] : ['Contacto', 'Denúncias'],
-          contactos.map(([c, n]) => empresa
-            ? [`<span style="font-family:'JetBrains Mono', monospace;">${escapeHtml(c)}</span>`, n, contactoForaOficial.has(c) ? 'Diferente dos canais oficiais registados' : '—']
-            : [`<span style="font-family:'JetBrains Mono', monospace;">${escapeHtml(c)}</span>`, n])
-        )) : ''}
+        ${total ? seccao('Identificadores mencionados', `<p style="font-size:0.82rem; color:#94a3b8;">${contactos.length} padrão(ões) distinto(s) foram omitidos deste resumo por poderem identificar pessoas. A extração automática não confirma quem controla um contacto. Reveja qualquer indicador em ambiente restrito antes de decidir se existe base para o partilhar.</p>`) : ''}
         ${total ? seccao('Últimas ocorrências', tabela(
-          ['Data', 'Classificação', 'Confiança', 'Tipo', 'Entrada'],
+          ['Data', 'Classificação automática', 'Confiança', 'Tipo', 'Canal de entrada'],
           casos.slice(0, 15).map(c => [fmtDataHora(c.criado_em), escapeHtml(c.veredito || ''), (c.confianca != null ? c.confianca + '%' : '—'), escapeHtml(c.tipo || '—'), escapeHtml(c.canal || '—')])
         )) : ''}
         ${total ? seccao('Canal de entrada das denúncias', tabela(['Canal', 'Denúncias'], canaisEntrada.map(([c, n]) => [escapeHtml(c), n]))) : ''}
@@ -3438,8 +3432,8 @@
         ${seccao('Ações sugeridas', `
           <ul style="font-size:0.82rem; line-height:1.6; margin:6px 0 0 18px; padding:0;">
             <li>Lembrar aos clientes, nos canais oficiais, quais são os vossos contactos e meios de pagamento legítimos.</li>
-            <li>Indicar que nunca pedem pagamentos a partir de números ou contas diferentes.</li>
-            <li>Se houver contactos ou sites falsos, reportá-los às autoridades competentes e, no caso de sites, ao registo/alojamento do domínio.</li>
+            <li>Publicar os canais e meios de pagamento oficiais da empresa numa página controlada pela própria entidade.</li>
+            <li>Validar qualquer indicador de forma independente e seguir o canal de reporte adequado antes de pedir bloqueio ou remoção.</li>
           </ul>`)}
       `;
 
@@ -3454,11 +3448,11 @@ Olá,
 
 Segue o resumo do período de ${fmtData(inicio)} a ${hoje}:
 ${total
-  ? `- Denúncias que mencionam a ${marca}: ${total} (golpe: ${nGolpe}; suspeito: ${nSuspeito})
-- Denúncias com contactos diferentes dos vossos canais oficiais: ${nForaOficial}`
-  : `- Nenhuma denúncia registada com o nome da ${marca} neste período.`}
+  ? `- Registos submetidos que mencionam a ${marca}: ${total} (classificados automaticamente como golpe: ${nGolpe}; suspeito: ${nSuspeito})
+- Registos com menções a canais diferentes dos registados pela empresa: ${nForaOficial}`
+  : `- Nenhum registo encontrado com o nome da ${marca} neste período.`}
 
-Envio em anexo o relatório completo em PDF. Recordo que são denúncias de utilizadores classificadas automaticamente, não fraudes confirmadas.
+Envio em anexo o resumo de registos submetidos. As classificações são automáticas, podem conter erros e não confirmam fraude ou autoria.
 
 Qualquer dúvida, estou disponível.
 
@@ -3473,9 +3467,9 @@ Olá,
 
 Sou [O SEU NOME], do Zap, Quem É? (${origem}), uma ferramenta gratuita onde as pessoas verificam mensagens suspeitas.
 
-Entre ${fmtData(primeira)} e ${fmtData(ultima)} recebemos ${total} ${total === 1 ? 'denúncia' : 'denúncias'} de mensagens que mencionavam a ${marca} e foram classificadas como golpe ou suspeitas${tiposTxt}.
+Entre ${fmtData(primeira)} e ${fmtData(ultima)} foram submetidos ${total} ${total === 1 ? 'registo' : 'registos'} de mensagens que mencionavam a ${marca} e foram classificados automaticamente como golpe ou suspeitos${tiposTxt}.
 
-Não vendo nada com este aviso. Preparei um resumo com os exemplos, sem dados pessoais de quem denunciou, para poderem avisar os vossos clientes e, se entenderem, reportar às autoridades. Posso enviar?
+Este primeiro contacto serve para perceber se a informação é útil. Qualquer resumo omitirá o texto original e os identificadores de contacto; as classificações automáticas não confirmam fraude. Posso enviar uma descrição do procedimento de revisão?
 
 Com os melhores cumprimentos,
 [O SEU NOME]
@@ -3668,7 +3662,7 @@ Zap, Quem É?`;
       tbody.innerHTML = leads.map(lead => {
         const dataStr = lead.criado_em ? new Date(lead.criado_em).toLocaleString('pt-PT') : '-';
         const rawWa = (lead.whatsapp || '').replace(/\D/g, '');
-        const waLink = rawWa ? `https://wa.me/${rawWa}?text=${encodeURIComponent('Olá ' + lead.nome + '! Recebemos a sua solicitação do Selo ZAP VERIFIED para a ' + lead.empresa + '. Podemos ativar a sua proteção hoje mesmo?')}` : null;
+        const waLink = rawWa ? `https://wa.me/${rawWa}?text=${encodeURIComponent('Olá ' + lead.nome + '! Recebemos o pedido de informação sobre o registo empresarial para a ' + lead.empresa + '. Podemos enviar uma proposta com o âmbito e as condições para sua revisão.')}` : null;
         const encodedLead = encodeURIComponent(JSON.stringify(lead));
 
         return `
@@ -3894,15 +3888,15 @@ Zap, Quem É?`;
       const surtosTbody = document.getElementById('surtosTableBody');
       if (surtosTbody) {
         if (!surtos.length) {
-          surtosTbody.innerHTML = '<tr><td colspan="8" style="text-align: center; color: var(--text-muted); padding: 24px;">Nenhum surto coordenado detetado no momento.</td></tr>';
+          surtosTbody.innerHTML = '<tr><td colspan="8" style="text-align: center; color: var(--text-muted); padding: 24px;">Não há agrupamentos de submissões para rever.</td></tr>';
         } else {
           surtosTbody.innerHTML = surtos.map(s => {
             const ultima = s.ultima_deteccao ? new Date(s.ultima_deteccao).toLocaleString('pt-PT') : '-';
             const badgeEstado = s.status_surto === 'SURTO_CRITICO'
-              ? '<span class="badge badge-suspenso">🔥 SURTO CRÍTICO</span>'
+              ? '<span class="badge badge-suspenso">Muitas submissões; rever</span>'
               : (s.status_surto === 'CAMPANHA_ATIVA'
-                ? '<span class="badge badge-severidade-suspeita">⚠️ CAMPANHA ATIVA</span>'
-                : '<span class="badge badge-severidade-monitorar">SINAL ISOLADO</span>');
+                ? '<span class="badge badge-severidade-suspeita">Repetições; rever</span>'
+                : '<span class="badge badge-severidade-monitorar">Registo isolado</span>');
             return `
               <tr>
                 <td style="font-weight: 800; color: #fff;">${escapeHtml(s.marca)}</td>
@@ -3914,8 +3908,8 @@ Zap, Quem É?`;
                 <td>${badgeEstado}</td>
                 <td>
                   <div style="display: flex; gap: 6px; flex-wrap: wrap;">
-                    <button class="btn-xs" style="color: #38bdf8; background: rgba(56, 189, 248, 0.15); border-color: rgba(56, 189, 248, 0.35);" onclick="abrirPacoteTakedown('${escapeHtml(s.marca)}', '${s.empresa_id || ''}')">⚡ Kit Takedown / SIBS</button>
-                    <button class="btn-xs" style="color: #fbbf24; background: rgba(245, 158, 11, 0.15); border-color: rgba(245, 158, 11, 0.3);" onclick="prepararAlertaGratuito('${escapeHtml(s.marca)}', '${s.empresa_id || ''}')">✉️ Alerta</button>
+                    <button class="btn-xs" style="color: #38bdf8; background: rgba(56, 189, 248, 0.15); border-color: rgba(56, 189, 248, 0.35);" onclick="abrirPacoteTakedown('${escapeHtml(s.marca)}', '${s.empresa_id || ''}')">Rever resumo</button>
+                    <button class="btn-xs" style="color: #fbbf24; background: rgba(245, 158, 11, 0.15); border-color: rgba(245, 158, 11, 0.3);" onclick="prepararAlertaGratuito('${escapeHtml(s.marca)}', '${s.empresa_id || ''}')">Modelo de contacto</button>
                   </div>
                 </td>
               </tr>
@@ -3935,9 +3929,9 @@ Zap, Quem É?`;
           const labelTipo = {
             ENTIDADE_MB: '🏦 Entidade MB',
             REFERENCIA_MB: '🔢 Referência MB',
-            IBAN: '💳 IBAN (Mula)',
-            TELEFONE_BURLA: '📱 Tel / MB WAY',
-            DOMINIO_PHISHING: '🌐 Domínio Phishing'
+            IBAN: '💳 IBAN mencionado',
+            TELEFONE_BURLA: '📱 Telefone mencionado',
+            DOMINIO_PHISHING: '🌐 Domínio ou URL mencionado'
           };
           iocsTbody.innerHTML = iocsFiltrados.map(item => {
             const ultima = item.ultima_deteccao ? new Date(item.ultima_deteccao).toLocaleString('pt-PT') : '-';
@@ -3953,7 +3947,7 @@ Zap, Quem É?`;
                 <td>
                   <div style="display: flex; gap: 6px;">
                     <button class="btn-xs" onclick="navigator.clipboard.writeText('${escapeHtml(item.valor)}'); showToast('IOC copiado para a área de transferência!');">📋 Copiar IOC</button>
-                    <button class="btn-xs" style="color: #38bdf8; border-color: rgba(56, 189, 248, 0.35);" onclick="abrirPacoteTakedown('${escapeHtml(item.marca)}', '${item.empresa_id || ''}')">⚡ Takedown</button>
+                    <button class="btn-xs" style="color: #38bdf8; border-color: rgba(56, 189, 248, 0.35);" onclick="abrirPacoteTakedown('${escapeHtml(item.marca)}', '${item.empresa_id || ''}')">Rever resumo</button>
                   </div>
                 </td>
               </tr>
@@ -3987,7 +3981,7 @@ Zap, Quem É?`;
         }
 
         const btnConverterLead = !r.empresa_id
-          ? `<button class="btn-xs" style="color: #34d399; background: rgba(16, 185, 129, 0.15); border-color: rgba(16, 185, 129, 0.35);" onclick="converterMarcaRadarEmLead('${escapeHtml(r.empresa)}')">➕ Converter em Lead</button>`
+          ? `<button class="btn-xs" style="color: #34d399; background: rgba(16, 185, 129, 0.15); border-color: rgba(16, 185, 129, 0.35);" onclick="converterMarcaRadarEmLead('${escapeHtml(r.empresa)}')">Criar lead por rever</button>`
           : '';
 
         return `
@@ -4003,7 +3997,7 @@ Zap, Quem É?`;
               <div style="display: flex; gap: 6px; flex-wrap: wrap;">
                 ${btnConverterLead}
                 <button class="btn-xs btn-xs-primary" onclick="abrirDetalheRadar('${r.empresa_id || ''}', '${escapeHtml(r.empresa)}')">Ver Detalhe</button>
-                <button class="btn-xs" style="color: #38bdf8; background: rgba(56, 189, 248, 0.15); border-color: rgba(56, 189, 248, 0.35);" onclick="abrirPacoteTakedown('${escapeHtml(r.empresa)}', '${r.empresa_id || ''}')">⚡ Kit Takedown</button>
+                    <button class="btn-xs" style="color: #38bdf8; background: rgba(56, 189, 248, 0.15); border-color: rgba(56, 189, 248, 0.35);" onclick="abrirPacoteTakedown('${escapeHtml(r.empresa)}', '${r.empresa_id || ''}')">Rever resumo</button>
                 <button class="btn-xs" style="color: #fbbf24; background: rgba(245, 158, 11, 0.15); border-color: rgba(245, 158, 11, 0.3);" onclick="prepararAlertaGratuito('${escapeHtml(r.empresa)}', '${r.empresa_id || ''}')">✉️ Alerta Gratuito</button>
                 <button class="btn-xs" style="color: #93c5fd; background: rgba(59, 130, 246, 0.15); border-color: rgba(59, 130, 246, 0.3);" onclick="gerarDossieParaEmpresa('${escapeHtml(r.empresa)}')">📄 Dossiê CISO</button>
               </div>
@@ -4039,7 +4033,7 @@ Zap, Quem É?`;
     }
 
     // =========================================================================
-    // KIT COMERCIAL ZAP VERIFIED (Seções 3, 4, 5, 6, 7, 8, 9)
+    // KIT DE CONSULTA DO REGISTO EMPRESARIAL
     // =========================================================================
     function abrirKitBadge(seloId) {
       const selo = (dashboardState.selos || []).find(s => s.id === seloId);
@@ -4049,9 +4043,11 @@ Zap, Quem É?`;
       currentKitEmpresa = emp;
 
       const agora = new Date();
-      const expirado = selo.valido_ate ? new Date(selo.valido_ate) < agora : false;
+      const validadeMs = selo.valido_ate ? new Date(selo.valido_ate).getTime() : NaN;
+      const expirado = !Number.isFinite(validadeMs) || validadeMs < agora.getTime();
       const isSuspenso = emp?.status === 'suspenso';
-      const isAtivo = emp?.status === 'ativo' && !expirado;
+      const isTeste = Boolean(selo.is_teste || emp?.is_teste);
+      const isAtivo = !isTeste && selo.ativo === true && emp?.status === 'ativo' && !expirado;
 
       // Header e Metadados
       document.getElementById('kitEmpresaNome').textContent = emp ? emp.nome : 'Empresa';
@@ -4059,15 +4055,18 @@ Zap, Quem É?`;
       document.getElementById('kitValidade').textContent = selo.valido_ate ? new Date(selo.valido_ate).toLocaleDateString('pt-PT') : 'Indeterminada';
 
       const statusBadge = document.getElementById('kitEstadoBadge');
-      if (isAtivo) {
+      if (isTeste) {
+        statusBadge.className = 'badge badge-expirado';
+        statusBadge.textContent = '● DEMONSTRAÇÃO — SEM VALIDADE';
+      } else if (isAtivo) {
         statusBadge.className = 'badge badge-ativo';
-        statusBadge.textContent = '● VERIFICAÇÃO ATIVA';
+        statusBadge.textContent = '● REGISTO ATIVO';
       } else if (isSuspenso) {
         statusBadge.className = 'badge badge-suspenso';
-        statusBadge.textContent = '● VERIFICAÇÃO SUSPENSA';
+        statusBadge.textContent = '● REGISTO SUSPENSO';
       } else {
         statusBadge.className = 'badge badge-expirado';
-        statusBadge.textContent = '● VERIFICAÇÃO EXPIRADA';
+        statusBadge.textContent = expirado ? '● REGISTO EXPIRADO OU SEM VALIDADE' : '● REGISTO INATIVO';
       }
 
       const publicUrl = `${window.location.origin}/verify/${selo.codigo}`;
@@ -4077,7 +4076,7 @@ Zap, Quem É?`;
 
       document.getElementById('kitBtnAbrirPublico').href = publicUrl;
 
-      // Canais Verificados (com ícones oficiais recortados e links para download)
+      // Mostrar os campos assinalados como validados no registo; não distribuir ícones estáticos.
       const canaisLista = document.getElementById('kitCanaisLista');
       let canaisHtml = '';
 
@@ -4087,10 +4086,9 @@ Zap, Quem É?`;
           canaisHtml += `
             <div style="display: flex; align-items: center; justify-content: space-between; padding: 8px 12px; background: rgba(16, 185, 129, 0.08); border-radius: 8px; border: 1px solid rgba(16, 185, 129, 0.25);">
               <div style="display: flex; align-items: center; gap: 10px;">
-                <img src="/badges/canal-dominio-verificado.png" alt="Domínio Verificado" style="width: 26px; height: 26px; object-fit: contain;" />
-                <span style="font-size: 0.85rem; color: #34d399;">DOMÍNIO VERIFICADO: <strong style="color: #fff;">${escapeHtml(emp.dominio_oficial)}</strong></span>
+                <span aria-hidden="true" style="color: #34d399; font-weight: 800;">✓</span>
+                <span style="font-size: 0.85rem; color: #34d399;">DOMÍNIO COM VALIDAÇÃO INDICADA: <strong style="color: #fff;">${escapeHtml(emp.dominio_oficial)}</strong></span>
               </div>
-              <a href="/badges/canal-dominio-verificado.png" download="canal-dominio-verificado.png" class="btn-xs" style="text-decoration: none;">⬇ Ícone</a>
             </div>`;
         } else if (emp.dominio_oficial) {
           canaisHtml += `<div style="display: flex; align-items: center; gap: 8px; font-size: 0.85rem; color: #94a3b8; padding: 6px 10px;"><span>–</span> <span>DOMÍNIO REGISTADO (NÃO VERIFICADO): ${escapeHtml(emp.dominio_oficial)}</span></div>`;
@@ -4101,10 +4099,9 @@ Zap, Quem É?`;
           canaisHtml += `
             <div style="display: flex; align-items: center; justify-content: space-between; padding: 8px 12px; background: rgba(16, 185, 129, 0.08); border-radius: 8px; border: 1px solid rgba(16, 185, 129, 0.25);">
               <div style="display: flex; align-items: center; gap: 10px;">
-                <img src="/badges/canal-email-verificado.png" alt="Email Verificado" style="width: 26px; height: 26px; object-fit: contain;" />
-                <span style="font-size: 0.85rem; color: #34d399;">EMAIL VERIFICADO: <strong style="color: #fff;">${escapeHtml(emp.email_oficial)}</strong></span>
+                <span aria-hidden="true" style="color: #34d399; font-weight: 800;">✓</span>
+                <span style="font-size: 0.85rem; color: #34d399;">EMAIL COM VALIDAÇÃO INDICADA: <strong style="color: #fff;">${escapeHtml(emp.email_oficial)}</strong></span>
               </div>
-              <a href="/badges/canal-email-verificado.png" download="canal-email-verificado.png" class="btn-xs" style="text-decoration: none;">⬇ Ícone</a>
             </div>`;
         } else if (emp.email_oficial) {
           canaisHtml += `<div style="display: flex; align-items: center; gap: 8px; font-size: 0.85rem; color: #94a3b8; padding: 6px 10px;"><span>–</span> <span>EMAIL REGISTADO (NÃO VERIFICADO): ${escapeHtml(emp.email_oficial)}</span></div>`;
@@ -4115,10 +4112,9 @@ Zap, Quem É?`;
           canaisHtml += `
             <div style="display: flex; align-items: center; justify-content: space-between; padding: 8px 12px; background: rgba(16, 185, 129, 0.08); border-radius: 8px; border: 1px solid rgba(16, 185, 129, 0.25);">
               <div style="display: flex; align-items: center; gap: 10px;">
-                <img src="/badges/canal-telefone-verificado.png" alt="Telefone Verificado" style="width: 26px; height: 26px; object-fit: contain;" />
-                <span style="font-size: 0.85rem; color: #34d399;">TELEFONE VERIFICADO: <strong style="color: #fff;">${escapeHtml(emp.telefone_oficial)}</strong></span>
+                <span aria-hidden="true" style="color: #34d399; font-weight: 800;">✓</span>
+                <span style="font-size: 0.85rem; color: #34d399;">TELEFONE COM VALIDAÇÃO INDICADA: <strong style="color: #fff;">${escapeHtml(emp.telefone_oficial)}</strong></span>
               </div>
-              <a href="/badges/canal-telefone-verificado.png" download="canal-telefone-verificado.png" class="btn-xs" style="text-decoration: none;">⬇ Ícone</a>
             </div>`;
         } else if (emp.telefone_oficial) {
           canaisHtml += `<div style="display: flex; align-items: center; gap: 8px; font-size: 0.85rem; color: #94a3b8; padding: 6px 10px;"><span>–</span> <span>TELEFONE REGISTADO (NÃO VERIFICADO): ${escapeHtml(emp.telefone_oficial)}</span></div>`;
@@ -4130,34 +4126,23 @@ Zap, Quem É?`;
       }
       canaisLista.innerHTML = canaisHtml;
 
-      // Renderizar botões de seleção de badges (14 modelos)
+      // Oferecer apenas emblemas dinâmicos ligados ao estado consultado do registo.
       const btnContainer = document.getElementById('kitBadgeButtons');
       btnContainer.innerHTML = BADGE_DEFINITIONS.map(b => `
-        <button id="btnBadge_${b.id}" class="btn-xs ${b.id === 'badge-principal' ? 'btn-xs-primary' : ''}" onclick="setKitFormato('${b.id}')" title="${b.desc}">
+        <button id="btnBadge_${b.id}" class="btn-xs ${b.id === 'svg-principal' ? 'btn-xs-primary' : ''}" onclick="setKitFormato('${b.id}')" title="${b.desc}">
           ${b.name}
         </button>
       `).join('');
 
-      // Inicia com o badge principal oficial recortado
-      setKitFormato('badge-principal');
+      // Inicia com o emblema dinâmico; a imagem estática pode ficar desatualizada.
+      setKitFormato('svg-principal');
       document.getElementById('kitBadgeModal').style.display = 'flex';
     }
 
     const BADGE_DEFINITIONS = [
-      { id: 'badge-principal', name: '🛡️ Emblema Vertical', type: 'png', path: '/badges/badge-principal.png', dim: '255 × 400 px', desc: 'Emblema vertical oficial com mascote, lupa e canais' },
-      { id: 'badge-circular', name: '⭕ Circular Grande', type: 'png', path: '/badges/badge-circular.png', dim: '405 × 390 px', desc: 'Selo redondo oficial com mascote e borda verde' },
-      { id: 'badge-horizontal-dark', name: '🌙 Horizontal Dark', type: 'png', path: '/badges/badge-horizontal-dark.png', dim: '295 × 85 px', desc: 'Badge arredondado com mascote para fundos escuros' },
-      { id: 'badge-horizontal-light', name: '☀️ Horizontal Light', type: 'png', path: '/badges/badge-horizontal-light.png', dim: '295 × 85 px', desc: 'Badge arredondado com mascote para fundos claros' },
-      { id: 'badge-horizontal-clean-dark', name: '✨ Clean Dark', type: 'png', path: '/badges/badge-horizontal-clean-dark.png', dim: '295 × 70 px', desc: 'Selo compacto minimalista escuro com escudo' },
-      { id: 'badge-horizontal-clean-light', name: '✨ Clean Light', type: 'png', path: '/badges/badge-horizontal-clean-light.png', dim: '295 × 70 px', desc: 'Selo compacto minimalista claro com escudo' },
-      { id: 'badge-bar-dark', name: '📊 Barra Canais Dark', type: 'png', path: '/badges/badge-bar-dark.png', dim: '500 × 85 px', desc: 'Barra completa com mascote e os 3 canais' },
-      { id: 'badge-bar-light', name: '📊 Barra Canais Light', type: 'png', path: '/badges/badge-bar-light.png', dim: '480 × 85 px', desc: 'Barra completa com mascote em fundo claro' },
-      { id: 'selo-mascote-circular', name: '🕵️ Mascote Redondo', type: 'png', path: '/badges/selo-mascote-circular.png', dim: '150 × 140 px', desc: 'Selo circular com mascote e Empresa Verificada' },
-      { id: 'selo-circular-verde', name: '✓ Selo Verde Minimal', type: 'png', path: '/badges/selo-circular-verde.png', dim: '140 × 140 px', desc: 'Selo circular verde com checkmark central' },
-      { id: 'selo-shield', name: '🔰 Selo Escudo', type: 'png', path: '/badges/selo-shield.png', dim: '130 × 140 px', desc: 'Selo em formato de escudo clássico' },
-      { id: 'svg-horizontal', name: '⚡ SVG Horizontal', type: 'svg', svgFormat: 'horizontal', dim: '310 × 64 px (Vetorial)', desc: 'SVG dinâmico com status em tempo real' },
-      { id: 'svg-principal', name: '⚡ SVG Vertical', type: 'svg', svgFormat: 'principal', dim: '220 × 250 px (Vetorial)', desc: 'SVG vertical dinâmico com status em tempo real' },
-      { id: 'svg-circular', name: '⚡ SVG Circular', type: 'svg', svgFormat: 'circular', dim: '160 × 160 px (Vetorial)', desc: 'SVG circular dinâmico com status em tempo real' }
+      { id: 'svg-horizontal', name: 'SVG horizontal', type: 'svg', svgFormat: 'horizontal', dim: '310 × 64 px (vetorial)', desc: 'Imagem dinâmica com o estado atual do registo' },
+      { id: 'svg-principal', name: 'SVG vertical', type: 'svg', svgFormat: 'principal', dim: '220 × 250 px (vetorial)', desc: 'Imagem dinâmica com o estado atual do registo' },
+      { id: 'svg-circular', name: 'SVG circular', type: 'svg', svgFormat: 'circular', dim: '160 × 160 px (vetorial)', desc: 'Imagem dinâmica com o estado atual do registo' }
     ];
 
     function setKitFormato(badgeId) {
@@ -4177,8 +4162,9 @@ Zap, Quem É?`;
       if (!currentKitSelo) return;
 
       const agora = new Date();
-      const expirado = currentKitSelo.valido_ate ? new Date(currentKitSelo.valido_ate) < agora : false;
-      const status = currentKitEmpresa?.status === 'suspenso' ? 'suspenso' : (expirado ? 'expirado' : (currentKitEmpresa?.status === 'ativo' ? 'ativo' : 'inativo'));
+      const validadeMs = currentKitSelo.valido_ate ? new Date(currentKitSelo.valido_ate).getTime() : NaN;
+      const ativo = currentKitSelo.ativo === true && currentKitEmpresa?.status === 'ativo' && Number.isFinite(validadeMs) && validadeMs >= agora.getTime() && !currentKitSelo.is_teste && !currentKitEmpresa?.is_teste;
+      const status = currentKitEmpresa?.status === 'suspenso' ? 'suspenso' : (ativo ? 'ativo' : 'inativo');
       const empresaNome = currentKitEmpresa ? currentKitEmpresa.nome : 'Empresa';
       const codigo = currentKitSelo.codigo;
       const verifyUrl = `${window.location.origin}/verify/${codigo}`;
@@ -4186,27 +4172,10 @@ Zap, Quem É?`;
       const previewEl = document.getElementById('kitBadgePreview');
       const btnDownload = document.getElementById('kitBtnDownload');
 
-      let embedCode = '';
-      if (badge.type === 'png') {
-        const fullImgUrl = `${window.location.origin}${badge.path}`;
-        previewEl.innerHTML = `<img src="${badge.path}" alt="${escapeHtml(badge.name)}" style="max-height: 200px; max-width: 100%; object-fit: contain; filter: drop-shadow(0 8px 20px rgba(0,0,0,0.6)); border-radius: 8px;" />`;
-        btnDownload.textContent = '⬇ Baixar PNG';
-        embedCode = `<a href="${verifyUrl}" target="_blank" rel="noopener noreferrer">\n  <img src="${fullImgUrl}" alt="ZAP VERIFIED — Canais oficiais confirmados" />\n</a>`;
-      } else {
-        // SVG Dinâmico
-        let svg = '';
-        if (badge.svgFormat === 'principal') {
-          svg = generatePrincipalBadgeSvg(codigo, empresaNome, status);
-        } else if (badge.svgFormat === 'circular') {
-          svg = generateCircularBadgeSvg(codigo, empresaNome, status);
-        } else {
-          svg = generateHorizontalBadgeSvg(codigo, empresaNome, status);
-        }
-        previewEl.innerHTML = svg;
-        btnDownload.textContent = '⬇ Baixar SVG';
-        const badgeImageUrl = `${window.location.origin}/api/badge?codigo=${codigo}&formato=${badge.svgFormat}`;
-        embedCode = `<a href="${verifyUrl}" target="_blank" rel="noopener noreferrer">\n  <img src="${badgeImageUrl}" alt="ZAP VERIFIED — Canais oficiais confirmados" />\n</a>`;
-      }
+      const badgeImageUrl = `${window.location.origin}/api/badge?codigo=${encodeURIComponent(codigo)}&formato=${encodeURIComponent(badge.svgFormat)}`;
+      previewEl.innerHTML = `<img src="${badgeImageUrl}" alt="${escapeHtml(badge.name)}: estado atual do registo" style="max-height: 200px; max-width: 100%; object-fit: contain; filter: drop-shadow(0 8px 20px rgba(0,0,0,0.6)); border-radius: 8px;" />`;
+      btnDownload.textContent = '⬇ Baixar SVG (estado atual)';
+      const embedCode = `<a href="${verifyUrl}" target="_blank" rel="noopener noreferrer">\n  <img src="${badgeImageUrl}" alt="Consulta do registo empresarial" />\n</a>`;
 
       document.getElementById('kitHtmlEmbed').value = embedCode;
     }
@@ -4231,30 +4200,14 @@ Zap, Quem É?`;
       const badge = BADGE_DEFINITIONS.find(b => b.id === currentKitFormato) || BADGE_DEFINITIONS[0];
       const codigo = currentKitSelo?.codigo || 'badge';
 
-      if (badge.type === 'png') {
-        const a = document.createElement('a');
-        a.href = badge.path;
-        a.download = `zap-verified-${codigo}-${badge.id}.png`;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        showToast('Badge PNG baixado com sucesso!');
-      } else {
-        const container = document.getElementById('kitBadgePreview');
-        const svg = container ? container.innerHTML : '';
-        if (!svg) return;
-
-        const blob = new Blob([svg], { type: 'image/svg+xml;charset=utf-8' });
-        const dlUrl = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = dlUrl;
-        a.download = `zap-verified-${codigo}-${badge.svgFormat}.svg`;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        URL.revokeObjectURL(dlUrl);
-        showToast('Arquivo SVG baixado com sucesso!');
-      }
+      const badgeUrl = `${window.location.origin}/api/badge?codigo=${encodeURIComponent(codigo)}&formato=${encodeURIComponent(badge.svgFormat)}`;
+      const anchor = document.createElement('a');
+      anchor.href = badgeUrl;
+      anchor.download = `zap-registo-${codigo}-${badge.svgFormat}.svg`;
+      document.body.appendChild(anchor);
+      anchor.click();
+      document.body.removeChild(anchor);
+      showToast('SVG transferido com o estado atual do registo.');
     }
 
     // Geradores de SVG no cliente (Preview em tempo real sem latência)
@@ -4262,7 +4215,7 @@ Zap, Quem É?`;
       const isAtivo = status === 'ativo';
       const isSuspenso = status === 'suspenso';
       const primaryColor = isAtivo ? '#10b981' : (isSuspenso ? '#ef4444' : '#f59e0b');
-      const statusLabel = isAtivo ? 'CANAIS CONFIRMADOS' : (isSuspenso ? 'VERIFICAÇÃO SUSPENSA' : 'VERIFICAÇÃO EXPIRADA');
+      const statusLabel = isAtivo ? 'REGISTO ATIVO' : (isSuspenso ? 'REGISTO SUSPENSO' : 'REGISTO INATIVO');
 
       return `<svg xmlns="http://www.w3.org/2000/svg" width="310" height="64" viewBox="0 0 310 64" fill="none">
         <rect width="310" height="64" rx="12" fill="#0f172a" stroke="#ffffff" stroke-opacity="0.12" stroke-width="1" />
@@ -4275,7 +4228,7 @@ Zap, Quem É?`;
         <text x="58" y="54" font-family="monospace" font-size="8.5" font-weight="500" fill="#64748b">${escapeHtml(codigo)}</text>
         <rect x="236" y="16" width="60" height="20" rx="10" fill="${primaryColor}" fill-opacity="0.15" stroke="${primaryColor}" stroke-opacity="0.4" stroke-width="1" />
         <circle cx="246" cy="26" r="3" fill="${primaryColor}" />
-        <text x="254" y="29.5" font-family="sans-serif" font-size="9" font-weight="700" fill="${primaryColor}">${isAtivo ? 'OFICIAL' : (isSuspenso ? 'SUSP' : 'EXP')}</text>
+        <text x="254" y="29.5" font-family="sans-serif" font-size="9" font-weight="700" fill="${primaryColor}">${isAtivo ? 'ATIVO' : (isSuspenso ? 'SUSP' : 'INATIVO')}</text>
       </svg>`;
     }
 
@@ -4283,7 +4236,7 @@ Zap, Quem É?`;
       const isAtivo = status === 'ativo';
       const isSuspenso = status === 'suspenso';
       const primaryColor = isAtivo ? '#10b981' : (isSuspenso ? '#ef4444' : '#f59e0b');
-      const statusLabel = isAtivo ? 'VERIFICAÇÃO ATIVA' : (isSuspenso ? 'VERIFICAÇÃO SUSPENSA' : 'VERIFICAÇÃO EXPIRADA');
+      const statusLabel = isAtivo ? 'REGISTO ATIVO' : (isSuspenso ? 'REGISTO SUSPENSO' : 'REGISTO INATIVO');
 
       return `<svg xmlns="http://www.w3.org/2000/svg" width="220" height="250" viewBox="0 0 220 250" fill="none">
         <rect width="220" height="250" rx="18" fill="#0f172a" stroke="#ffffff" stroke-opacity="0.12" stroke-width="1.5" />
@@ -4292,7 +4245,7 @@ Zap, Quem É?`;
           <path d="M17 26.5L22.5 32L33 20" stroke="#ffffff" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round" />
         </g>
         <text x="110" y="104" text-anchor="middle" font-family="sans-serif" font-size="14.5" font-weight="900" fill="#ffffff" letter-spacing="0.1em">ZAP VERIFIED</text>
-        <text x="110" y="122" text-anchor="middle" font-family="sans-serif" font-size="9" font-weight="700" fill="${primaryColor}" letter-spacing="0.08em">CANAIS OFICIAIS CONFIRMADOS</text>
+        <text x="110" y="122" text-anchor="middle" font-family="sans-serif" font-size="9" font-weight="700" fill="${primaryColor}" letter-spacing="0.08em">CONSULTA DE REGISTO</text>
         <line x1="30" y1="138" x2="190" y2="138" stroke="#ffffff" stroke-opacity="0.1" stroke-width="1" />
         <text x="110" y="160" text-anchor="middle" font-family="sans-serif" font-size="12" font-weight="700" fill="#f8fafc">${escapeHtml(empresaNome)}</text>
         <rect x="30" y="178" width="160" height="24" rx="12" fill="${primaryColor}" fill-opacity="0.12" stroke="${primaryColor}" stroke-opacity="0.35" stroke-width="1" />
@@ -4315,7 +4268,7 @@ Zap, Quem É?`;
           <path d="M17 25L22 30L33 19" stroke="#ffffff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" />
         </g>
         <text x="80" y="112" text-anchor="middle" font-family="sans-serif" font-size="11" font-weight="900" fill="#ffffff" letter-spacing="0.08em">ZAP VERIFIED</text>
-        <text x="80" y="126" text-anchor="middle" font-family="sans-serif" font-size="8" font-weight="700" fill="${primaryColor}" letter-spacing="0.06em">CANAIS OFICIAIS</text>
+        <text x="80" y="126" text-anchor="middle" font-family="sans-serif" font-size="8" font-weight="700" fill="${primaryColor}" letter-spacing="0.06em">CONSULTA DE REGISTO</text>
         <circle cx="80" cy="138" r="3" fill="${primaryColor}" />
       </svg>`;
     }
@@ -4938,7 +4891,7 @@ Zap, Quem É?`;
           throw new Error(errData.error || await res.text());
         }
         const data = await res.json();
-        showToast('Relatório pericial gerado com sucesso!');
+        showToast('Resumo automático gerado; reveja antes de partilhar.');
         await loadDashboardData();
         verEmpresa(currentEmpresaDetalheId);
         if (data.relatorio && data.relatorio.id) {
@@ -4973,7 +4926,7 @@ Zap, Quem É?`;
     }
 
     async function marcarRelatorioEnviado(relatorioId) {
-      if (!confirm('Confirmar que este relatório pericial aprovado foi enviado ao cliente?')) return;
+      if (!confirm('Confirmar que este resumo, aprovado após revisão humana, foi enviado ao cliente?')) return;
       try {
         const res = await fetch('/api/admin', {
           method: 'POST',
@@ -5098,24 +5051,24 @@ Zap, Quem É?`;
         }
         document.getElementById('pacoteTakedownModal').style.display = 'flex';
       } catch (err) {
-        alert('Erro ao gerar pacote forense de takedown: ' + err.message);
+        alert('Erro ao gerar resumo de sinais: ' + err.message);
       }
     }
 
     function copiarTakedownAssunto() {
       const val = document.getElementById('takedownAssuntoInput').value;
       navigator.clipboard.writeText(val);
-      showToast('Assunto do Takedown copiado!');
+      showToast('Assunto sugerido copiado. Reveja antes de usar.');
     }
 
     function copiarTakedownCorpo() {
       const val = document.getElementById('takedownCorpoTextarea').value;
       navigator.clipboard.writeText(val);
-      showToast('Pacote forense de Takedown copiado com sucesso!');
+      showToast('Resumo copiado. Reveja antes de partilhar.');
     }
 
     async function converterMarcaRadarEmLead(marca) {
-      if (!confirm(`Deseja converter a marca "${marca}" detetada no Shadow Radar numa Lead Comercial do funil B2B?`)) return;
+      if (!confirm(`Deseja criar um lead a partir do nome "${marca}" mencionado em registos submetidos? A menção não confirma um ataque.`)) return;
       try {
         const res = await fetch('/api/admin', {
           method: 'POST',
@@ -5362,7 +5315,7 @@ Zap, Quem É?`;
     function formatEstadoClusterBadge(estado) {
       const map = {
         possivel_campanha: { label: '● Possível campanha', bg: 'rgba(245, 158, 11, 0.16)', color: '#fbbf24', border: 'rgba(245, 158, 11, 0.4)' },
-        ativa:             { label: '● Campanha ativa (revista)', bg: 'rgba(239, 68, 68, 0.16)', color: '#f87171', border: 'rgba(239, 68, 68, 0.4)' },
+        ativa:             { label: '● Agrupamento por rever', bg: 'rgba(239, 68, 68, 0.16)', color: '#f87171', border: 'rgba(239, 68, 68, 0.4)' },
         encerrada:         { label: '● Encerrada', bg: 'rgba(148, 163, 184, 0.15)', color: '#94a3b8', border: 'rgba(148, 163, 184, 0.3)' },
         descartada:        { label: '● Descartada (falso alarme)', bg: 'rgba(16, 185, 129, 0.14)', color: '#34d399', border: 'rgba(16, 185, 129, 0.3)' }
       };
