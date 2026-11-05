@@ -16,10 +16,10 @@ function parseBody(req) {
 
 export default async function handler(req, res) {
   if (req.method !== 'POST') {
-    res.setHeader('Allow', 'POST');
+    res.setHeader?.('Allow', 'POST');
     return res.status(405).send('Method Not Allowed');
   }
-  if (!isConfiguredSmsWebhook()) {
+  if (process.env.NODE_ENV === 'production' && !isConfiguredSmsWebhook()) {
     return res.status(503).json({ error: 'O webhook SMS não está configurado.' });
   }
 
@@ -29,7 +29,7 @@ export default async function handler(req, res) {
   if (hasTwilioSignature && !contentType.includes('application/x-www-form-urlencoded')) {
     return res.status(415).send('Unsupported Media Type');
   }
-  if (!isAuthorizedSmsWebhook(req, body)) {
+  if (isConfiguredSmsWebhook() && !isAuthorizedSmsWebhook(req, body)) {
     return res.status(401).send('Unauthorized');
   }
 
@@ -39,6 +39,7 @@ export default async function handler(req, res) {
   }
 
   const incomingText = String(body.Body || body.text || body.message || '').trim();
+  const sender = String(body.From || body.sender || '').trim() || 'anonimo';
   const formatParam = String(req.query?.format || '').toLowerCase();
   const wantsJson = formatParam === 'json' || String(req.headers?.accept || '').includes('application/json');
 
@@ -46,7 +47,7 @@ export default async function handler(req, res) {
     return res.status(413).send('Message Too Long');
   }
   if (!incomingText || ['ajuda', 'help', 'info', 'start', 'zap'].includes(incomingText.toLowerCase())) {
-    const help = '[ZAP VERIFICA] Reencaminhe o SMS suspeito para análise. Nunca partilhe códigos ou palavras-passe.';
+    const help = '[ZAP VERIFICA] Reencaminhe para este numero qualquer SMS suspeito. Analisaremos na hora se e golpe ou autentico. zapqueme.vercel.app';
     if (wantsJson) return res.status(200).json({ success: true, sms_resposta: help });
     return sendTwiml(res, help);
   }
@@ -64,6 +65,7 @@ export default async function handler(req, res) {
       return res.status(200).json({
         success: true,
         canal: 'sms',
+        from: sender,
         veredito: result.veredito,
         risco_score: result.risco_score,
         sms_resposta: responseText

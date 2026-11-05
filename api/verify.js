@@ -16,48 +16,54 @@ export function escapeHtml(str) {
 }
 
 /**
- * Determina o estado publicado no registo. Não declara que a pessoa que contacta
- * controla os canais listados nem que um pedido de pagamento é legítimo.
+ * Determina o status do selo conforme Seção 16 da especificação
+ * Estados públicos:
+ * - Válido: "✓ Verificação ativa"
+ * - Suspenso: "⚠️ Verificação suspensa"
+ * - Expirado: "⚠️ Verificação expirada"
+ * - Empresa inativa / Selo inativo: "⚠️ Verificação inativa"
+ * - Revogado: "❌ Verificação revogada"
+ * - Teste: "🧪 Página de teste"
  */
 export function calcularStatusPublico({ selo, empresa, agora = new Date() }) {
   const isTeste = !!(selo?.is_teste || empresa?.is_teste);
   const arquivado = !!(selo?.arquivado_em || empresa?.arquivado_em);
-  const dataValidade = selo?.valido_ate;
+  const dataValidade = empresa?.data_validade || selo?.valido_ate;
   const dataMs = dataValidade ? new Date(dataValidade).getTime() : NaN;
-  const expirado = Number.isFinite(dataMs) && dataMs < agora.getTime();
+  const expirado = Number.isFinite(dataMs) ? dataMs < agora.getTime() : false;
   const validadeIndeterminada = !Number.isFinite(dataMs);
-  const est = String(empresa?.estado || empresa?.status || '').toLowerCase();
+  const est = String(empresa?.estado || empresa?.status || 'ativo').toLowerCase();
 
-  let statusPublico = 'Registo inativo ou sem estado confirmado';
-  let statusClasse = 'status-inativo';
-  let statusRaw = 'inativo';
+  let statusPublico = '✓ Verificação ativa';
+  let statusClasse = 'status-valido';
+  let statusRaw = 'valido';
 
   if (isTeste) {
-    statusPublico = 'Demonstração — sem validade';
+    statusPublico = '🧪 Página de teste';
     statusClasse = 'status-teste';
     statusRaw = 'teste';
   } else if (est === 'revogado') {
-    statusPublico = 'Registo revogado';
+    statusPublico = '❌ Verificação revogada';
     statusClasse = 'status-revogado';
     statusRaw = 'revogado';
   } else if (est === 'suspenso') {
-    statusPublico = 'Registo suspenso';
+    statusPublico = '⚠️ Verificação suspensa';
     statusClasse = 'status-suspenso';
     statusRaw = 'suspenso';
-  } else if (arquivado || selo?.ativo !== true) {
-    statusPublico = 'Registo inativo';
+  } else if (arquivado || selo?.ativo === false) {
+    statusPublico = '⚠️ Verificação inativa';
     statusClasse = 'status-inativo';
     statusRaw = 'inativo';
-  } else if (est === 'expirado' || expirado || validadeIndeterminada) {
-    statusPublico = expirado ? 'Registo expirado' : 'Validade não confirmada';
+  } else if (est === 'expirado' || expirado) {
+    statusPublico = '⚠️ Verificação expirada';
     statusClasse = 'status-expirado';
     statusRaw = 'expirado';
   } else if (est !== 'ativo') {
-    statusPublico = 'Registo inativo ou sem estado confirmado';
+    statusPublico = '⚠️ Verificação inativa';
     statusClasse = 'status-inativo';
     statusRaw = 'inativo';
   } else {
-    statusPublico = 'Registo ativo no serviço';
+    statusPublico = '✓ Verificação ativa';
     statusClasse = 'status-valido';
     statusRaw = 'valido';
   }
@@ -234,7 +240,7 @@ export function renderVerifyHtml({ selo, empresa, statusPublico, statusClasse })
       <div class="channel-badge badge-verified">
         <span aria-hidden="true" style="color: #10b981; font-weight: 800;">✓</span>
         <div class="channel-detail">
-          <span class="channel-type">Validação indicada no registo</span>
+          <span class="channel-type">Canal verificado</span>
           <span class="channel-val">${escapeHtml(empresa.dominio_oficial)}</span>
         </div>
       </div>`;
@@ -243,7 +249,7 @@ export function renderVerifyHtml({ selo, empresa, statusPublico, statusClasse })
       <div class="channel-badge badge-registered">
         <span class="icon">–</span>
         <div class="channel-detail">
-          <span class="channel-type">Canal indicado sem validação marcada</span>
+          <span class="channel-type">Canal registado, ainda não verificado</span>
           <span class="channel-val">${escapeHtml(empresa.dominio_oficial)}</span>
         </div>
       </div>`;
@@ -258,7 +264,7 @@ export function renderVerifyHtml({ selo, empresa, statusPublico, statusClasse })
       <div class="channel-badge badge-verified">
         <span aria-hidden="true" style="color: #10b981; font-weight: 800;">✓</span>
         <div class="channel-detail">
-          <span class="channel-type">Validação indicada no registo</span>
+          <span class="channel-type">Canal verificado</span>
           <span class="channel-val">${escapeHtml(empresa.email_oficial)}</span>
         </div>
       </div>`;
@@ -267,7 +273,7 @@ export function renderVerifyHtml({ selo, empresa, statusPublico, statusClasse })
       <div class="channel-badge badge-registered">
         <span class="icon">–</span>
         <div class="channel-detail">
-          <span class="channel-type">Canal indicado sem validação marcada</span>
+          <span class="channel-type">Canal registado, ainda não verificado</span>
           <span class="channel-val">${escapeHtml(empresa.email_oficial)}</span>
         </div>
       </div>`;
@@ -282,7 +288,7 @@ export function renderVerifyHtml({ selo, empresa, statusPublico, statusClasse })
       <div class="channel-badge badge-verified">
         <span aria-hidden="true" style="color: #10b981; font-weight: 800;">✓</span>
         <div class="channel-detail">
-          <span class="channel-type">Validação indicada no registo</span>
+          <span class="channel-type">Canal verificado</span>
           <span class="channel-val">${escapeHtml(empresa.telefone_oficial)}</span>
         </div>
       </div>`;
@@ -291,7 +297,7 @@ export function renderVerifyHtml({ selo, empresa, statusPublico, statusClasse })
       <div class="channel-badge badge-registered">
         <span class="icon">–</span>
         <div class="channel-detail">
-          <span class="channel-type">Canal indicado sem validação marcada</span>
+          <span class="channel-type">Canal registado, ainda não verificado</span>
           <span class="channel-val">${escapeHtml(empresa.telefone_oficial)}</span>
         </div>
       </div>`;
